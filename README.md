@@ -4,13 +4,13 @@ Plataforma gamificada para aprender programação escrevendo, executando, testan
 
 ## Estado
 
-Fase 1A em andamento: a primeira missão JavaScript já funciona ponta a ponta com autenticação, Monaco, testes privados, XP idempotente e desbloqueio.
+Fase 1A em andamento: as primeiras missões JavaScript funcionam ponta a ponta com autenticação, sandbox, testes privados, XP idempotente e desbloqueio.
 
 ## Stack
 
 - React 19, TypeScript, Tailwind CSS 4 e Vinext (modelo de aplicação Next.js)
 - D1 + Sign in with ChatGPT no deploy privado; PostgreSQL/Supabase permanece o alvo público
-- Monaco Editor e avaliador AST seguro para as primeiras missões
+- Monaco Editor e QuickJS/Wasm isolado com limites de CPU, memória e pilha
 
 ## Desenvolvimento
 

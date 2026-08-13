@@ -1,9 +1,15 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { ensureUser, getMission, getMissionTests, recordAttempt } from "@/db";
-import { compileSafeFunction } from "@/lib/safe-js-evaluator";
+import { ensureUser, getMission, getMissionTests, getRecentSubmissionCount, recordAttempt, recordSubmission, type SubmissionStatus } from "@/db";
+import { executeJavaScript } from "@/lib/quickjs-runner";
 
 type Payload = { code?: string; mode?: "run" | "test" };
-type TestValue = number | boolean;
+const MAX_CODE_LENGTH = 12_000;
+const RATE_LIMIT = 20;
+
+async function hashCode(code: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(code));
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
 
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const user = await getChatGPTUser();
@@ -17,23 +23,35 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   let payload: Payload;
   try { payload = await request.json() as Payload; } catch { return Response.json({ ok: false, message: "Envio inválido." }, { status: 400 }); }
   if (typeof payload.code !== "string" || (payload.mode !== "run" && payload.mode !== "test")) return Response.json({ ok: false, message: "Código e modo são obrigatórios." }, { status: 400 });
+  if (payload.code.length > MAX_CODE_LENGTH) return Response.json({ ok: false, message: "O código excede 12.000 caracteres." }, { status: 413 });
+  if (await getRecentSubmissionCount(user.userId) >= RATE_LIMIT) {
+    return Response.json({ ok: false, message: "Muitas execuções. Tente novamente em alguns minutos." }, { status: 429, headers: { "Retry-After": "300" } });
+  }
 
+  const startedAt = Date.now();
+  const codeHash = await hashCode(payload.code);
+  let status: SubmissionStatus = "error";
   try {
-    const parameters = JSON.parse(mission.parametersJson) as string[];
-    const execute = compileSafeFunction(payload.code, mission.functionName, parameters);
-    if (payload.mode === "run") return Response.json({ ok: true, compiled: true, message: "Código validado no ambiente seguro." });
+    if (payload.mode === "run") {
+      await executeJavaScript(payload.code, mission.functionName);
+      status = "passed";
+      return Response.json({ ok: true, compiled: true, message: "Código validado no ambiente isolado." });
+    }
 
     const tests = await getMissionTests(mission.id);
-    const results = tests.map((test) => {
-      const input = JSON.parse(test.inputJson) as TestValue[];
-      const expected = JSON.parse(test.expectedJson) as TestValue;
-      return { name: test.name, passed: Object.is(execute(...input), expected) };
-    });
+    const results = await executeJavaScript(payload.code, mission.functionName, tests.map((test) => ({
+      name: test.name,
+      input: JSON.parse(test.inputJson) as unknown[],
+      expected: JSON.parse(test.expectedJson) as unknown,
+    })));
     const passed = results.every((result) => result.passed);
+    status = passed ? "passed" : "failed";
     const progress = await recordAttempt(user.userId, mission, passed);
     return Response.json({ ok: passed, message: passed ? "Todos os testes passaram." : "Alguns testes ainda falharam.", results, ...progress });
   } catch (error) {
-    await recordAttempt(user.userId, mission, false);
+    if (payload.mode === "test") await recordAttempt(user.userId, mission, false);
     return Response.json({ ok: false, message: error instanceof Error ? error.message : "Não foi possível avaliar o código." }, { status: 422 });
+  } finally {
+    await recordSubmission({ userId: user.userId, missionId: mission.id, mode: payload.mode, status, codeHash, durationMs: Date.now() - startedAt });
   }
 }

@@ -13,6 +13,8 @@ type D1Database = { prepare(sql: string): D1Statement; batch(statements: D1State
 export type MissionSummary = { slug: string; title: string; xpReward: number; skillName: string; state: "locked" | "available" | "in_progress" | "completed" };
 export type Mission = { id: number; skillId: number; slug: string; title: string; briefing: string; objective: string; starterCode: string; functionName: string; parametersJson: string; xpReward: number; nextMissionSlug: string | null; state: MissionSummary["state"]; awardedXp: number };
 export type MissionTest = { name: string; inputJson: string; expectedJson: string };
+export type SubmissionMode = "run" | "test";
+export type SubmissionStatus = "passed" | "failed" | "error";
 
 function getDb(): D1Database {
   const db = (env as unknown as { DB?: D1Database }).DB;
@@ -55,6 +57,17 @@ export async function getMission(userId: string, slug: string): Promise<Mission 
 export async function getMissionTests(missionId: number): Promise<MissionTest[]> {
   const result = await getDb().prepare("SELECT name,input_json AS inputJson,expected_json AS expectedJson FROM mission_tests WHERE mission_id=? ORDER BY sort_order").bind(missionId).all<MissionTest>();
   return result.results;
+}
+
+export async function getRecentSubmissionCount(userId: string, minutes = 5) {
+  const row = await getDb().prepare(`SELECT COUNT(*) AS count FROM submissions
+    WHERE user_id=? AND created_at >= datetime('now',?)`).bind(userId, `-${minutes} minutes`).first<{ count: number }>();
+  return row?.count ?? 0;
+}
+
+export async function recordSubmission(input: { userId: string; missionId: number; mode: SubmissionMode; status: SubmissionStatus; codeHash: string; durationMs: number }) {
+  await getDb().prepare(`INSERT INTO submissions (user_id,mission_id,mode,status,code_hash,duration_ms)
+    VALUES (?,?,?,?,?,?)`).bind(input.userId, input.missionId, input.mode, input.status, input.codeHash, input.durationMs).run();
 }
 
 export async function recordAttempt(userId: string, mission: Mission, passed: boolean) {

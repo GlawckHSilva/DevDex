@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.0] — 2026-08-13
+
+### Added
+
+- sandbox QuickJS/Wasm compatível com Workers;
+- limites de tempo, memória, pilha e tamanho de código;
+- histórico D1 com hash do código e rate limit por usuário;
+- testes de isolamento e interrupção de loops infinitos.
+
 ## [0.2.0] — 2026-08-13
 
 ### Added

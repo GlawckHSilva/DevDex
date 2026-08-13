@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const technologies = sqliteTable("technologies", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -82,3 +82,14 @@ export const userXpHistory = sqliteTable("user_xp_history", {
   reason: text("reason").notNull(),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [uniqueIndex("idx_xp_user_mission").on(table.userId, table.missionId)]);
+
+export const submissions = sqliteTable("submissions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  missionId: integer("mission_id").notNull().references(() => missions.id),
+  mode: text("mode", { enum: ["run", "test"] }).notNull(),
+  status: text("status", { enum: ["passed", "failed", "error"] }).notNull(),
+  codeHash: text("code_hash").notNull(),
+  durationMs: integer("duration_ms").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [index("idx_submissions_user_created").on(table.userId, table.createdAt)]);

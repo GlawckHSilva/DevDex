@@ -28,6 +28,11 @@ const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
+    if (url.pathname.startsWith("/api/missions/")) {
+      const scope = globalThis as typeof globalThis & { __DEVDEX_QUICKJS_WASM__?: WebAssembly.Module };
+      scope.__DEVDEX_QUICKJS_WASM__ ??= (await import("../node_modules/@jitl/quickjs-wasmfile-release-sync/dist/emscripten-module.wasm")).default;
+    }
+
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
       return handleImageOptimization(request, {

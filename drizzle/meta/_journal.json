@@ -8,6 +8,13 @@
       "when": 1786640757889,
       "tag": "0000_awesome_scalphunter",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1786641912850,
+      "tag": "0001_loud_spirit",
+      "breakpoints": true
     }
   ]
 }

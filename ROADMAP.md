@@ -20,12 +20,17 @@ Primeiro fluxo vertical JavaScript:
 - avaliador AST por allowlist, sem `eval`;
 - XP idempotente, domínio e desbloqueio.
 
-## Próximo — Fase 1A.2
+## Em andamento — Fase 1A.2
 
-- serviço runner isolado para JavaScript completo;
+- runner QuickJS/Wasm para JavaScript completo, sem APIs do host;
+- limites de CPU, memória, pilha e tamanho de código;
+- rate limit e histórico de submissões com hash do código;
+
+## Próximo
+
 - adapter PostgreSQL/Supabase e autenticação pública;
 - E2E do login à conclusão;
-- observabilidade, rate limit e histórico de submissões.
+- métricas agregadas e alertas de execução.
 
 ## Depois — Fase 1B
 
@@ -43,7 +48,7 @@ Primeiro fluxo vertical JavaScript:
 
 ## Riscos
 
-- isolamento real do runner e custo por execução;
+- isolamento para linguagens futuras e custo por execução;
 - consistência entre conclusão, domínio e XP;
 - vazamento de testes privados;
 - compatibilidade de execução SQL entre dialetos;
@@ -52,6 +57,5 @@ Primeiro fluxo vertical JavaScript:
 ## Débitos técnicos conhecidos
 
 - Supabase ainda não foi provisionado; o deploy privado usa D1/SIWC;
-- o avaliador atual suporta apenas expressões AST permitidas, não JavaScript geral;
 - migrations foram validadas estaticamente, sem instância PostgreSQL local;
-- runner e E2E pertencem à próxima etapa.
+- E2E autenticado ainda pertence à próxima etapa.

@@ -2,15 +2,14 @@
 
 ## Decisões
 
-O DevDex começa como monólito modular para produto e dados, com a execução de código obrigatoriamente separada. Essa divisão mantém a Fase 0 simples sem colocar código não confiável no processo principal.
+O DevDex começa como monólito modular para produto e dados. JavaScript não confiável roda em uma VM QuickJS compilada para Wasm, sem APIs do host; linguagens futuras usarão um serviço externo.
 
 ```text
 Browser
   └─ Web App (React/TypeScript)
        ├─ Identity (SIWC no deploy privado; Supabase Auth no produto público)
        ├─ Curriculum + Progress (D1 adapter; PostgreSQL como alvo)
-       └─ Runner Client
-            └─ Code Runner isolado (serviço futuro)
+       └─ Runner QuickJS/Wasm isolado
 ```
 
 ## Domínios
@@ -31,6 +30,7 @@ supabase/migrations/  modelo PostgreSQL alvo
 drizzle/              migration D1 executável no Sites
 tests/                validações automatizadas
 worker/               entrada de deploy do app
+lib/quickjs-runner*    sandbox JavaScript e limites de execução
 ```
 
 ## Limites
@@ -43,4 +43,4 @@ worker/               entrada de deploy do app
 
 ## Evolução
 
-Separar backend da aplicação somente quando carga, equipe ou limites de deploy justificarem. O runner já nasce como serviço independente. Filas, cache e storage entram por necessidade medida.
+Separar backend da aplicação somente quando carga, equipe ou limites de deploy justificarem. O runner externo entra com novas linguagens ou quando métricas exigirem isolamento de processo. Filas, cache e storage entram por necessidade medida.
