@@ -12,3 +12,5 @@
 Tipos: tutorial, coding challenge, bug hunt, support, project e boss. O MVP implementará primeiro `coding_challenge`, depois HTML/CSS preview e SQL.
 
 Estados: `available`, `in_progress`, `completed`. Repetir missão pode melhorar domínio, mas não concede o mesmo XP indefinidamente.
+
+O primeiro fluxo aplica essas regras em batch transacional D1: falhas incrementam tentativas; a primeira conclusão concede XP, atualiza domínio e cria a disponibilidade da próxima missão. Repetições mantêm o XP total.

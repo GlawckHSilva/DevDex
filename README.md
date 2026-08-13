@@ -4,13 +4,13 @@ Plataforma gamificada para aprender programação escrevendo, executando, testan
 
 ## Estado
 
-Fase 0 concluída: arquitetura, modelo PostgreSQL, migrations, documentação, interface-base e validações. O primeiro fluxo funcional de missão ainda não foi implementado.
+Fase 1A em andamento: a primeira missão JavaScript já funciona ponta a ponta com autenticação, Monaco, testes privados, XP idempotente e desbloqueio.
 
 ## Stack
 
 - React 19, TypeScript, Tailwind CSS 4 e Vinext (modelo de aplicação Next.js)
-- PostgreSQL e Supabase Auth planejados para o MVP
-- Monaco Editor e runner isolado na próxima etapa
+- D1 + Sign in with ChatGPT no deploy privado; PostgreSQL/Supabase permanece o alvo público
+- Monaco Editor e avaliador AST seguro para as primeiras missões
 
 ## Desenvolvimento
 

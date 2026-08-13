@@ -12,4 +12,8 @@ Controles obrigatórios: usuário sem privilégios, filesystem read-only, diret�
 
 JavaScript será o primeiro runtime. SQL usa banco efêmero por missão, credenciais únicas e statements permitidos. HTML/CSS usa iframe sandbox no preview e validação DOM/CSS separada.
 
-O app envia apenas um `submission_id`; o runner não recebe credenciais Supabase nem dados de outros usuários.
+## Implementação atual
+
+As duas primeiras missões usam um interpretador AST restrito: aceita uma única função, parâmetros exatos, `return` e operadores explicitamente permitidos. Não usa `eval`, não acessa globais e não executa JavaScript arbitrário. Isso prova o fluxo de aprendizagem com segurança, mas não substitui o runner isolado planejado.
+
+No runner definitivo, o app enviará apenas um `submission_id`; o serviço não receberá credenciais do banco nem dados de outros usuários.

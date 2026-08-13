@@ -4,24 +4,25 @@ Atualizado em: 2026-08-13
 
 ## Situação
 
-Fase 0 concluída. O repositório contém uma fundação executável e documentada, sem fingir funcionalidades do MVP.
+Fase 0 concluída e primeira fatia da Fase 1A funcional.
 
 ## Implementado
 
-- landing page, `/dashboard` e `/status`;
+- landing page, dashboard autenticado, missão e API de submissão;
 - UI dark inspirada em IDE, responsiva;
-- modelo PostgreSQL e duas migrations;
+- modelo PostgreSQL alvo e adapter D1 versionado para o deploy privado;
 - RLS para dados pessoais e bloqueio de testes privados;
 - seed versionado das quatro trilhas do MVP;
-- documentação de arquitetura, banco, currículo, missão, execução, segurança, IA, atualização e MVP.
+- Monaco, avaliador AST seguro, testes privados, XP idempotente e desbloqueio;
+- duas missões JavaScript iniciais.
 
 ## Não implementado
 
-- Supabase conectado, cadastro e login do produto;
-- Monaco Editor e execução de código;
-- conclusão, XP e desbloqueios funcionais;
+- Supabase e autenticação pública do produto;
+- runner isolado para JavaScript geral;
+- E2E automatizado no navegador;
 - painel admin, mentor IA e tecnologias pós-MVP.
 
 ## Próxima tarefa
 
-Implementar a primeira missão JavaScript ponta a ponta conforme `ROADMAP.md`.
+Extrair a execução para um runner isolado e adicionar o adapter PostgreSQL/Supabase.

@@ -9,17 +9,23 @@
 - documentação operacional e escopo fechado do MVP;
 - lint, typecheck, testes e build.
 
-## Próximo — Fase 1A
+## Implementado — Fase 1A.1
 
-Um fluxo vertical completo em JavaScript:
+Primeiro fluxo vertical JavaScript:
 
-1. Supabase local e autenticação;
-2. catálogo lido do banco;
-3. uma lesson e uma coding challenge;
-4. Monaco Editor;
-5. runner JavaScript isolado mínimo;
-6. testes privados, conclusão transacional, XP e desbloqueio;
-7. E2E do cadastro à conclusão.
+- autenticação SIWC e separação por usuário;
+- currículo e progresso persistidos em D1;
+- duas missões sequenciais carregadas do banco;
+- Monaco, execução/validação e testes privados;
+- avaliador AST por allowlist, sem `eval`;
+- XP idempotente, domínio e desbloqueio.
+
+## Próximo — Fase 1A.2
+
+- serviço runner isolado para JavaScript completo;
+- adapter PostgreSQL/Supabase e autenticação pública;
+- E2E do login à conclusão;
+- observabilidade, rate limit e histórico de submissões.
 
 ## Depois — Fase 1B
 
@@ -45,7 +51,7 @@ Um fluxo vertical completo em JavaScript:
 
 ## Débitos técnicos conhecidos
 
-- Supabase ainda não foi provisionado neste ambiente;
-- app ainda não possui adapter de banco nem autenticação do produto;
+- Supabase ainda não foi provisionado; o deploy privado usa D1/SIWC;
+- o avaliador atual suporta apenas expressões AST permitidas, não JavaScript geral;
 - migrations foram validadas estaticamente, sem instância PostgreSQL local;
 - runner e E2E pertencem à próxima etapa.

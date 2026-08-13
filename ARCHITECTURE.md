@@ -7,8 +7,8 @@ O DevDex começa como monólito modular para produto e dados, com a execução d
 ```text
 Browser
   └─ Web App (React/TypeScript)
-       ├─ Identity (Supabase Auth)
-       ├─ Curriculum + Progress (PostgreSQL/RLS)
+       ├─ Identity (SIWC no deploy privado; Supabase Auth no produto público)
+       ├─ Curriculum + Progress (D1 adapter; PostgreSQL como alvo)
        └─ Runner Client
             └─ Code Runner isolado (serviço futuro)
 ```
@@ -25,9 +25,10 @@ Browser
 
 ```text
 app/                  rotas e interface
-db/                   schema Drizzle PostgreSQL
+db/                   schema e adapter D1 do deploy privado
 docs/                 decisões e especificações
-supabase/migrations/  fonte canônica do banco
+supabase/migrations/  modelo PostgreSQL alvo
+drizzle/              migration D1 executável no Sites
 tests/                validações automatizadas
 worker/               entrada de deploy do app
 ```

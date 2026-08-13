@@ -1,65 +1,84 @@
-import { boolean, integer, jsonb, pgEnum, pgTable, primaryKey, real, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
-export const contentStatus = pgEnum("content_status", ["draft", "review", "published", "deprecated"]);
-export const missionType = pgEnum("mission_type", ["tutorial", "coding_challenge", "bug_hunt", "support", "project", "boss"]);
-export const difficulty = pgEnum("difficulty", ["beginner", "easy", "medium", "hard", "expert"]);
-export const runtime = pgEnum("runtime", ["html_css", "javascript", "sql"]);
-export const missionState = pgEnum("mission_state", ["available", "in_progress", "completed"]);
-
-const audit = { createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(), updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow() };
-
-export const profiles = pgTable("profiles", {
-  id: uuid("id").primaryKey(), displayName: text("display_name").notNull(), avatarUrl: text("avatar_url"), level: integer("level").notNull().default(1), totalXp: integer("total_xp").notNull().default(0), streakDays: integer("streak_days").notNull().default(0), lastStudyDate: timestamp("last_study_date", { withTimezone: true }), ...audit,
+export const technologies = sqliteTable("technologies", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
 });
 
-export const technologies = pgTable("technologies", {
-  id: uuid("id").primaryKey().defaultRandom(), slug: text("slug").notNull().unique(), name: text("name").notNull(), description: text("description").notNull(), icon: text("icon"), sortOrder: integer("sort_order").notNull().default(0), status: contentStatus("status").notNull().default("draft"), ...audit,
+export const learningPaths = sqliteTable("learning_paths", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  technologyId: integer("technology_id").notNull().references(() => technologies.id),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
 });
 
-export const curriculumVersions = pgTable("curriculum_versions", {
-  id: uuid("id").primaryKey().defaultRandom(), technologyId: uuid("technology_id").notNull().references(() => technologies.id), version: text("version").notNull(), supportedVersion: text("supported_version"), currentKnownVersion: text("current_known_version"), lastReviewedAt: timestamp("last_reviewed_at", { withTimezone: true }), status: contentStatus("status").notNull().default("draft"), ...audit,
-}, (table) => [uniqueIndex("curriculum_version_unique").on(table.technologyId, table.version)]);
+export const skills = sqliteTable("skills", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  learningPathId: integer("learning_path_id").notNull().references(() => learningPaths.id),
+  slug: text("slug").notNull(),
+  name: text("name").notNull(),
+  sortOrder: integer("sort_order").notNull(),
+}, (table) => [uniqueIndex("idx_skills_path_slug").on(table.learningPathId, table.slug)]);
 
-export const learningPaths = pgTable("learning_paths", {
-  id: uuid("id").primaryKey().defaultRandom(), curriculumVersionId: uuid("curriculum_version_id").notNull().references(() => curriculumVersions.id), slug: text("slug").notNull().unique(), name: text("name").notNull(), description: text("description").notNull(), sortOrder: integer("sort_order").notNull().default(0), status: contentStatus("status").notNull().default("draft"), ...audit,
+export const missions = sqliteTable("missions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  skillId: integer("skill_id").notNull().references(() => skills.id),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  briefing: text("briefing").notNull(),
+  objective: text("objective").notNull(),
+  starterCode: text("starter_code").notNull(),
+  functionName: text("function_name").notNull(),
+  parametersJson: text("parameters_json").notNull(),
+  xpReward: integer("xp_reward").notNull(),
+  sortOrder: integer("sort_order").notNull(),
+  nextMissionSlug: text("next_mission_slug"),
 });
 
-export const skills = pgTable("skills", {
-  id: uuid("id").primaryKey().defaultRandom(), learningPathId: uuid("learning_path_id").notNull().references(() => learningPaths.id), slug: text("slug").notNull(), name: text("name").notNull(), description: text("description").notNull(), xpReward: integer("xp_reward").notNull().default(0), sortOrder: integer("sort_order").notNull().default(0), status: contentStatus("status").notNull().default("draft"), ...audit,
-}, (table) => [uniqueIndex("skill_path_slug_unique").on(table.learningPathId, table.slug)]);
-
-export const skillPrerequisites = pgTable("skill_prerequisites", {
-  skillId: uuid("skill_id").notNull().references(() => skills.id), prerequisiteSkillId: uuid("prerequisite_skill_id").notNull().references(() => skills.id), minimumMastery: integer("minimum_mastery").notNull().default(75),
-}, (table) => [primaryKey({ columns: [table.skillId, table.prerequisiteSkillId] })]);
-
-export const lessons = pgTable("lessons", {
-  id: uuid("id").primaryKey().defaultRandom(), skillId: uuid("skill_id").notNull().references(() => skills.id), slug: text("slug").notNull(), title: text("title").notNull(), body: jsonb("body").notNull(), sortOrder: integer("sort_order").notNull().default(0), status: contentStatus("status").notNull().default("draft"), ...audit,
-}, (table) => [uniqueIndex("lesson_skill_slug_unique").on(table.skillId, table.slug)]);
-
-export const missions = pgTable("missions", {
-  id: uuid("id").primaryKey().defaultRandom(), skillId: uuid("skill_id").notNull().references(() => skills.id), lessonId: uuid("lesson_id").references(() => lessons.id), slug: text("slug").notNull().unique(), title: text("title").notNull(), briefing: text("briefing").notNull(), instructions: jsonb("instructions").notNull(), starterCode: text("starter_code").notNull().default(""), runtime: runtime("runtime").notNull(), type: missionType("type").notNull(), difficulty: difficulty("difficulty").notNull(), xpReward: integer("xp_reward").notNull(), timeLimitMs: integer("time_limit_ms").notNull().default(5000), sortOrder: integer("sort_order").notNull().default(0), status: contentStatus("status").notNull().default("draft"), ...audit,
+export const missionTests = sqliteTable("mission_tests", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  missionId: integer("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  inputJson: text("input_json").notNull(),
+  expectedJson: text("expected_json").notNull(),
+  sortOrder: integer("sort_order").notNull(),
 });
 
-export const missionTests = pgTable("mission_tests", {
-  id: uuid("id").primaryKey().defaultRandom(), missionId: uuid("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }), name: text("name").notNull(), source: text("source").notNull(), isPrivate: boolean("is_private").notNull().default(true), sortOrder: integer("sort_order").notNull().default(0), ...audit,
+export const profiles = sqliteTable("profiles", {
+  userId: text("user_id").primaryKey(),
+  email: text("email").notNull(),
+  displayName: text("display_name").notNull(),
+  totalXp: integer("total_xp").notNull().default(0),
+  level: integer("level").notNull().default(1),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const userLearningPaths = pgTable("user_learning_paths", {
-  userId: uuid("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }), learningPathId: uuid("learning_path_id").notNull().references(() => learningPaths.id), startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [primaryKey({ columns: [table.userId, table.learningPathId] })]);
+export const userMissions = sqliteTable("user_missions", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  missionId: integer("mission_id").notNull().references(() => missions.id),
+  state: text("state", { enum: ["available", "in_progress", "completed"] }).notNull().default("available"),
+  attempts: integer("attempts").notNull().default(0),
+  awardedXp: integer("awarded_xp").notNull().default(0),
+  completedAt: text("completed_at"),
+}, (table) => [primaryKey({ columns: [table.userId, table.missionId] })]);
 
-export const userSkillProgress = pgTable("user_skill_progress", {
-  userId: uuid("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }), skillId: uuid("skill_id").notNull().references(() => skills.id), mastery: integer("mastery").notNull().default(0), successfulAttempts: integer("successful_attempts").notNull().default(0), failedAttempts: integer("failed_attempts").notNull().default(0), lastPracticedAt: timestamp("last_practiced_at", { withTimezone: true }), nextReviewAt: timestamp("next_review_at", { withTimezone: true }), ...audit,
+export const userSkillProgress = sqliteTable("user_skill_progress", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  skillId: integer("skill_id").notNull().references(() => skills.id),
+  mastery: integer("mastery").notNull().default(0),
+  successfulAttempts: integer("successful_attempts").notNull().default(0),
+  failedAttempts: integer("failed_attempts").notNull().default(0),
 }, (table) => [primaryKey({ columns: [table.userId, table.skillId] })]);
 
-export const userMissions = pgTable("user_missions", {
-  id: uuid("id").primaryKey().defaultRandom(), userId: uuid("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }), missionId: uuid("mission_id").notNull().references(() => missions.id), state: missionState("state").notNull().default("available"), attempts: integer("attempts").notNull().default(0), hintsUsed: integer("hints_used").notNull().default(0), bestScore: real("best_score").notNull().default(0), completedAt: timestamp("completed_at", { withTimezone: true }), ...audit,
-}, (table) => [uniqueIndex("user_mission_unique").on(table.userId, table.missionId)]);
-
-export const userXpHistory = pgTable("user_xp_history", {
-  id: uuid("id").primaryKey().defaultRandom(), userId: uuid("user_id").notNull().references(() => profiles.id, { onDelete: "cascade" }), missionId: uuid("mission_id").references(() => missions.id), amount: integer("amount").notNull(), reason: text("reason").notNull(), createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
-
-export const curriculumSources = pgTable("curriculum_sources", {
-  id: uuid("id").primaryKey().defaultRandom(), technologyId: uuid("technology_id").notNull().references(() => technologies.id), url: text("url").notNull(), sourceVersion: text("source_version"), checkedAt: timestamp("checked_at", { withTimezone: true }).notNull().defaultNow(), detectedChange: text("detected_change"), reviewStatus: text("review_status").notNull().default("pending"), ...audit,
-});
+export const userXpHistory = sqliteTable("user_xp_history", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  missionId: integer("mission_id").notNull().references(() => missions.id),
+  amount: integer("amount").notNull(),
+  reason: text("reason").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [uniqueIndex("idx_xp_user_mission").on(table.userId, table.missionId)]);

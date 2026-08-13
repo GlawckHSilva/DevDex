@@ -1,6 +1,6 @@
 # Banco de dados
 
-PostgreSQL/Supabase é a fonte de verdade. `supabase/migrations` é canônico; `db/schema.ts` fornece tipos e geração Drizzle.
+PostgreSQL/Supabase permanece o modelo alvo em `supabase/migrations`. O deploy privado atual usa um adapter D1 definido em `db/schema.ts` e migrado por `drizzle/`, mantendo a interface sem acesso direto ao banco.
 
 ## Modelo
 
