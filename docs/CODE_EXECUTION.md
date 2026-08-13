@@ -6,7 +6,7 @@ Código do aluno nunca executa no app ou no banco principal.
 
 ## Runner
 
-Cada runtime implementa `RunnerAdapter`. JavaScript cria um contexto QuickJS/Wasm; SQL cria um banco SQLite/Wasm totalmente novo em memória.
+Cada runtime implementa `RunnerAdapter`. JavaScript cria um contexto QuickJS/Wasm; SQL cria um banco SQLite/Wasm totalmente novo em memória; HTML/CSS é analisado por AST no backend.
 
 Controles atuais: sem APIs do host, rede ou filesystem; interrupção por tempo; limites de memória, pilha e tamanho de código.
 
@@ -14,6 +14,6 @@ O runner SQL executa schema e seed confiáveis, prepara um único SELECT do alun
 
 ## Implementação atual
 
-JavaScript possui cinco missões em QuickJS. SQLite possui seis missões de leitura, com limite de 4.000 caracteres, um statement, 100 linhas e timeout por missão.
+JavaScript possui cinco missões em QuickJS. SQLite possui seis missões de leitura. HTML e CSS possuem quatro missões cada, limite de 8.000 caracteres e preview em iframe sandbox.
 
 Runtimes futuros podem migrar para serviço externo quando exigirem isolamento de processo.

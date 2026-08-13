@@ -44,6 +44,7 @@ export default defineConfig(async () => {
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
   return {
+    optimizeDeps: { exclude: ["@jitl/quickjs-wasmfile-release-sync", "quickjs-emscripten-core", "css-tree/parser", "css-tree/generator", "css-tree/walker"] },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }
       : undefined,

@@ -38,13 +38,18 @@ Primeiro fluxo vertical JavaScript:
 
 ## Próximo
 
-- HTML/CSS executável em iframe isolado;
 - métricas agregadas e alertas de execução.
+
+## Implementado — Fase 1C
+
+- adapters HTML/CSS com parsing e validação server-side;
+- quatro missões HTML e quatro CSS encadeadas;
+- preview em iframe sandbox com CSP sem scripts, rede ou navegação;
+- E2E do fluxo visual e bloqueio de conteúdo ativo.
 
 ## Depois — Fase 1B
 
 - expandir HTML, CSS, JavaScript e SQL básico;
-- preview HTML/CSS;
 - dashboard, perfil, skill tree e revisão;
 - observabilidade e painel editorial mínimo.
 

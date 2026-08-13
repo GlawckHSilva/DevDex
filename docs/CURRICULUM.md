@@ -8,6 +8,8 @@ Conteúdo nunca fica acoplado a componentes. A interface recebe uma versão publ
 - CSS: selectors, colors, spacing e flexbox.
 - JavaScript: variáveis, condições, loops, funções e arrays, com uma missão publicada por skill.
 - SQL Fundamentals · SQLite: SELECT, WHERE, ORDER BY, BETWEEN, LIKE e IN, com uma missão publicada por skill.
+- HTML Fundamentals: conteúdo semântico, navegação, listas e formulários.
+- CSS Fundamentals: cores, espaçamento, bordas e flexbox.
 
 ## Publicação
 

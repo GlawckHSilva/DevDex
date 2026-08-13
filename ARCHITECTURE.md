@@ -2,7 +2,7 @@
 
 ## Decisões
 
-O DevDex começa como monólito modular para produto e dados. JavaScript roda em QuickJS/Wasm; SQL roda em SQLite/Wasm descartável. Nenhum runtime recebe o binding do D1 principal.
+O DevDex começa como monólito modular para produto e dados. JavaScript roda em QuickJS/Wasm; SQL roda em SQLite/Wasm descartável; HTML/CSS é analisado no backend e renderizado em iframe opaco. Nenhum runtime recebe o binding do D1 principal.
 
 ```text
 Browser
@@ -11,7 +11,8 @@ Browser
        ├─ Curriculum + Progress (Cloudflare D1)
        └─ Runner adapters
             ├─ QuickJS/Wasm
-            └─ SQLite/Wasm efêmero
+            ├─ SQLite/Wasm efêmero
+            └─ Parser Web + iframe sandbox
 ```
 
 ## Domínios

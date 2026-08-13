@@ -88,6 +88,17 @@ export const sqlMissionConfigs = sqliteTable("sql_mission_configs", {
   maxStatements: integer("max_statements").notNull().default(1),
 });
 
+export const webMissionConfigs = sqliteTable("web_mission_configs", {
+  missionId: integer("mission_id").primaryKey().references(() => missions.id, { onDelete: "cascade" }),
+  documentType: text("document_type", { enum: ["html", "css"] }).notNull(),
+  runtimeVersion: text("runtime_version").notNull().default("web-parser-1"),
+  starterCode: text("starter_code").notNull(),
+  previewHtml: text("preview_html").notNull().default(""),
+  previewCss: text("preview_css").notNull().default(""),
+  validatorJson: text("validator_json").notNull(),
+  maxLength: integer("max_length").notNull().default(8000),
+});
+
 export const profiles = sqliteTable("profiles", {
   userId: text("user_id").primaryKey(),
   email: text("email").notNull(),

@@ -17,7 +17,7 @@ export default async function Dashboard() {
   return <main className="dashboard-shell">
     <aside className="sidebar">
       <Link className="brand" href="/"><span className="brand-mark">D_</span>DevDex</Link>
-      <nav aria-label="Área do aluno"><Link className="sidebar-active" href="/dashboard">⌂ Visão geral</Link><Link href="/trilhas/javascript-fundamentals">◇ JavaScript</Link><Link href="/trilhas/sql-fundamentals-sqlite">◇ SQL · SQLite</Link><span>☆ Conquistas</span></nav>
+      <nav aria-label="Área do aluno"><Link className="sidebar-active" href="/dashboard">⌂ Visão geral</Link><Link href="/trilhas/html-fundamentals">◇ HTML</Link><Link href="/trilhas/css-fundamentals">◇ CSS</Link><Link href="/trilhas/javascript-fundamentals">◇ JavaScript</Link><Link href="/trilhas/sql-fundamentals-sqlite">◇ SQL · SQLite</Link><span>☆ Conquistas</span></nav>
       <a className="signout" href={chatGPTSignOutPath("/")}>Sair</a>
     </aside>
     <section className="dashboard-content">

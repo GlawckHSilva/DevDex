@@ -6,6 +6,7 @@ export type Mission = { id: number; skillId: number; slug: string; title: string
 export type MissionTest = { name: string; inputJson: string; expectedJson: string };
 export type LearningPathView = { slug: string; name: string; description: string; version: number; missions: MissionSummary[] };
 export type SqlMissionConfig = { dialect: string; runtimeVersion: string; schemaSql: string; seedSql: string; starterSql: string; expectedResultJson: string; tableSchemaJson: string; tablePreviewJson: string; maxRows: number; timeoutMs: number; maxStatements: number };
+export type WebMissionConfig = { documentType: "html" | "css"; runtimeVersion: string; starterCode: string; previewHtml: string; previewCss: string; validatorJson: string; maxLength: number };
 
 const missionState = `CASE
   WHEN um.state='completed' THEN 'completed'
@@ -76,6 +77,14 @@ export async function getSqlMissionConfig(missionId: number): Promise<SqlMission
     table_preview_json AS tablePreviewJson,max_rows AS maxRows,timeout_ms AS timeoutMs,max_statements AS maxStatements
     FROM sql_mission_configs WHERE mission_id=?`).bind(missionId).first<SqlMissionConfig>();
   return config ? { ...config, starterSql: config.starterSql.replaceAll("\\n", "\n") } : null;
+}
+
+export async function getWebMissionConfig(missionId: number): Promise<WebMissionConfig | null> {
+  const config = await getDb().prepare(`SELECT document_type AS documentType,runtime_version AS runtimeVersion,
+    starter_code AS starterCode,preview_html AS previewHtml,preview_css AS previewCss,
+    validator_json AS validatorJson,max_length AS maxLength FROM web_mission_configs WHERE mission_id=?`)
+    .bind(missionId).first<WebMissionConfig>();
+  return config ? { ...config, starterCode: config.starterCode.replaceAll("\\n", "\n"), previewHtml: config.previewHtml.replaceAll("\\n", "\n"), previewCss: config.previewCss.replaceAll("\\n", "\n") } : null;
 }
 
 export async function recordAttempt(userId: string, mission: Mission, passed: boolean) {

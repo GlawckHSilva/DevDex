@@ -15,6 +15,8 @@
 - testes privados consultados somente durante a avaliação e anonimizados na resposta;
 - XP/domínio concluídos em transação idempotente;
 - SQLite/Wasm em memória, recriado por submissão e sem bindings, rede ou persistência;
+- HTML/CSS analisado no backend, com tags, atributos e recursos ativos bloqueados;
+- iframe sem permissões, origem opaca, CSP `default-src 'none'` e sem navegação;
 - SQL restrito a um SELECT, com limites de tamanho, tempo, escopo e linhas;
 - CSP, headers seguros, sanitização e iframe sandbox sem mesma origem;
 - rate limit por usuário/IP/missão e auditoria de eventos sensíveis;

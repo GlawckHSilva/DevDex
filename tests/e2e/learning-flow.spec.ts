@@ -119,3 +119,33 @@ test("executa SQLite/Wasm descartável sem misturar progresso", async ({ page, r
   await page.goto("/dashboard");
   await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
 });
+
+test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, request }) => {
+  const userId = "web-ui-user";
+  await page.setExtraHTTPHeaders(userHeaders(userId));
+  await page.goto("/trilhas/html-fundamentals");
+  await expect(page.getByRole("heading", { name: "HTML Fundamentals" })).toBeVisible();
+  await page.goto("/missoes/pagina-da-oficina");
+  await expect(page.getByTestId("web-editor")).toBeVisible();
+
+  const preview = page.getByTitle("Preview da missão");
+  await expect(preview).toHaveAttribute("sandbox", "");
+  await expect(preview).toHaveAttribute("referrerpolicy", "no-referrer");
+  expect(await preview.getAttribute("srcdoc")).toContain("default-src 'none'");
+
+  const unsafe = await submit(request, "web-unsafe", "pagina-da-oficina", "<script>alert(1)</script>");
+  expect(unsafe.status()).toBe(422);
+  const wrong = await submit(request, "web-wrong", "pagina-da-oficina", "<h2>Oficina DevDex</h2>");
+  expect(wrong.status()).toBe(200);
+  expect(await wrong.json()).toMatchObject({ ok: false, gainedXp: 0 });
+
+  const html = await submit(request, userId, "pagina-da-oficina", "<main><h1>Oficina DevDex</h1><p>Aprenda código na prática.</p></main>");
+  expect(await html.json()).toMatchObject({ ok: true, gainedXp: 100, unlockedSlug: "navegacao-da-oficina" });
+
+  await page.goto("/missoes/cores-do-cartao");
+  await expect(page.getByTestId("web-editor")).toBeVisible();
+  const css = await submit(request, userId, "cores-do-cartao", ".card { color: #f8fafc; background-color: #0f172a; }");
+  expect(await css.json()).toMatchObject({ ok: true, gainedXp: 100, unlockedSlug: "espaco-do-cartao" });
+  await page.goto("/dashboard");
+  await expect(page.getByText("200 XP", { exact: true })).toBeVisible();
+});

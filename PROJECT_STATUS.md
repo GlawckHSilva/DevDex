@@ -4,7 +4,7 @@ Atualizado em: 2026-08-13
 
 ## Situação
 
-Fase 1B iniciada e publicada em Cloudflare Sites.
+Fase 1C concluída e publicada em Cloudflare Sites.
 
 ## Implementado
 
@@ -19,6 +19,8 @@ Fase 1B iniciada e publicada em Cloudflare Sites.
 - seis missões SQL Fundamentals · SQLite, de SELECT a IN;
 - SQLite/Wasm descartável por execução, sem acesso ao D1 principal;
 - visualizador de dados/estrutura, editor SQL e resultado tabular;
+- quatro missões HTML e quatro CSS com validação estrutural no backend;
+- preview visual em iframe opaco, sem scripts, rede, formulários ou navegação;
 - E2E de autenticação, persistência, isolamento, bloqueio e XP concorrente.
 
 ## Não implementado
@@ -28,4 +30,4 @@ Fase 1B iniciada e publicada em Cloudflare Sites.
 
 ## Próxima tarefa
 
-Adicionar HTML/CSS executável em iframe isolado.
+Adicionar métricas agregadas e alertas de execução.

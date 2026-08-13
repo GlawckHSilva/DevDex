@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.0] — 2026-08-13
+
+### Added
+
+- `WebRunnerAdapter` separado dos runners existentes;
+- HTML e CSS Fundamentals com quatro missões cada;
+- validação DOM/CSS server-side sem expor critérios privados;
+- preview em iframe sandbox com CSP restritiva;
+- testes de conteúdo ativo, recursos externos e fluxo visual.
+
 ## [0.5.0] — 2026-08-13
 
 ### Added

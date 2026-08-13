@@ -1,8 +1,9 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { ensureUser, getMission, getMissionTests, getSqlMissionConfig, recordAttempt } from "@/db";
+import { ensureUser, getMission, getMissionTests, getSqlMissionConfig, getWebMissionConfig, recordAttempt } from "@/db";
 import { getRecentSubmissionCount, recordSubmission, type SubmissionStatus } from "@/db/runner";
 import { JavaScriptRunnerAdapter } from "@/lib/runners/javascript-adapter";
 import { SqlRunnerAdapter, type SqlExpectedResult } from "@/lib/runners/sql-adapter";
+import { WebRunnerAdapter, type WebValidationRule } from "@/lib/runners/web-adapter";
 
 type Payload = { code?: string; mode?: "run" | "test" };
 const MAX_CODE_LENGTH = 12_000;
@@ -38,6 +39,29 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   let resultRows = 0;
   let errorType: string | null = null;
   try {
+    if (mission.runtime === "html" || mission.runtime === "css") {
+      const config = await getWebMissionConfig(mission.id);
+      if (!config) throw new Error("Configuração do preview indisponível.");
+      const result = await WebRunnerAdapter.execute({
+        code: payload.code,
+        documentType: config.documentType,
+        rules: payload.mode === "test" ? JSON.parse(config.validatorJson) as WebValidationRule[] : undefined,
+        maxLength: config.maxLength,
+      });
+      const passed = payload.mode === "run" || result.passed;
+      status = passed ? "passed" : "failed";
+      if (payload.mode === "run") return Response.json({ ok: true, message: "Código seguro e sintaticamente válido." });
+      passedTests = result.results.filter((item) => item.passed).length;
+      failedTests = result.results.length - passedTests;
+      const progress = await recordAttempt(user.userId, mission, passed);
+      return Response.json({
+        ok: passed,
+        message: passed ? "Todos os critérios visuais foram atendidos." : "O preview ainda não atende a todos os critérios.",
+        results: result.results.map((item, index) => ({ name: `Critério ${index + 1}`, passed: item.passed })),
+        ...progress,
+      });
+    }
+
     if (mission.runtime === "sqlite") {
       const config = await getSqlMissionConfig(mission.id);
       if (!config) throw new Error("Configuração SQL indisponível.");
