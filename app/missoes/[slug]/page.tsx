@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { ensureUser, getMission, getSqlMissionConfig, getWebMissionConfig } from "@/db";
@@ -18,7 +17,7 @@ async function MissionContent({ slug }: { slug: string }) {
   await ensureUser(user);
   const mission = await getMission(user.userId, slug);
   if (!mission) notFound();
-  if (mission.state === "locked") return <main className="app-page container"><Link className="back" href="/dashboard">← Dashboard</Link><h2>Missão bloqueada</h2><p className="notice">Conclua a missão anterior para liberar este desafio.</p></main>;
+  if (mission.state === "locked") return <main className="app-page container"><a className="back" href="/dashboard">← Dashboard</a><h2>Missão bloqueada</h2><p className="notice">Conclua a missão anterior para liberar este desafio.</p></main>;
 
   const sqlConfig = mission.runtime === "sqlite" ? await getSqlMissionConfig(mission.id) : null;
   const webConfig = mission.runtime === "html" || mission.runtime === "css" ? await getWebMissionConfig(mission.id) : null;
@@ -28,7 +27,7 @@ async function MissionContent({ slug }: { slug: string }) {
   const pathLabel = isSql ? "SQL FUNDAMENTALS · SQLITE" : webConfig ? `${webConfig.documentType.toUpperCase()} FUNDAMENTALS` : "JAVASCRIPT FUNDAMENTALS";
 
   return <main className="workspace-page">
-    <header className="workspace-header"><Link className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</Link><div><small>{pathLabel}</small><strong>{mission.title}</strong></div><span className="workspace-xp">+{mission.xpReward} XP</span></header>
+    <header className="workspace-header"><a className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</a><div><small>{pathLabel}</small><strong>{mission.title}</strong></div><span className="workspace-xp">+{mission.xpReward} XP</span></header>
     {sqlConfig ? <SqlWorkspace mission={{ slug: mission.slug, title: mission.title, briefing: mission.briefing, objective: mission.objective, starterSql: sqlConfig.starterSql, completed: mission.state === "completed", nextMissionSlug: mission.nextMissionSlug, dialect: sqlConfig.dialect, tableSchema: JSON.parse(sqlConfig.tableSchemaJson), tablePreview: JSON.parse(sqlConfig.tablePreviewJson) }} />
       : webConfig ? <WebWorkspace mission={{ slug: mission.slug, title: mission.title, briefing: mission.briefing, objective: mission.objective, starterCode: webConfig.starterCode, completed: mission.state === "completed", nextMissionSlug: mission.nextMissionSlug, documentType: webConfig.documentType, previewHtml: webConfig.previewHtml, previewCss: webConfig.previewCss }} />
       : <MissionWorkspace mission={{ slug: mission.slug, title: mission.title, briefing: mission.briefing, objective: mission.objective, starterCode: mission.starterCode, functionName: mission.functionName, completed: mission.state === "completed", nextMissionSlug: mission.nextMissionSlug }} />}

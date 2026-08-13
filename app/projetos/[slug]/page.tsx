@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { ensureUser, getProject } from "@/db";
@@ -16,7 +15,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   if (!activeStep) notFound();
 
   return <main className="workspace-page">
-    <header className="workspace-header project-header"><Link className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</Link><div><small>PROJECT MODE · TO-DO APP</small><strong>{activeStep.title}</strong></div><span className="workspace-xp">{project.completedSteps}/{project.steps.length} ETAPAS</span></header>
+    <header className="workspace-header project-header"><a className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</a><div><small>PROJECT MODE · TO-DO APP</small><strong>{activeStep.title}</strong></div><span className="workspace-xp">{project.completedSteps}/{project.steps.length} ETAPAS</span></header>
     <ProjectWorkspace project={{
       slug: project.slug, title: project.title, description: project.description, state: project.state, completedSteps: project.completedSteps,
       files: project.files,

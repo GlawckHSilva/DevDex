@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 const tracks = [
   ["HTML", "Estrutura e semântica", "01"],
   ["CSS", "Layout e responsividade", "02"],
@@ -11,12 +9,12 @@ export default function Home() {
   return (
     <main>
       <nav className="nav container" aria-label="Navegação principal">
-        <Link className="brand" href="/" aria-label="DevDex, início">
+        <a className="brand" href="/" aria-label="DevDex, início">
           <span className="brand-mark">D_</span><span>DevDex</span>
-        </Link>
+        </a>
         <div className="nav-links">
-          <a href="#trilhas">Trilhas</a><Link href="/status">Status</Link>
-          <Link className="button button-small" href="/dashboard">Abrir plataforma</Link>
+          <a href="#trilhas">Trilhas</a><a href="/status">Status</a>
+          <a className="button button-small" href="/dashboard">Abrir plataforma</a>
         </div>
       </nav>
 
@@ -25,7 +23,7 @@ export default function Home() {
         <h1>Aprenda programação.<br /><span>Escrevendo código de verdade.</span></h1>
         <p className="hero-copy">Uma jornada gamificada por missões, desafios e projetos que ensina você a construir, testar e depurar software real.</p>
         <div className="hero-actions">
-          <Link className="button" href="/dashboard">Explorar fundação <span>→</span></Link>
+          <a className="button" href="/dashboard">Explorar fundação <span>→</span></a>
           <a className="button button-ghost" href="#arquitetura">Ver arquitetura</a>
         </div>
 

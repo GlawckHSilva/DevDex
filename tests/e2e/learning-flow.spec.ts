@@ -25,6 +25,19 @@ test("protege rotas sem sessão", async ({ request }) => {
   expect(response.headers().location).toContain("/signin-with-chatgpt");
 });
 
+test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ page }) => {
+  await page.setExtraHTTPHeaders(userHeaders("navigation-user"));
+  await page.goto("/");
+  await page.getByRole("link", { name: "Abrir plataforma" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.getByRole("link", { name: /Project Mode/ }).click();
+  await expect(page).toHaveURL(/\/projetos\/lista-de-tarefas$/);
+  await expect(page.getByTestId("project-editor")).toBeVisible();
+  await page.getByRole("link", { name: "Dashboard" }).click();
+  await page.getByRole("link", { name: "◇ HTML", exact: true }).click();
+  await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/);
+});
+
 test("percorre trilha, conclui missão e persiste apó novo login", async ({ browser, page, request }) => {
   const userId = "journey-user";
   await page.setExtraHTTPHeaders(userHeaders(userId));
