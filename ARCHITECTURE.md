@@ -34,6 +34,8 @@ tests/                validações automatizadas
 worker/               entrada de deploy do app
 lib/runners/           contratos e adapters de runtime
 lib/quickjs-runner*    sandbox JavaScript existente
+app/projetos/          workspace cumulativo de projetos
+db/projects.ts         progresso e XP do Project Mode
 ```
 
 ## Limites
@@ -42,6 +44,8 @@ lib/quickjs-runner*    sandbox JavaScript existente
 - O cliente não concede XP nem altera domínio.
 - Conclusão, domínio e XP são gravados por batch transacional e idempotente no servidor.
 - O runner não compartilha banco, filesystem ou credenciais com o app.
+- Projetos, etapas, arquivos e progresso não usam campos opcionais de `missions`.
+- O código do projeto permanece no navegador; o D1 guarda apenas progresso, hash e métricas.
 - Conteúdo publicado é versionado; progresso aponta para a versão estudada.
 
 ## Evolução

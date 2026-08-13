@@ -99,6 +99,39 @@ export const webMissionConfigs = sqliteTable("web_mission_configs", {
   maxLength: integer("max_length").notNull().default(8000),
 });
 
+export const projects = sqliteTable("projects", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  xpReward: integer("xp_reward").notNull(),
+  sortOrder: integer("sort_order").notNull(),
+  status: text("status", { enum: ["draft", "published", "deprecated"] }).notNull().default("published"),
+});
+
+export const projectSteps = sqliteTable("project_steps", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  projectId: integer("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  briefing: text("briefing").notNull(),
+  objective: text("objective").notNull(),
+  activeFile: text("active_file").notNull(),
+  requirementsJson: text("requirements_json").notNull(),
+  validatorJson: text("validator_json").notNull(),
+  xpReward: integer("xp_reward").notNull(),
+  sortOrder: integer("sort_order").notNull(),
+});
+
+export const projectFiles = sqliteTable("project_files", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  projectId: integer("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  path: text("path").notNull(),
+  language: text("language", { enum: ["html", "css", "javascript"] }).notNull(),
+  starterCode: text("starter_code").notNull(),
+  sortOrder: integer("sort_order").notNull(),
+}, (table) => [uniqueIndex("idx_project_files_project_path").on(table.projectId, table.path)]);
+
 export const profiles = sqliteTable("profiles", {
   userId: text("user_id").primaryKey(),
   email: text("email").notNull(),
@@ -123,6 +156,49 @@ export const userMissions = sqliteTable("user_missions", {
   awardedXp: integer("awarded_xp").notNull().default(0),
   completedAt: text("completed_at"),
 }, (table) => [primaryKey({ columns: [table.userId, table.missionId] })]);
+
+export const userProjectProgress = sqliteTable("user_project_progress", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  projectId: integer("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  currentStepId: integer("current_step_id").references(() => projectSteps.id),
+  state: text("state", { enum: ["available", "in_progress", "completed"] }).notNull().default("available"),
+  completedSteps: integer("completed_steps").notNull().default(0),
+  awardedXp: integer("awarded_xp").notNull().default(0),
+  completedAt: text("completed_at"),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.projectId] })]);
+
+export const userProjectSteps = sqliteTable("user_project_steps", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  stepId: integer("step_id").notNull().references(() => projectSteps.id, { onDelete: "cascade" }),
+  state: text("state", { enum: ["in_progress", "completed"] }).notNull().default("in_progress"),
+  attempts: integer("attempts").notNull().default(0),
+  awardedXp: integer("awarded_xp").notNull().default(0),
+  completedAt: text("completed_at"),
+}, (table) => [primaryKey({ columns: [table.userId, table.stepId] })]);
+
+export const projectXpHistory = sqliteTable("project_xp_history", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  projectId: integer("project_id").notNull().references(() => projects.id),
+  stepId: integer("step_id").notNull().references(() => projectSteps.id),
+  amount: integer("amount").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [uniqueIndex("idx_project_xp_user_step").on(table.userId, table.stepId)]);
+
+export const projectSubmissions = sqliteTable("project_submissions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  projectId: integer("project_id").notNull().references(() => projects.id),
+  stepId: integer("step_id").notNull().references(() => projectSteps.id),
+  status: text("status", { enum: ["passed", "failed", "error"] }).notNull(),
+  sourceHash: text("source_hash").notNull(),
+  durationMs: integer("duration_ms").notNull(),
+  passedTests: integer("passed_tests").notNull().default(0),
+  failedTests: integer("failed_tests").notNull().default(0),
+  errorType: text("error_type"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [index("idx_project_submissions_user_created").on(table.userId, table.createdAt)]);
 
 export const userSkillProgress = sqliteTable("user_skill_progress", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),

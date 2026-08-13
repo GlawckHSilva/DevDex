@@ -65,3 +65,54 @@ export function runJavaScript(module: QuickJSWASMModule, code: string, functionN
     runtime.dispose();
   }
 }
+
+const PROJECT_DOM = String.raw`
+class Element {
+  constructor(tagName, id = "") { this.tagName = tagName.toUpperCase(); this.id = id; this.value = ""; this.textContent = ""; this.children = []; this.parentNode = null; this.listeners = {}; }
+  addEventListener(type, handler) { (this.listeners[type] ||= []).push(handler); }
+  appendChild(child) { child.parentNode = this; this.children.push(child); return child; }
+  append(...children) { children.forEach((child) => this.appendChild(child)); }
+  remove() { if (this.parentNode) this.parentNode.children = this.parentNode.children.filter((child) => child !== this); }
+  querySelector(selector) { if (selector === "button") return this.children.find((child) => child.tagName === "BUTTON") || null; return null; }
+  dispatchEvent(event) { event.target = this; (this.listeners[event.type] || []).forEach((handler) => handler(event)); return true; }
+  click() { this.dispatchEvent(new Event("click")); }
+}
+class Event { constructor(type) { this.type = type; this.defaultPrevented = false; this.target = null; } preventDefault() { this.defaultPrevented = true; } }
+const __storage = {};
+const localStorage = { getItem: (key) => Object.hasOwn(__storage, key) ? __storage[key] : null, setItem: (key, value) => { __storage[key] = String(value); }, removeItem: (key) => { delete __storage[key]; }, clear: () => { Object.keys(__storage).forEach((key) => delete __storage[key]); } };
+let __elements;
+function __resetDom() { __elements = { "task-form": new Element("form", "task-form"), "task-input": new Element("input", "task-input"), "task-list": new Element("ul", "task-list") }; }
+__resetDom();
+const document = { getElementById: (id) => __elements[id] || null, querySelector: (selector) => selector.startsWith("#") ? (__elements[selector.slice(1)] || null) : null, createElement: (tag) => new Element(tag) };
+`;
+
+export function runProjectJavaScript(module: QuickJSWASMModule, code: string, test: "add" | "remove" | "persist") {
+  const runtime = module.newRuntime();
+  runtime.setMemoryLimit(MEMORY_LIMIT);
+  runtime.setMaxStackSize(STACK_LIMIT);
+  runtime.setInterruptHandler(() => Date.now() > deadline);
+  const context = runtime.newContext();
+  const deadline = Date.now() + TIME_LIMIT_MS;
+  const assertions = test === "add" ? [
+    "__elements['task-list'].children.length === 1",
+    "__elements['task-list'].children[0]?.textContent?.includes('Revisar código') === true",
+  ] : test === "remove" ? [
+    "__elements['task-list'].children.length === 1",
+    "(__elements['task-list'].children[0]?.querySelector('button')?.click(), __elements['task-list'].children.length === 0)",
+  ] : [
+    "Object.keys(__storage).length > 0",
+    "(__resetDom(), __student(), __elements['task-list'].children.some((item) => item.textContent.includes('Revisar código')))",
+  ];
+  try {
+    const setup = context.evalCode(`${PROJECT_DOM}\nfunction __student(){\n${code}\n}\n__student();\n__elements["task-input"].value="Revisar código";\n__elements["task-form"].dispatchEvent(new Event("submit"));`, "project.js");
+    if (setup.error) { const error = context.dump(setup.error); setup.error.dispose(); throw new Error(errorMessage(error)); }
+    setup.value.dispose();
+    return assertions.map((assertion) => {
+      const result = context.evalCode(`Boolean(${assertion})`, "project-test.js");
+      if (result.error) { const error = context.dump(result.error); result.error.dispose(); throw new Error(errorMessage(error)); }
+      const passed = context.dump(result.value) === true;
+      result.value.dispose();
+      return { passed };
+    });
+  } finally { context.dispose(); runtime.dispose(); }
+}

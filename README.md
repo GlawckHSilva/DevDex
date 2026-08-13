@@ -4,7 +4,7 @@ Plataforma gamificada para aprender programação escrevendo, executando, testan
 
 ## Estado
 
-Fase 1C concluída: JavaScript, SQL Fundamentals · SQLite e HTML/CSS funcionam ponta a ponta com autenticação, sandboxes, XP idempotente e desbloqueio.
+Fase 1D concluída: quatro motores e Project Mode funcionam ponta a ponta com autenticação, sandboxes, XP idempotente e desbloqueio.
 
 ## Stack
 

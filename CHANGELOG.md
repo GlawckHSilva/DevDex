@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.0] — 2026-08-13
+
+### Added
+
+- Project Mode como domínio separado de missões;
+- primeiro projeto To-do App em cinco etapas;
+- workspace com três arquivos, preview e requisitos privados;
+- validação DOM em QuickJS e XP idempotente por etapa;
+- autosave local sem persistir código no servidor.
+
 ## [0.6.0] — 2026-08-13
 
 ### Added

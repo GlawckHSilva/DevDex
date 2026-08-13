@@ -15,6 +15,10 @@ async function submit(request: APIRequestContext, userId: string, slug: string, 
   });
 }
 
+async function submitProject(request: APIRequestContext, userId: string, files: Record<string, string>) {
+  return request.post("/api/projects/lista-de-tarefas/submit", { headers: userHeaders(userId), data: { mode: "test", files } });
+}
+
 test("protege rotas sem sessão", async ({ request }) => {
   const response = await request.get("/dashboard", { maxRedirects: 0 });
   expect(response.status()).toBe(307);
@@ -148,4 +152,33 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   expect(await css.json()).toMatchObject({ ok: true, gainedXp: 100, unlockedSlug: "espaco-do-cartao" });
   await page.goto("/dashboard");
   await expect(page.getByText("200 XP", { exact: true })).toBeVisible();
+});
+
+test("constrói um To-do App em cinco etapas com autosave local", async ({ page, request }) => {
+  const userId = "project-user";
+  const files = {
+    "index.html": '<main class="todo-app"><h1>Minha Lista</h1><form id="task-form"><input id="task-input" type="text"><button type="submit">Adicionar</button></form><ul id="task-list"></ul></main>',
+    "style.css": ".todo-app { max-width: 480px; padding: 24px; background-color: #fff; border-radius: 16px; }",
+    "script.js": `const form=document.getElementById("task-form"),input=document.getElementById("task-input"),list=document.getElementById("task-list");let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");function save(){localStorage.setItem("tasks",JSON.stringify(tasks));}function render(text){const li=document.createElement("li");li.textContent=text;const button=document.createElement("button");button.addEventListener("click",()=>{li.remove();tasks=tasks.filter(task=>task!==text);save();});li.appendChild(button);list.appendChild(li);}tasks.forEach(render);form.addEventListener("submit",event=>{event.preventDefault();if(!input.value.trim())return;tasks.push(input.value);render(input.value);save();input.value="";});`,
+  };
+  await page.setExtraHTTPHeaders(userHeaders(userId));
+  await page.goto("/projetos/lista-de-tarefas");
+  await expect(page.getByTestId("project-editor")).toBeVisible();
+  const preview = page.getByTitle("Preview do projeto");
+  await expect(preview).toHaveAttribute("sandbox", "allow-scripts");
+  expect(await preview.getAttribute("srcdoc")).toContain("default-src 'none'");
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("devdex:project:lista-de-tarefas:files:v1"))).not.toBeNull();
+
+  const rewards = [100, 120, 140, 160, 200];
+  for (const reward of rewards) {
+    const response = await submitProject(request, userId, files);
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toMatchObject({ ok: true, gainedXp: reward });
+  }
+  const repeated = await submitProject(request, userId, files);
+  expect(await repeated.json()).toMatchObject({ ok: true, projectCompleted: true });
+
+  await page.goto("/dashboard");
+  await expect(page.locator("header").getByText("720 XP", { exact: true })).toBeVisible();
+  await expect(page.getByText("🏆 CONCLUÍDO")).toBeVisible();
 });

@@ -28,7 +28,7 @@ const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    if (url.pathname.startsWith("/api/missions/")) {
+    if (url.pathname.startsWith("/api/missions/") || url.pathname.startsWith("/api/projects/")) {
       const workerScope = globalThis as unknown as { location?: URL };
       workerScope.location ??= new URL(request.url);
       const scope = globalThis as typeof globalThis & { __DEVDEX_QUICKJS_WASM__?: WebAssembly.Module; __DEVDEX_SQLITE_WASM__?: WebAssembly.Module };

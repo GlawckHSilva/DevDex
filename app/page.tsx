@@ -21,7 +21,7 @@ export default function Home() {
       </nav>
 
       <section className="hero container">
-        <div className="eyebrow"><span className="pulse" /> Fase 1C · Três motores ativos</div>
+        <div className="eyebrow"><span className="pulse" /> Fase 1D · Project Mode ativo</div>
         <h1>Aprenda programação.<br /><span>Escrevendo código de verdade.</span></h1>
         <p className="hero-copy">Uma jornada gamificada por missões, desafios e projetos que ensina você a construir, testar e depurar software real.</p>
         <div className="hero-actions">
@@ -45,6 +45,11 @@ export default function Home() {
         <div className="track-grid">
           {tracks.map(([title, description, number]) => <article className="track-card" key={title}><span className="track-number">{number}</span><div className="track-icon">{title.slice(0, 2)}</div><h3>{title} Fundamentals{title === "SQL" ? " · SQLite" : ""}</h3><p>{description}</p><span className="track-state">Disponível</span></article>)}
         </div>
+      </section>
+
+      <section className="section container">
+        <div className="section-heading"><div><span className="kicker">JORNADA DE APRENDIZADO</span><h2>Do conceito ao projeto completo.</h2></div><p>Cada modo tem uma função clara e prepara o aluno para construir com mais autonomia.</p></div>
+        <div className="mode-grid"><article><span>01</span><h3>Lessons</h3><p>Aprender conceitos.</p></article><article><span>02</span><h3>Challenges</h3><p>Praticar conceitos isolados.</p></article><article className="active"><span>03</span><h3>Projects</h3><p>Combinar vários conhecimentos.</p></article><article><span>04</span><h3>Boss Battles</h3><p>Construir praticamente sozinho.</p></article></div>
       </section>
 
       <section className="section container" id="arquitetura">

@@ -26,6 +26,8 @@ export async function ensureUser(user: ChatGPTUser) {
       AND NOT EXISTS (SELECT 1 FROM mission_prerequisites mp WHERE mp.mission_id=m.id)`).bind(user.userId),
     db.prepare(`INSERT OR IGNORE INTO user_learning_paths (user_id,learning_path_id)
       SELECT ?,id FROM learning_paths WHERE status='published'`).bind(user.userId),
+    db.prepare(`INSERT OR IGNORE INTO user_project_progress (user_id,project_id,current_step_id,state)
+      SELECT ?,p.id,(SELECT id FROM project_steps WHERE project_id=p.id ORDER BY sort_order LIMIT 1),'available' FROM projects p WHERE p.status='published'`).bind(user.userId),
   ]);
 }
 
@@ -121,3 +123,4 @@ export async function recordAttempt(userId: string, mission: Mission, passed: bo
 }
 
 export * from "./schema";
+export * from "./projects";

@@ -4,7 +4,7 @@ Atualizado em: 2026-08-13
 
 ## Situação
 
-Fase 1C concluída e publicada em Cloudflare Sites.
+Fase 1D concluída e publicada em Cloudflare Sites.
 
 ## Implementado
 
@@ -21,6 +21,8 @@ Fase 1C concluída e publicada em Cloudflare Sites.
 - visualizador de dados/estrutura, editor SQL e resultado tabular;
 - quatro missões HTML e quatro CSS com validação estrutural no backend;
 - preview visual em iframe opaco, sem scripts, rede, formulários ou navegação;
+- Project Mode com To-do App em cinco etapas e três arquivos;
+- progresso de projeto próprio, XP idempotente e autosave local do código;
 - E2E de autenticação, persistência, isolamento, bloqueio e XP concorrente.
 
 ## Não implementado
@@ -30,4 +32,4 @@ Fase 1C concluída e publicada em Cloudflare Sites.
 
 ## Próxima tarefa
 
-Adicionar métricas agregadas e alertas de execução.
+Adicionar métricas agregadas e alertas de execução antes de Python.

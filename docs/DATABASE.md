@@ -29,3 +29,4 @@ D1 não possui RLS. Todas as consultas pessoais recebem o `user_id` autenticado 
 - `0002`: trilha com cinco missões, aulas, pré-requisitos e métricas.
 - `0003`: configuração e seis missões SQL Fundamentals · SQLite.
 - `0004`: configuração e oito missões HTML/CSS.
+- `0005`: projetos, etapas, arquivos, progresso, XP e submissões do Project Mode.

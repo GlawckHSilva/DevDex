@@ -40,6 +40,15 @@ Primeiro fluxo vertical JavaScript:
 
 - métricas agregadas e alertas de execução.
 
+## Implementado — Fase 1D
+
+- entidades próprias para projetos, etapas, arquivos e progresso;
+- To-do App em cinco etapas cumulativas;
+- workspace com árvore de arquivos, editor, preview e requisitos;
+- JavaScript + DOM validado em QuickJS com DOM controlado;
+- autosave do código somente no navegador;
+- projeto concluído exibido no dashboard.
+
 ## Implementado — Fase 1C
 
 - adapters HTML/CSS com parsing e validação server-side;

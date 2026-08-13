@@ -11,6 +11,8 @@
 
 Tipos: tutorial, coding challenge, bug hunt, support, project e boss. O MVP possui desafios JavaScript, SQLite, HTML e CSS.
 
+Projetos são um domínio próprio: `projects`, `project_steps`, `project_files` e progresso dedicado. Lessons ensinam conceitos, challenges praticam habilidades isoladas, projects combinam tecnologias e boss battles reduzem a orientação.
+
 Estados: `available`, `in_progress`, `completed`. Repetir missão pode melhorar domínio, mas não concede o mesmo XP indefinidamente.
 
 O primeiro fluxo aplica essas regras em batch transacional D1: falhas incrementam tentativas; a primeira conclusão concede XP, atualiza domínio e cria a disponibilidade da próxima missão. Repetições mantêm o XP total.
