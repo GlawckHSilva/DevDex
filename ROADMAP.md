@@ -15,21 +15,21 @@ Primeiro fluxo vertical JavaScript:
 
 - autenticação SIWC e separação por usuário;
 - currículo e progresso persistidos em D1;
-- duas missões sequenciais carregadas do banco;
+- cinco missões sequenciais carregadas do banco;
 - Monaco, execução/validação e testes privados;
-- avaliador AST por allowlist, sem `eval`;
+- sandbox QuickJS/Wasm sem APIs do host;
 - XP idempotente, domínio e desbloqueio.
 
-## Em andamento — Fase 1A.2
+## Implementado — Fase 1A.2
 
 - runner QuickJS/Wasm para JavaScript completo, sem APIs do host;
 - limites de CPU, memória, pilha e tamanho de código;
 - rate limit e histórico de submissões com hash do código;
+- E2E autenticado, persistência e testes de concorrência do XP.
 
 ## Próximo
 
-- adapter PostgreSQL/Supabase e autenticação pública;
-- E2E do login à conclusão;
+- primeiro runtime SQL isolado;
 - métricas agregadas e alertas de execução.
 
 ## Depois — Fase 1B
@@ -56,6 +56,5 @@ Primeiro fluxo vertical JavaScript:
 
 ## Débitos técnicos conhecidos
 
-- Supabase ainda não foi provisionado; o deploy privado usa D1/SIWC;
-- migrations foram validadas estaticamente, sem instância PostgreSQL local;
-- E2E autenticado ainda pertence à próxima etapa.
+- SIWC depende do ambiente do ChatGPT e não oferece login independente;
+- D1 não tem RLS nativo; toda autorização permanece no backend.

@@ -14,12 +14,12 @@ export default async function Dashboard() {
   return <main className="dashboard-shell">
     <aside className="sidebar">
       <Link className="brand" href="/"><span className="brand-mark">D_</span>DevDex</Link>
-      <nav aria-label="Área do aluno"><Link className="sidebar-active" href="/dashboard">⌂ Visão geral</Link><span>◇ Skill tree</span><span>☆ Conquistas</span></nav>
+      <nav aria-label="Área do aluno"><Link className="sidebar-active" href="/dashboard">⌂ Visão geral</Link><Link href="/trilhas/javascript-fundamentals">◇ Trilha JavaScript</Link><span>☆ Conquistas</span></nav>
       <a className="signout" href={chatGPTSignOutPath("/")}>Sair</a>
     </aside>
     <section className="dashboard-content">
       <header className="dashboard-top"><div><span className="kicker">CENTRAL DO AVENTUREIRO</span><h1>Olá, {user.displayName.split("@")[0]}.</h1></div><div className="level-chip"><small>NÍVEL {profile.level}</small><strong>{profile.totalXp} XP</strong></div></header>
-      <div className="progress-panel"><div><span>JavaScript Fundamentals</span><strong>{progress}%</strong></div><div className="progress-track"><i style={{ width: `${progress}%` }} /></div><small>{completed} de {missions.length} missões concluídas</small></div>
+      <Link className="progress-panel" href="/trilhas/javascript-fundamentals"><div><span>JavaScript Fundamentals</span><strong>{progress}%</strong></div><div className="progress-track"><i style={{ width: `${progress}%` }} /></div><small>{completed} de {missions.length} missões concluídas</small></Link>
       <div className="mission-list">
         <div className="mission-list-heading"><div><span className="kicker">MISSÕES</span><h2>Continue sua jornada</h2></div><span>{missions.length} missões</span></div>
         {missions.map((mission, index) => {

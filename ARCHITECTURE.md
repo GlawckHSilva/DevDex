@@ -7,8 +7,8 @@ O DevDex começa como monólito modular para produto e dados. JavaScript não co
 ```text
 Browser
   └─ Web App (React/TypeScript)
-       ├─ Identity (SIWC no deploy privado; Supabase Auth no produto público)
-       ├─ Curriculum + Progress (D1 adapter; PostgreSQL como alvo)
+       ├─ Identity (Sign in with ChatGPT)
+       ├─ Curriculum + Progress (Cloudflare D1)
        └─ Runner QuickJS/Wasm isolado
 ```
 
@@ -26,7 +26,6 @@ Browser
 app/                  rotas e interface
 db/                   schema e adapter D1 do deploy privado
 docs/                 decisões e especificações
-supabase/migrations/  modelo PostgreSQL alvo
 drizzle/              migration D1 executável no Sites
 tests/                validações automatizadas
 worker/               entrada de deploy do app
@@ -37,7 +36,7 @@ lib/quickjs-runner*    sandbox JavaScript e limites de execução
 
 - A interface nunca consulta `mission_tests`.
 - O cliente não concede XP nem altera domínio.
-- Conclusão, domínio e XP serão gravados por operação transacional server-side.
+- Conclusão, domínio e XP são gravados por batch transacional e idempotente no servidor.
 - O runner não compartilha banco, filesystem ou credenciais com o app.
 - Conteúdo publicado é versionado; progresso aponta para a versão estudada.
 

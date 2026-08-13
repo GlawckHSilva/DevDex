@@ -22,5 +22,5 @@ test("renders the DevDex foundation landing page", async () => {
 test("renders project status", async () => {
   const response = await render("/status");
   assert.equal(response.status, 200);
-  assert.match(await response.text(), /Fase 0/);
+  assert.match(await response.text(), /Fase 1A/);
 });

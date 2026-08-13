@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.0] — 2026-08-13
+
+### Added
+
+- D1 como banco principal do currículo, progresso e operação;
+- trilha JavaScript com cinco skills e cinco missões encadeadas;
+- autorização de pré-requisitos no backend e XP transacional/idempotente;
+- E2E autenticado com persistência, isolamento, repetição e concorrência;
+- métricas de submissão sem armazenamento do código-fonte.
+
 ## [0.3.0] — 2026-08-13
 
 ### Added

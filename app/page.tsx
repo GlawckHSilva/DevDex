@@ -21,7 +21,7 @@ export default function Home() {
       </nav>
 
       <section className="hero container">
-        <div className="eyebrow"><span className="pulse" /> Fase 0 · Fundação ativa</div>
+        <div className="eyebrow"><span className="pulse" /> Fase 1A · JavaScript ativo</div>
         <h1>Aprenda programação.<br /><span>Escrevendo código de verdade.</span></h1>
         <p className="hero-copy">Uma jornada gamificada por missões, desafios e projetos que ensina você a construir, testar e depurar software real.</p>
         <div className="hero-actions">

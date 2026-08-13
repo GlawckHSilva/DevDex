@@ -1,5 +1,6 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { ensureUser, getMission, getMissionTests, getRecentSubmissionCount, recordAttempt, recordSubmission, type SubmissionStatus } from "@/db";
+import { ensureUser, getMission, getMissionTests, recordAttempt } from "@/db";
+import { getRecentSubmissionCount, recordSubmission, type SubmissionStatus } from "@/db/runner";
 import { executeJavaScript } from "@/lib/quickjs-runner";
 
 type Payload = { code?: string; mode?: "run" | "test" };
@@ -31,6 +32,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   const startedAt = Date.now();
   const codeHash = await hashCode(payload.code);
   let status: SubmissionStatus = "error";
+  let passedTests = 0;
+  let failedTests = 0;
+  let errorType: string | null = null;
   try {
     if (payload.mode === "run") {
       await executeJavaScript(payload.code, mission.functionName);
@@ -45,13 +49,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       expected: JSON.parse(test.expectedJson) as unknown,
     })));
     const passed = results.every((result) => result.passed);
+    passedTests = results.filter((result) => result.passed).length;
+    failedTests = results.length - passedTests;
     status = passed ? "passed" : "failed";
     const progress = await recordAttempt(user.userId, mission, passed);
-    return Response.json({ ok: passed, message: passed ? "Todos os testes passaram." : "Alguns testes ainda falharam.", results, ...progress });
+    return Response.json({
+      ok: passed,
+      message: passed ? "Todos os testes passaram." : "Alguns testes ainda falharam.",
+      results: results.map((result, index) => ({ name: `Teste ${index + 1}`, passed: result.passed })),
+      ...progress,
+    });
   } catch (error) {
+    errorType = error instanceof Error ? error.name : "UnknownError";
     if (payload.mode === "test") await recordAttempt(user.userId, mission, false);
     return Response.json({ ok: false, message: error instanceof Error ? error.message : "Não foi possível avaliar o código." }, { status: 422 });
   } finally {
-    await recordSubmission({ userId: user.userId, missionId: mission.id, mode: payload.mode, status, codeHash, durationMs: Date.now() - startedAt });
+    await recordSubmission({ userId: user.userId, missionId: mission.id, mode: payload.mode, status, codeHash, durationMs: Date.now() - startedAt, passedTests, failedTests, errorType }).catch(console.error);
   }
 }

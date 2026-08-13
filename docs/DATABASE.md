@@ -1,13 +1,13 @@
 # Banco de dados
 
-PostgreSQL/Supabase permanece o modelo alvo em `supabase/migrations`. O deploy privado atual usa um adapter D1 definido em `db/schema.ts` e migrado por `drizzle/`, mantendo a interface sem acesso direto ao banco.
+Cloudflare D1 é o banco principal, definido em `db/schema.ts` e migrado por `drizzle/`. A interface nunca acessa o banco diretamente.
 
 ## Modelo
 
-- Currículo: `technologies → curriculum_versions → learning_paths → skills → lessons → missions → mission_tests`.
-- Pré-requisitos: `skill_prerequisites` forma um grafo acíclico validado pela aplicação/editorial.
+- Currículo: `technologies → learning_paths → skills → lessons → missions → mission_tests`.
+- Pré-requisitos: `mission_prerequisites` controla o desbloqueio sequencial.
 - Usuário: `profiles`, `user_learning_paths`, `user_skill_progress`, `user_missions`, `user_xp_history`.
-- Atualização: `curriculum_sources` registra fonte, versão, verificação e mudança detectada.
+- Operação: `submissions` registra hash, runtime, versão, duração e contagens, nunca o código.
 
 ## Regras
 
@@ -19,9 +19,10 @@ PostgreSQL/Supabase permanece o modelo alvo em `supabase/migrations`. O deploy p
 
 ## Segurança
 
-RLS permite leitura de conteúdo publicado e acesso do aluno apenas aos próprios dados. Escritas de resultado, domínio e XP são revogadas do cliente e devem ocorrer em função/serviço server-side.
+D1 não possui RLS. Todas as consultas pessoais recebem o `user_id` autenticado pelo SIWC, e escritas de resultado e XP existem somente no backend.
 
 ## Migrations
 
-- `20260813130000_foundation.sql`: tipos, tabelas, índices, triggers, RLS e grants.
-- `20260813131000_seed_mvp_curriculum.sql`: quatro trilhas e skills iniciais.
+- `0000`: fundação, índices e seed inicial.
+- `0001`: submissões operacionais.
+- `0002`: trilha com cinco missões, aulas, pré-requisitos e métricas.
