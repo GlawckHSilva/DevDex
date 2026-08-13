@@ -8,6 +8,7 @@ Cloudflare D1 é o banco principal, definido em `db/schema.ts` e migrado por `dr
 - Pré-requisitos: `mission_prerequisites` controla o desbloqueio sequencial.
 - Usuário: `profiles`, `user_learning_paths`, `user_skill_progress`, `user_missions`, `user_xp_history`.
 - Operação: `submissions` registra hash, runtime, versão, duração e contagens, nunca o código.
+- Laboratório SQL: `sql_mission_configs` guarda schema, seed, validador, dialeto e limites; o banco do aluno existe somente em memória.
 
 ## Regras
 
@@ -26,3 +27,4 @@ D1 não possui RLS. Todas as consultas pessoais recebem o `user_id` autenticado 
 - `0000`: fundação, índices e seed inicial.
 - `0001`: submissões operacionais.
 - `0002`: trilha com cinco missões, aulas, pré-requisitos e métricas.
+- `0003`: configuração e seis missões SQL Fundamentals · SQLite.

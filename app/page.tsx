@@ -21,7 +21,7 @@ export default function Home() {
       </nav>
 
       <section className="hero container">
-        <div className="eyebrow"><span className="pulse" /> Fase 1A · JavaScript ativo</div>
+        <div className="eyebrow"><span className="pulse" /> Fase 1B · JavaScript + SQLite ativos</div>
         <h1>Aprenda programação.<br /><span>Escrevendo código de verdade.</span></h1>
         <p className="hero-copy">Uma jornada gamificada por missões, desafios e projetos que ensina você a construir, testar e depurar software real.</p>
         <div className="hero-actions">
@@ -43,14 +43,14 @@ export default function Home() {
       <section className="section container" id="trilhas">
         <div className="section-heading"><div><span className="kicker">MVP CURRICULUM</span><h2>Quatro trilhas. Uma base sólida.</h2></div><p>Conteúdo versionado no banco, separado da interface e liberado por pré-requisitos.</p></div>
         <div className="track-grid">
-          {tracks.map(([title, description, number]) => <article className="track-card" key={title}><span className="track-number">{number}</span><div className="track-icon">{title.slice(0, 2)}</div><h3>{title} Fundamentals</h3><p>{description}</p><span className="track-state">Planejado para o MVP</span></article>)}
+          {tracks.map(([title, description, number]) => <article className="track-card" key={title}><span className="track-number">{number}</span><div className="track-icon">{title.slice(0, 2)}</div><h3>{title} Fundamentals{title === "SQL" ? " · SQLite" : ""}</h3><p>{description}</p><span className="track-state">{title === "JavaScript" || title === "SQL" ? "Disponível" : "Planejado para o MVP"}</span></article>)}
         </div>
       </section>
 
       <section className="section container" id="arquitetura">
         <div className="architecture">
           <div><span className="kicker">ARQUITETURA EVOLUTIVA</span><h2>Preparado para crescer sem recomeçar.</h2><p>Currículo, progresso e execução são domínios separados. O código do aluno nunca roda junto da aplicação principal.</p></div>
-          <div className="architecture-flow" aria-label="Fluxo da arquitetura"><span>WEB APP<small>React + TypeScript</small></span><i>→</i><span>PLATAFORMA<small>Auth + PostgreSQL</small></span><i>→</i><span>RUNNER<small>Sandbox isolada</small></span></div>
+          <div className="architecture-flow" aria-label="Fluxo da arquitetura"><span>WEB APP<small>React + TypeScript</small></span><i>→</i><span>PLATAFORMA<small>SIWC + D1</small></span><i>→</i><span>RUNNERS<small>QuickJS + SQLite</small></span></div>
         </div>
       </section>
 

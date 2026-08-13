@@ -1,10 +1,11 @@
 import type { ChatGPTUser } from "@/app/chatgpt-auth";
 import { getDb } from "./client";
 
-export type MissionSummary = { slug: string; title: string; xpReward: number; skillName: string; state: "locked" | "available" | "in_progress" | "completed" };
+export type MissionSummary = { slug: string; title: string; xpReward: number; skillName: string; pathSlug?: string; pathName?: string; state: "locked" | "available" | "in_progress" | "completed" };
 export type Mission = { id: number; skillId: number; slug: string; title: string; briefing: string; objective: string; starterCode: string; functionName: string; parametersJson: string; runtime: string; runnerVersion: string; difficulty: string; version: number; xpReward: number; nextMissionSlug: string | null; state: MissionSummary["state"]; awardedXp: number };
 export type MissionTest = { name: string; inputJson: string; expectedJson: string };
 export type LearningPathView = { slug: string; name: string; description: string; version: number; missions: MissionSummary[] };
+export type SqlMissionConfig = { dialect: string; runtimeVersion: string; schemaSql: string; seedSql: string; starterSql: string; expectedResultJson: string; tableSchemaJson: string; tablePreviewJson: string; maxRows: number; timeoutMs: number; maxStatements: number };
 
 const missionState = `CASE
   WHEN um.state='completed' THEN 'completed'
@@ -20,9 +21,10 @@ export async function ensureUser(user: ChatGPTUser) {
     db.prepare(`INSERT INTO profiles (user_id,email,display_name) VALUES (?,?,?)
       ON CONFLICT(user_id) DO UPDATE SET email=excluded.email,display_name=excluded.display_name,updated_at=CURRENT_TIMESTAMP`).bind(user.userId, user.email, user.displayName),
     db.prepare(`INSERT OR IGNORE INTO user_missions (user_id,mission_id,state)
-      SELECT ?,id,'available' FROM missions ORDER BY sort_order LIMIT 1`).bind(user.userId),
+      SELECT ?,m.id,'available' FROM missions m WHERE m.status='published'
+      AND NOT EXISTS (SELECT 1 FROM mission_prerequisites mp WHERE mp.mission_id=m.id)`).bind(user.userId),
     db.prepare(`INSERT OR IGNORE INTO user_learning_paths (user_id,learning_path_id)
-      SELECT ?,id FROM learning_paths WHERE slug='javascript-fundamentals'`).bind(user.userId),
+      SELECT ?,id FROM learning_paths WHERE status='published'`).bind(user.userId),
   ]);
 }
 
@@ -31,10 +33,10 @@ export async function getDashboard(user: ChatGPTUser) {
   const db = getDb();
   const [profile, missions] = await Promise.all([
     db.prepare("SELECT total_xp AS totalXp,level FROM profiles WHERE user_id=?").bind(user.userId).first<{ totalXp: number; level: number }>(),
-    db.prepare(`SELECT m.slug,m.title,m.xp_reward AS xpReward,s.name AS skillName,${missionState} AS state
-      FROM missions m JOIN skills s ON s.id=m.skill_id
+    db.prepare(`SELECT m.slug,m.title,m.xp_reward AS xpReward,s.name AS skillName,lp.slug AS pathSlug,lp.name AS pathName,${missionState} AS state
+      FROM missions m JOIN skills s ON s.id=m.skill_id JOIN learning_paths lp ON lp.id=s.learning_path_id
       LEFT JOIN user_missions um ON um.mission_id=m.id AND um.user_id=?
-      WHERE m.status='published' ORDER BY m.sort_order`).bind(user.userId, user.userId).all<MissionSummary>(),
+      WHERE m.status='published' ORDER BY lp.id,m.sort_order`).bind(user.userId, user.userId).all<MissionSummary>(),
   ]);
   return { profile: profile ?? { totalXp: 0, level: 1 }, missions: missions.results };
 }
@@ -53,18 +55,27 @@ export async function getLearningPath(user: ChatGPTUser, slug: string): Promise<
 }
 
 export async function getMission(userId: string, slug: string): Promise<Mission | null> {
-  return getDb().prepare(`SELECT m.id,m.skill_id AS skillId,m.slug,m.title,m.briefing,m.objective,
+  const mission = await getDb().prepare(`SELECT m.id,m.skill_id AS skillId,m.slug,m.title,m.briefing,m.objective,
     m.starter_code AS starterCode,m.function_name AS functionName,m.parameters_json AS parametersJson,
     m.runtime,m.runner_version AS runnerVersion,m.difficulty,m.version,
     m.xp_reward AS xpReward,m.next_mission_slug AS nextMissionSlug,${missionState} AS state,
     COALESCE(um.awarded_xp,0) AS awardedXp
     FROM missions m LEFT JOIN user_missions um ON um.mission_id=m.id AND um.user_id=?
     WHERE m.slug=? AND m.status='published'`).bind(userId, userId, slug).first<Mission>();
+  return mission ? { ...mission, starterCode: mission.starterCode.replaceAll("\\n", "\n") } : null;
 }
 
 export async function getMissionTests(missionId: number): Promise<MissionTest[]> {
   const result = await getDb().prepare("SELECT name,input_json AS inputJson,expected_json AS expectedJson FROM mission_tests WHERE mission_id=? ORDER BY sort_order").bind(missionId).all<MissionTest>();
   return result.results;
+}
+
+export async function getSqlMissionConfig(missionId: number): Promise<SqlMissionConfig | null> {
+  const config = await getDb().prepare(`SELECT dialect,runtime_version AS runtimeVersion,schema_sql AS schemaSql,seed_sql AS seedSql,
+    starter_sql AS starterSql,expected_result_json AS expectedResultJson,table_schema_json AS tableSchemaJson,
+    table_preview_json AS tablePreviewJson,max_rows AS maxRows,timeout_ms AS timeoutMs,max_statements AS maxStatements
+    FROM sql_mission_configs WHERE mission_id=?`).bind(missionId).first<SqlMissionConfig>();
+  return config ? { ...config, starterSql: config.starterSql.replaceAll("\\n", "\n") } : null;
 }
 
 export async function recordAttempt(userId: string, mission: Mission, passed: boolean) {

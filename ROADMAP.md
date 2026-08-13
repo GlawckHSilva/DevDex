@@ -4,7 +4,7 @@
 
 - arquitetura modular e limites de segurança;
 - design base responsivo;
-- schema PostgreSQL, RLS e migrations;
+- schema D1, autorização server-side e migrations;
 - modelo de currículo versionado e progresso por domínio;
 - documentação operacional e escopo fechado do MVP;
 - lint, typecheck, testes e build.
@@ -27,16 +27,24 @@ Primeiro fluxo vertical JavaScript:
 - rate limit e histórico de submissões com hash do código;
 - E2E autenticado, persistência e testes de concorrência do XP.
 
+## Implementado — Fase 1B.1
+
+- adapters independentes para JavaScript e SQLite;
+- banco SQLite/Wasm novo e descartado a cada submissão;
+- seis missões: SELECT, WHERE, ORDER BY, BETWEEN, LIKE e IN;
+- resultado tabular, estrutura do banco e erros didáticos;
+- SELECT único, limites de query, linhas, tempo e escopo;
+- E2E de erros, 20 reenvios, concorrência e isolamento.
+
 ## Próximo
 
-- primeiro runtime SQL isolado;
+- HTML/CSS executável em iframe isolado;
 - métricas agregadas e alertas de execução.
 
 ## Depois — Fase 1B
 
 - expandir HTML, CSS, JavaScript e SQL básico;
 - preview HTML/CSS;
-- sandbox SQL por desafio;
 - dashboard, perfil, skill tree e revisão;
 - observabilidade e painel editorial mínimo.
 

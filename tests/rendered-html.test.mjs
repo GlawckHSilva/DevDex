@@ -15,12 +15,12 @@ test("renders the DevDex foundation landing page", async () => {
   assert.match(html, /<html lang="pt-BR">/);
   assert.match(html, /Escrevendo código de verdade/);
   assert.match(html, /HTML(?:<!-- -->)? Fundamentals/);
-  assert.match(html, /Sandbox isolada/);
+  assert.match(html, /QuickJS \+ SQLite/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);
 });
 
 test("renders project status", async () => {
   const response = await render("/status");
   assert.equal(response.status, 200);
-  assert.match(await response.text(), /Fase 1A/);
+  assert.match(await response.text(), /Fase 1B/);
 });

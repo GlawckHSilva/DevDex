@@ -85,3 +85,37 @@ test("credita XP uma vez sob repetição e concorrência", async ({ page, reques
   await page.goto("/dashboard");
   await expect(page.getByText("100 XP", { exact: true })).toBeVisible();
 });
+
+test("executa SQLite/Wasm descartável sem misturar progresso", async ({ page, request }) => {
+  const correct = "SELECT ID, DESCRICAO, VALOR, ATIVO FROM PRODUTOS";
+  await page.setExtraHTTPHeaders(userHeaders("sql-ui-user"));
+  await page.goto("/trilhas/sql-fundamentals-sqlite");
+  await expect(page.getByRole("heading", { name: "SQL Fundamentals · SQLite" })).toBeVisible();
+  await page.goto("/missoes/listar-produtos");
+  await expect(page.getByTestId("sql-editor")).toBeVisible();
+  await expect(page.getByText(/PRODUTOS/).first()).toBeVisible();
+
+  const cases = [
+    { id: "sql-syntax", query: "SELECT FROM PRODUTOS", status: 422, message: /syntax error/i },
+    { id: "sql-table", query: "SELECT * FROM CLIENTES", status: 422, message: /no such table/i },
+    { id: "sql-column", query: "SELECT NOMEE FROM PRODUTOS", status: 422, message: /coluna NOMEE não existe/i },
+    { id: "sql-wrong", query: "SELECT * FROM PRODUTOS WHERE ID=1", status: 200, message: /ainda não corresponde/i },
+    { id: "sql-multiple", query: "SELECT * FROM PRODUTOS; SELECT 1", status: 422, message: /somente um statement/i },
+  ];
+  for (const item of cases) {
+    const response = await submit(request, item.id, "listar-produtos", item.query);
+    expect(response.status()).toBe(item.status);
+    expect((await response.json()).message).toMatch(item.message);
+  }
+
+  for (let index = 0; index < 20; index += 1) expect((await submit(request, "sql-repeat", "listar-produtos", correct)).status()).toBe(200);
+  const concurrent = await Promise.all([submit(request, "sql-concurrent", "listar-produtos", correct), submit(request, "sql-concurrent", "listar-produtos", correct)]);
+  expect(concurrent.every((response) => response.status() === 200)).toBe(true);
+
+  await page.setExtraHTTPHeaders(userHeaders("sql-repeat"));
+  await page.goto("/dashboard");
+  await expect(page.getByText("100 XP", { exact: true })).toBeVisible();
+  await page.setExtraHTTPHeaders(userHeaders("sql-isolated"));
+  await page.goto("/dashboard");
+  await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
+});

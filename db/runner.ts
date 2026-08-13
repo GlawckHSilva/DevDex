@@ -16,15 +16,18 @@ export async function recordSubmission(input: {
   mode: SubmissionMode;
   status: SubmissionStatus;
   codeHash: string;
+  runtime: string;
+  runnerVersion: string;
   durationMs: number;
   passedTests: number;
   failedTests: number;
+  resultRows: number;
   errorType: string | null;
 }) {
   await getDb().prepare(`INSERT INTO submissions
-    (user_id,mission_id,mode,status,code_hash,runtime,runner_version,duration_ms,passed_tests,failed_tests,error_type)
-    VALUES (?,?,?,?,?,'javascript',?,?,?,?,?)`).bind(
-      input.userId, input.missionId, input.mode, input.status, input.codeHash, RUNNER_VERSION,
-      input.durationMs, input.passedTests, input.failedTests, input.errorType,
+    (user_id,mission_id,mode,status,code_hash,runtime,runner_version,duration_ms,passed_tests,failed_tests,result_rows,error_type)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`).bind(
+      input.userId, input.missionId, input.mode, input.status, input.codeHash, input.runtime, input.runnerVersion,
+      input.durationMs, input.passedTests, input.failedTests, input.resultRows, input.errorType,
     ).run();
 }

@@ -73,6 +73,21 @@ export const missionTests = sqliteTable("mission_tests", {
   sortOrder: integer("sort_order").notNull(),
 });
 
+export const sqlMissionConfigs = sqliteTable("sql_mission_configs", {
+  missionId: integer("mission_id").primaryKey().references(() => missions.id, { onDelete: "cascade" }),
+  dialect: text("dialect").notNull().default("sqlite"),
+  runtimeVersion: text("runtime_version").notNull().default("sqlite-wasm-1"),
+  schemaSql: text("schema_sql").notNull(),
+  seedSql: text("seed_sql").notNull(),
+  starterSql: text("starter_sql").notNull(),
+  expectedResultJson: text("expected_result_json").notNull(),
+  tableSchemaJson: text("table_schema_json").notNull(),
+  tablePreviewJson: text("table_preview_json").notNull(),
+  maxRows: integer("max_rows").notNull().default(100),
+  timeoutMs: integer("timeout_ms").notNull().default(250),
+  maxStatements: integer("max_statements").notNull().default(1),
+});
+
 export const profiles = sqliteTable("profiles", {
   userId: text("user_id").primaryKey(),
   email: text("email").notNull(),
@@ -127,6 +142,7 @@ export const submissions = sqliteTable("submissions", {
   durationMs: integer("duration_ms").notNull(),
   passedTests: integer("passed_tests").notNull().default(0),
   failedTests: integer("failed_tests").notNull().default(0),
+  resultRows: integer("result_rows").notNull().default(0),
   errorType: text("error_type"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [index("idx_submissions_user_created").on(table.userId, table.createdAt)]);

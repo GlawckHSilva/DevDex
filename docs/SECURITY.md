@@ -14,6 +14,8 @@
 - binding D1 disponível somente ao Worker;
 - testes privados consultados somente durante a avaliação e anonimizados na resposta;
 - XP/domínio concluídos em transação idempotente;
+- SQLite/Wasm em memória, recriado por submissão e sem bindings, rede ou persistência;
+- SQL restrito a um SELECT, com limites de tamanho, tempo, escopo e linhas;
 - CSP, headers seguros, sanitização e iframe sandbox sem mesma origem;
 - rate limit por usuário/IP/missão e auditoria de eventos sensíveis;
 - secrets apenas no ambiente, rotação e menor privilégio;

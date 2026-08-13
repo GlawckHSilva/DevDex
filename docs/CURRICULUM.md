@@ -7,7 +7,7 @@ Conteúdo nunca fica acoplado a componentes. A interface recebe uma versão publ
 - HTML: estrutura, headings, paragraphs, links e forms.
 - CSS: selectors, colors, spacing e flexbox.
 - JavaScript: variáveis, condições, loops, funções e arrays, com uma missão publicada por skill.
-- SQL: SELECT, WHERE, ORDER BY, BETWEEN, LIKE e IN.
+- SQL Fundamentals · SQLite: SELECT, WHERE, ORDER BY, BETWEEN, LIKE e IN, com uma missão publicada por skill.
 
 ## Publicação
 

@@ -1,7 +1,8 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { ensureUser, getMission, getMissionTests, recordAttempt } from "@/db";
+import { ensureUser, getMission, getMissionTests, getSqlMissionConfig, recordAttempt } from "@/db";
 import { getRecentSubmissionCount, recordSubmission, type SubmissionStatus } from "@/db/runner";
-import { executeJavaScript } from "@/lib/quickjs-runner";
+import { JavaScriptRunnerAdapter } from "@/lib/runners/javascript-adapter";
+import { SqlRunnerAdapter, type SqlExpectedResult } from "@/lib/runners/sql-adapter";
 
 type Payload = { code?: string; mode?: "run" | "test" };
 const MAX_CODE_LENGTH = 12_000;
@@ -34,20 +35,51 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   let status: SubmissionStatus = "error";
   let passedTests = 0;
   let failedTests = 0;
+  let resultRows = 0;
   let errorType: string | null = null;
   try {
+    if (mission.runtime === "sqlite") {
+      const config = await getSqlMissionConfig(mission.id);
+      if (!config) throw new Error("Configuração SQL indisponível.");
+      const result = await SqlRunnerAdapter.execute({
+        query: payload.code,
+        schemaSql: config.schemaSql,
+        seedSql: config.seedSql,
+        expected: payload.mode === "test" ? JSON.parse(config.expectedResultJson) as SqlExpectedResult : undefined,
+        maxRows: config.maxRows,
+        timeoutMs: config.timeoutMs,
+        maxStatements: config.maxStatements,
+      });
+      resultRows = result.rows.length;
+      const passed = payload.mode === "run" || result.passed === true;
+      status = passed ? "passed" : "failed";
+      if (payload.mode === "run") return Response.json({ ok: true, message: `${resultRows} linha(s) retornada(s).`, columns: result.columns, rows: result.rows, dialect: config.dialect });
+      passedTests = passed ? 1 : 0;
+      failedTests = passed ? 0 : 1;
+      const progress = await recordAttempt(user.userId, mission, passed);
+      return Response.json({
+        ok: passed,
+        message: passed ? "Resultado correto." : "A consulta executou, mas o resultado ainda não corresponde ao objetivo.",
+        columns: result.columns,
+        rows: result.rows,
+        results: [{ name: "Resultado esperado", passed }],
+        dialect: config.dialect,
+        ...progress,
+      });
+    }
+
     if (payload.mode === "run") {
-      await executeJavaScript(payload.code, mission.functionName);
+      await JavaScriptRunnerAdapter.execute({ code: payload.code, functionName: mission.functionName });
       status = "passed";
       return Response.json({ ok: true, compiled: true, message: "Código validado no ambiente isolado." });
     }
 
     const tests = await getMissionTests(mission.id);
-    const results = await executeJavaScript(payload.code, mission.functionName, tests.map((test) => ({
+    const results = await JavaScriptRunnerAdapter.execute({ code: payload.code, functionName: mission.functionName, tests: tests.map((test) => ({
       name: test.name,
       input: JSON.parse(test.inputJson) as unknown[],
       expected: JSON.parse(test.expectedJson) as unknown,
-    })));
+    })) });
     const passed = results.every((result) => result.passed);
     passedTests = results.filter((result) => result.passed).length;
     failedTests = results.length - passedTests;
@@ -64,6 +96,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     if (payload.mode === "test") await recordAttempt(user.userId, mission, false);
     return Response.json({ ok: false, message: error instanceof Error ? error.message : "Não foi possível avaliar o código." }, { status: 422 });
   } finally {
-    await recordSubmission({ userId: user.userId, missionId: mission.id, mode: payload.mode, status, codeHash, durationMs: Date.now() - startedAt, passedTests, failedTests, errorType }).catch(console.error);
+    await recordSubmission({ userId: user.userId, missionId: mission.id, mode: payload.mode, status, codeHash, runtime: mission.runtime, runnerVersion: mission.runnerVersion, durationMs: Date.now() - startedAt, passedTests, failedTests, resultRows, errorType }).catch(console.error);
   }
 }

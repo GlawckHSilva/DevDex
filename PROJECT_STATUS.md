@@ -4,7 +4,7 @@ Atualizado em: 2026-08-13
 
 ## Situação
 
-Fase 1A concluída e publicada em Cloudflare Sites.
+Fase 1B iniciada e publicada em Cloudflare Sites.
 
 ## Implementado
 
@@ -16,6 +16,9 @@ Fase 1A concluída e publicada em Cloudflare Sites.
 - Monaco, QuickJS/Wasm isolado, testes privados, XP idempotente e desbloqueio;
 - limite por usuário e histórico de submissões sem armazenar o código-fonte;
 - cinco missões JavaScript encadeadas;
+- seis missões SQL Fundamentals · SQLite, de SELECT a IN;
+- SQLite/Wasm descartável por execução, sem acesso ao D1 principal;
+- visualizador de dados/estrutura, editor SQL e resultado tabular;
 - E2E de autenticação, persistência, isolamento, bloqueio e XP concorrente.
 
 ## Não implementado
@@ -25,4 +28,4 @@ Fase 1A concluída e publicada em Cloudflare Sites.
 
 ## Próxima tarefa
 
-Adicionar o primeiro runtime SQL isolado, sem alterar o runner JavaScript.
+Adicionar HTML/CSS executável em iframe isolado.

@@ -4,13 +4,13 @@ Plataforma gamificada para aprender programação escrevendo, executando, testan
 
 ## Estado
 
-Fase 1A concluída: cinco missões JavaScript funcionam ponta a ponta com autenticação, sandbox, testes privados, XP idempotente e desbloqueio.
+Fase 1B em andamento: JavaScript e SQL Fundamentals · SQLite funcionam ponta a ponta com autenticação, sandboxes, XP idempotente e desbloqueio.
 
 ## Stack
 
 - React 19, TypeScript, Tailwind CSS 4 e Vinext (modelo de aplicação Next.js)
 - Cloudflare D1 + Sign in with ChatGPT
-- Monaco Editor e QuickJS/Wasm isolado com limites de CPU, memória e pilha
+- Monaco Editor, QuickJS/Wasm e SQLite/Wasm descartável
 
 ## Desenvolvimento
 

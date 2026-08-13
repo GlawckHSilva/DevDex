@@ -4,6 +4,7 @@ import test from "node:test";
 
 const foundationUrl = new URL("../drizzle/0000_awesome_scalphunter.sql", import.meta.url);
 const engineUrl = new URL("../drizzle/0002_nebulous_jean_grey.sql", import.meta.url);
+const sqlEngineUrl = new URL("../drizzle/0003_clammy_screwball.sql", import.meta.url);
 const routeUrl = new URL("../app/api/missions/[slug]/submit/route.ts", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
@@ -12,6 +13,14 @@ test("D1 models five private, sequential missions", async () => {
   assert.match(sql, /'filtrar-pares'/);
   assert.match(sql, /\(5,4\)/);
   assert.match(sql, /`is_private`/);
+});
+
+test("D1 configures SQLite missions without storing student queries", async () => {
+  const sql = await readFile(sqlEngineUrl, "utf8");
+  assert.match(sql, /CREATE TABLE `sql_mission_configs`/);
+  assert.match(sql, /SQL Fundamentals · SQLite/);
+  assert.match(sql, /'select'.*'where'.*'order-by'.*'between'.*'like'.*'in'/is);
+  assert.doesNotMatch(sql, /student_query|source_code/);
 });
 
 test("D1 prevents duplicate XP and the API hides private test data", async () => {

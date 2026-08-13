@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0] — 2026-08-13
+
+### Added
+
+- `SqlRunnerAdapter` separado do QuickJS;
+- SQLite/Wasm descartável por submissão;
+- SQL Fundamentals · SQLite com seis missões encadeadas;
+- visualizador de estrutura/dados, editor e resultado tabular;
+- validação semântica de resultados e erros SQL didáticos;
+- testes de limites, repetição, concorrência e isolamento.
+
 ## [0.4.0] — 2026-08-13
 
 ### Added

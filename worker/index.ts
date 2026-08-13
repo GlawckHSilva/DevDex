@@ -29,8 +29,11 @@ const worker = {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith("/api/missions/")) {
-      const scope = globalThis as typeof globalThis & { __DEVDEX_QUICKJS_WASM__?: WebAssembly.Module };
+      const workerScope = globalThis as unknown as { location?: URL };
+      workerScope.location ??= new URL(request.url);
+      const scope = globalThis as typeof globalThis & { __DEVDEX_QUICKJS_WASM__?: WebAssembly.Module; __DEVDEX_SQLITE_WASM__?: WebAssembly.Module };
       scope.__DEVDEX_QUICKJS_WASM__ ??= (await import("../node_modules/@jitl/quickjs-wasmfile-release-sync/dist/emscripten-module.wasm")).default;
+      scope.__DEVDEX_SQLITE_WASM__ ??= (await import("../node_modules/sql.js/dist/sql-wasm.wasm")).default;
     }
 
     if (url.pathname === "/_vinext/image") {

@@ -2,14 +2,16 @@
 
 ## Decisões
 
-O DevDex começa como monólito modular para produto e dados. JavaScript não confiável roda em uma VM QuickJS compilada para Wasm, sem APIs do host; linguagens futuras usarão um serviço externo.
+O DevDex começa como monólito modular para produto e dados. JavaScript roda em QuickJS/Wasm; SQL roda em SQLite/Wasm descartável. Nenhum runtime recebe o binding do D1 principal.
 
 ```text
 Browser
   └─ Web App (React/TypeScript)
        ├─ Identity (Sign in with ChatGPT)
        ├─ Curriculum + Progress (Cloudflare D1)
-       └─ Runner QuickJS/Wasm isolado
+       └─ Runner adapters
+            ├─ QuickJS/Wasm
+            └─ SQLite/Wasm efêmero
 ```
 
 ## Domínios
@@ -29,7 +31,8 @@ docs/                 decisões e especificações
 drizzle/              migration D1 executável no Sites
 tests/                validações automatizadas
 worker/               entrada de deploy do app
-lib/quickjs-runner*    sandbox JavaScript e limites de execução
+lib/runners/           contratos e adapters de runtime
+lib/quickjs-runner*    sandbox JavaScript existente
 ```
 
 ## Limites
