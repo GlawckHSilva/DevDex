@@ -10,6 +10,7 @@ export type MissionTest = { name: string; inputJson: string; expectedJson: strin
 export type LearningPathView = { slug: string; name: string; description: string; version: number; missions: MissionSummary[] };
 export type SqlMissionConfig = { dialect: string; runtimeVersion: string; schemaSql: string; seedSql: string; starterSql: string; expectedResultJson: string; tableSchemaJson: string; tablePreviewJson: string; maxRows: number; timeoutMs: number; maxStatements: number };
 export type WebMissionConfig = { documentType: "html" | "css"; runtimeVersion: string; starterCode: string; previewHtml: string; previewCss: string; validatorJson: string; maxLength: number };
+export type MissionStudyMaterial = { title: string; introduction: string; explanation: string; exampleCode: string; exampleExplanation: string; keyPoints: string[]; commonMistakes: string[]; references: { label: string; url: string }[] };
 
 export class BetaAccessError extends Error {
   constructor(public reason: "closed" | "full") { super(reason === "closed" ? "Beta fechada." : "Beta lotada."); }
@@ -81,6 +82,14 @@ export async function getMission(userId: string, slug: string): Promise<Mission 
 export async function getMissionTests(missionId: number): Promise<MissionTest[]> {
   const result = await getDb().prepare("SELECT name,input_json AS inputJson,expected_json AS expectedJson FROM mission_tests WHERE mission_id=? ORDER BY sort_order").bind(missionId).all<MissionTest>();
   return result.results;
+}
+
+export async function getMissionStudyMaterial(missionId: number): Promise<MissionStudyMaterial | null> {
+  const material = await getDb().prepare(`SELECT title,introduction,explanation,example_code AS exampleCode,
+    example_explanation AS exampleExplanation,key_points_json AS keyPointsJson,
+    common_mistakes_json AS commonMistakesJson,references_json AS referencesJson
+    FROM mission_study_materials WHERE mission_id=?`).bind(missionId).first<Omit<MissionStudyMaterial, "keyPoints" | "commonMistakes" | "references"> & { keyPointsJson: string; commonMistakesJson: string; referencesJson: string }>();
+  return material ? { ...material, keyPoints: JSON.parse(material.keyPointsJson), commonMistakes: JSON.parse(material.commonMistakesJson), references: JSON.parse(material.referencesJson) } : null;
 }
 
 export async function getSqlMissionConfig(missionId: number): Promise<SqlMissionConfig | null> {

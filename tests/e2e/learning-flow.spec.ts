@@ -261,6 +261,25 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await page.goto("/trilhas/html-fundamentals");
   await expect(page.getByRole("heading", { name: "Crônicas da Estrutura" })).toBeVisible();
   await page.goto("/missoes/pagina-da-oficina");
+  const study = page.getByTestId("study-material");
+  await expect(study).toContainText("Títulos e parágrafos");
+  await expect(study).toContainText("Portal da Guilda");
+  await expect(study).not.toContainText("Oficina DevDex");
+  await expect(page.getByTestId("web-editor").locator(".monaco-editor")).toBeVisible();
+  await page.getByTestId("start-battle").click();
+  await expect(study).toBeHidden();
+  await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
+  await expect(study).toContainText("Títulos e parágrafos");
+  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await expect(page.getByTestId("start-battle")).toContainText("VOLTAR À BATALHA");
+  await page.getByTestId("start-battle").click();
+  await expect(study).toBeHidden();
+  await page.goto("/dashboard");
+  await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
+  await page.goto("/missoes/pagina-da-oficina");
+  await expect(study).toContainText("Títulos e parágrafos");
+  await page.getByTestId("start-battle").click();
+  await expect(study).toBeHidden();
   await expect(page.getByTestId("web-editor")).toBeVisible();
   await expect(page.locator(".battle-arena")).toHaveAttribute("style", /ruinas-da-estrutura-v1/);
   await expect(page.getByText("Espectro do Esqueleto", { exact: true })).toBeVisible();
@@ -286,6 +305,9 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
   await expect(page.getByTestId("battle-objectives").locator(".passed")).toHaveCount(1);
   await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
+  await expect(study).toBeVisible();
+  await page.getByTestId("start-battle").click();
+  await expect(study).toBeHidden();
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
   await page.getByRole("button", { name: /Atacar com a solução/ }).click();
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
@@ -309,6 +331,9 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveClass(/state-completed/);
   await expect(page.getByTestId("map-node-navegacao-da-oficina")).toHaveAttribute("aria-label", /Disponível/);
   await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*39%;top:\s*38%/);
+  await page.goto("/missoes/navegacao-da-oficina");
+  await expect(page.getByTestId("study-material")).toContainText("Navegação interna");
+  await expect(page.getByTestId("study-material")).not.toContainText("Portal da Guilda");
 
   const unsafe = await submit(request, "web-unsafe", "pagina-da-oficina", "<script>alert(1)</script>");
   expect(unsafe.status()).toBe(422);
@@ -319,6 +344,9 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   const review = await submit(request, userId, "pagina-da-oficina", "<main><h1>Oficina DevDex</h1><p>Aprenda código na prática.</p></main>");
   expect(await review.json()).toMatchObject({ ok: true, gainedXp: 0, newlyCompleted: false, unlockedSlug: "navegacao-da-oficina" });
   await page.goto("/missoes/pagina-da-oficina");
+  await expect(page.getByTestId("study-material")).toContainText("Títulos e parágrafos");
+  await page.getByTestId("start-battle").click();
+  await expect(page.getByTestId("study-material")).toBeHidden();
   await expect(page.locator(".battle-victory-banner")).toContainText("REVISÃO");
   await expect(page.getByTestId("victory-sequence")).toHaveCount(0);
   await page.waitForTimeout(2800);

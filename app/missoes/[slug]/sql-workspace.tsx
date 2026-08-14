@@ -1,13 +1,14 @@
 "use client";
 
 import Editor from "@monaco-editor/react";
+import type { MissionStudyMaterial } from "@/db";
 import { useState } from "react";
-import { BattleActions, BattleHeader, BattlePanel, useBattleVictory, type BattleAction, type BattleFeedback, type BattleResultItem, type BattleView } from "./battle-card";
+import { BattleActions, BattleHeader, BattlePanel, BattleStudyOverlay, useBattleVictory, type BattleAction, type BattleFeedback, type BattleResultItem, type BattleView } from "./battle-card";
 
 type SqlValue = string | number | null;
 type TableSchema = { tables: { name: string; columns: { name: string; type: string; primaryKey?: boolean }[] }[] };
 type TablePreview = { columns: string[]; rows: SqlValue[][] };
-type SqlMission = { slug: string; title: string; briefing: string; objective: string; starterSql: string; completed: boolean; nextMissionSlug: string | null; pathSlug: string; pathLabel: string; technologyName: string; xpReward: number; dialect: string; tableSchema: TableSchema; tablePreview: TablePreview };
+type SqlMission = { slug: string; title: string; briefing: string; objective: string; starterSql: string; completed: boolean; nextMissionSlug: string | null; pathSlug: string; pathLabel: string; technologyName: string; xpReward: number; dialect: string; tableSchema: TableSchema; tablePreview: TablePreview; study: MissionStudyMaterial | null };
 type Submission = { ok: boolean; message: string; columns?: string[]; rows?: SqlValue[][]; results?: BattleResultItem[]; gainedXp?: number; newlyCompleted?: boolean; unlockedSlug?: string | null; battle?: { lives: number; state: BattleView["state"]; hint?: string } | null };
 
 function ResultTable({ columns, rows }: { columns: string[]; rows: SqlValue[][] }) {
@@ -22,6 +23,8 @@ export function SqlWorkspace({ mission, initialBattle }: { mission: SqlMission; 
   const [hint, setHint] = useState<string | null>(null);
   const [loading, setLoading] = useState<BattleAction | null>(null);
   const [feedback, setFeedback] = useState<BattleFeedback>(null);
+  const [studyOpen, setStudyOpen] = useState(Boolean(mission.study));
+  const [studyStarted, setStudyStarted] = useState(false);
   const { victoryXp, registerVictory } = useBattleVictory(mission.pathSlug, mission.completed);
 
   async function submit(mode: BattleAction) {
@@ -30,6 +33,7 @@ export function SqlWorkspace({ mission, initialBattle }: { mission: SqlMission; 
     try {
       const response = await fetch(`/api/missions/${mission.slug}/submit`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ code: query, mode }) });
       const result = await response.json() as Submission;
+      if (mode === "research" && response.ok && mission.study) setStudyOpen(true);
       if (mode === "test") registerVictory(result);
       if (mode === "run" || mode === "test") setSubmission(result);
       if (result.battle && battle) setBattle({ ...battle, ...result.battle });
@@ -50,5 +54,6 @@ export function SqlWorkspace({ mission, initialBattle }: { mission: SqlMission; 
       <section className="battle-console-panel"><header><span>CONSOLE · RESULTADOS</span>{results?.length ? <b>✓ {results.filter((item) => item.passed).length}/{results.length} testes OK</b> : null}</header><div className="battle-console-output" aria-live="polite">{!submission ? <p className="console-empty">Teste livremente. Somente um ataque incorreto perde vida.</p> : <><p className={submission.ok ? "console-success" : "console-error"}>{submission.message}</p>{submission.columns && submission.rows ? <ResultTable columns={submission.columns} rows={submission.rows} /> : null}{submission.gainedXp ? <div className="reward-banner"><span>INIMIGO DERROTADO</span><strong>+{submission.gainedXp} XP</strong></div> : null}{submission.ok && submission.unlockedSlug ? <a className="next-mission" href={`/missoes/${submission.unlockedSlug}`}>Próxima batalha →</a> : submission.ok && battle?.state === "completed" ? <a className="next-mission" href={`/trilhas/${mission.pathSlug}`}>Voltar ao mapa →</a> : null}</>}</div></section>
       <BattleActions battle={battle} loading={loading} onAction={submit} victory={victoryXp !== null} />
     </div>
+    {studyOpen && mission.study && battle ? <BattleStudyOverlay material={mission.study} enemyType={battle.enemyType} started={studyStarted} onContinue={() => { setStudyStarted(true); setStudyOpen(false); }} /> : null}
   </div>;
 }

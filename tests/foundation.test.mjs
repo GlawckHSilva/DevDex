@@ -10,6 +10,7 @@ const betaUrl = new URL("../drizzle/0006_square_wallflower.sql", import.meta.url
 const metricsUrl = new URL("../db/metrics.ts", import.meta.url);
 const rpgUrl = new URL("../drizzle/0007_cloudy_mandroid.sql", import.meta.url);
 const campaignsUrl = new URL("../drizzle/0008_high_chat.sql", import.meta.url);
+const studyUrl = new URL("../drizzle/0009_calm_dreaming_celestial.sql", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
   const sql = await readFile(engineUrl, "utf8");
@@ -59,4 +60,12 @@ test("each technology is an independent configurable RPG campaign", async () => 
   assert.match(sql, /'bosque-dos-fundamentos'.*'published',5,1/);
   assert.match(sql, /\(12,1.*\(16,2.*\(6,4/s);
   assert.doesNotMatch(sql, /source_code|student_code/);
+});
+
+test("D1 stores mission-specific battle study material", async () => {
+  const sql = await readFile(studyUrl, "utf8");
+  assert.match(sql, /CREATE TABLE `mission_study_materials`/);
+  assert.match(sql, /'Títulos e parágrafos'.*'Navegação interna'/s);
+  assert.match(sql, /href="#contato"/);
+  assert.doesNotMatch(sql, /href="#servicos"/);
 });

@@ -93,6 +93,18 @@ export const missionTests = sqliteTable("mission_tests", {
   sortOrder: integer("sort_order").notNull(),
 });
 
+export const missionStudyMaterials = sqliteTable("mission_study_materials", {
+  missionId: integer("mission_id").primaryKey().references(() => missions.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  introduction: text("introduction").notNull(),
+  explanation: text("explanation").notNull(),
+  exampleCode: text("example_code").notNull(),
+  exampleExplanation: text("example_explanation").notNull(),
+  keyPointsJson: text("key_points_json").notNull().default("[]"),
+  commonMistakesJson: text("common_mistakes_json").notNull().default("[]"),
+  referencesJson: text("references_json").notNull().default("[]"),
+});
+
 export const sqlMissionConfigs = sqliteTable("sql_mission_configs", {
   missionId: integer("mission_id").primaryKey().references(() => missions.id, { onDelete: "cascade" }),
   dialect: text("dialect").notNull().default("sqlite"),

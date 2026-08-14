@@ -1,7 +1,7 @@
 "use client";
 
 import { PixelHero } from "@/app/aventura/character-select";
-import type { Archetype } from "@/db";
+import type { Archetype, MissionStudyMaterial } from "@/db";
 import Image from "next/image";
 import { useEffect, useState, type CSSProperties } from "react";
 
@@ -20,6 +20,19 @@ const ARENA_ASSETS: Record<string, string> = {
   JAVASCRIPT: "/campaigns/javascript/bosque-fundamentos-v1.png",
   SQL: "/campaigns/sql/arquivo-perdido-v1.png",
 };
+
+export function BattleStudyOverlay({ material, enemyType, started, onContinue }: { material: MissionStudyMaterial; enemyType: BattleView["enemyType"]; started: boolean; onContinue: () => void }) {
+  return <section className="battle-study-overlay" role="dialog" aria-modal="true" aria-labelledby="study-title" data-testid="study-material">
+    <article className="battle-study-card">
+      <header><span>{enemyType === "boss" ? "PREPARAÇÃO PARA O CHEFÃO" : "GRIMÓRIO DA BATALHA"}</span><small>CONHECIMENTO NECESSÁRIO</small><h1 id="study-title">{material.title}</h1><p>{material.introduction}</p></header>
+      <div className="battle-study-content">
+        <section><h2>Antes de enfrentar este inimigo</h2><p>{material.explanation}</p><h2>Exemplo</h2><pre><code>{material.exampleCode}</code></pre><p>{material.exampleExplanation}</p></section>
+        <aside><h2>Pontos importantes</h2><ul>{material.keyPoints.map((item) => <li key={item}>{item}</li>)}</ul>{material.commonMistakes.length ? <><h2>Erros comuns</h2><ul className="study-mistakes">{material.commonMistakes.map((item) => <li key={item}>{item}</li>)}</ul></> : null}</aside>
+      </div>
+      <footer><p>O exemplo ensina o conceito, mas você ainda precisará adaptá-lo ao objetivo da batalha.</p><button className="button" data-testid="start-battle" onClick={onContinue}>⚔️ {started ? "VOLTAR À BATALHA" : "INICIAR BATALHA"}</button></footer>
+    </article>
+  </section>;
+}
 
 export function BattleHeader({ battle, pathSlug, pathLabel, title, xpReward }: { battle?: BattleView; pathSlug: string; pathLabel: string; title: string; xpReward: number }) {
   return <header className="battle-page-header">
