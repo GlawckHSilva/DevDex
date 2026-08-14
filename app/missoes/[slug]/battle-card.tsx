@@ -37,14 +37,13 @@ export function BattlePanel({ battle, technology, objective, results, hint, feed
   const hp = battle.state === "completed" ? 0 : results?.length ? Math.round((results.length - passed) / results.length * 100) : 100;
   const enemyAsset = ENEMY_ASSETS[battle.enemyName];
 
-  return <aside className={`battle-panel battle-${battle.state}${feedback ? ` hit-${feedback}` : ""}`} data-testid="battle-panel">
+  return <aside className={`battle-panel battle-${battle.state} type-${battle.enemyType}${feedback ? ` hit-${feedback}` : ""}`} data-testid="battle-panel">
     <span className="battle-panel-kicker">BATALHA · {technology.toUpperCase()}</span>
     <div className="battle-arena" aria-label={`Você contra ${battle.enemyName}`}>
       <div className="battle-combatant battle-player"><PixelHero archetype={battle.archetype} /><strong>VOCÊ</strong><small>Nível {battle.playerLevel}</small></div>
       <b className="battle-vs">VS</b>
-      <div className="battle-combatant battle-enemy">{enemyAsset ? <Image src={enemyAsset} alt={`Sprite de ${battle.enemyName}`} width={154} height={174} /> : <div className={`pixel-enemy pixel-enemy-${battle.enemyType}`} aria-hidden="true"><i className="enemy-eye" /><i className="enemy-eye" /><i className="enemy-body" /><i className="enemy-crown" /></div>}<strong>{battle.enemyName}</strong><small>Nível {battle.enemyLevel}</small></div>
+      <div className="battle-combatant battle-enemy">{enemyAsset ? <Image src={enemyAsset} alt={`Sprite de ${battle.enemyName}`} width={190} height={210} /> : <div className={`pixel-enemy pixel-enemy-${battle.enemyType}`} aria-hidden="true"><i className="enemy-eye" /><i className="enemy-eye" /><i className="enemy-body" /><i className="enemy-crown" /></div>}<strong>{battle.enemyName}</strong><small>Nível {battle.enemyLevel}</small><div className="enemy-hp" data-testid="enemy-hp"><div><span>HP DO INIMIGO</span><b>{hp} / 100 HP</b></div><div className="enemy-hp-track" role="meter" aria-label={`${battle.enemyName} com ${hp} de 100 HP`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={hp}><i style={{ width: `${hp}%` }} /></div></div></div>
     </div>
-    <div className="enemy-hp" data-testid="enemy-hp"><div><span>HP DO INIMIGO</span><b>{hp} / 100 HP</b></div><div className="enemy-hp-track" role="meter" aria-label={`${battle.enemyName} com ${hp} de 100 HP`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={hp}><i style={{ width: `${hp}%` }} /></div></div>
     <section className="battle-objectives" data-testid="battle-objectives"><h2>◎ OBJETIVOS DA BATALHA</h2>{visibleResults.map((result) => <p className={result.passed ? "passed" : "pending"} key={result.name}><span>{result.passed ? "✓" : "○"}</span>{result.name}</p>)}</section>
     {hint ? <div className="battle-tip"><b>Dica:</b> {hint}</div> : null}
     {battle.state === "defeated" ? <div className="battle-state-overlay"><strong>DERROTADO</strong><p>Você ficou sem vidas nesta batalha.</p><button className="button" disabled={loading !== null} onClick={onRevive}>{loading === "revive" ? "RECUPERANDO…" : "TENTAR NOVAMENTE"}</button></div> : null}

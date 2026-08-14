@@ -17,6 +17,6 @@ export function CharacterSelect() {
 }
 
 export function PixelHero({ archetype, small = false }: { archetype: Archetype; small?: boolean }) {
-  if (archetype === "adventurer") return <div className={`pixel-hero${small ? " pixel-small" : ""}`} style={{ background: "center / contain no-repeat url('/characters/adventurer-male-v1.png')" }} aria-label="Aventureiro" />;
+  if (archetype === "adventurer") return <div className={`pixel-hero${small ? " pixel-small" : ""}`} style={{ background: "center / contain no-repeat url('/characters/adventurer-male-sprite-v2.png')" }} aria-label="Aventureiro" />;
   return <div className={`pixel-hero hero-${archetype}${small ? " pixel-small" : ""}`} aria-label="Aventureira"><i className="pixel-hair" /><i className="pixel-head" /><i className="pixel-body" /><i className="pixel-arm" /><i className="pixel-legs" /><i className="pixel-weapon" /></div>;
 }
