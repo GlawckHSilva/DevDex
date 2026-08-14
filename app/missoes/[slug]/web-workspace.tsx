@@ -34,7 +34,8 @@ export function WebWorkspace({ mission, initialBattle }: { mission: WebMission; 
       if (result.battle && battle) setBattle({ ...battle, ...result.battle });
       if (result.battle?.hint) setHint(result.battle.hint);
       if (response.ok && (mode === "run" || mode === "test")) setPreviewCode(code);
-      if (mode === "test") setFeedback(result.ok ? "enemy" : "player");
+      if (mode === "run" && result.results?.some((item) => item.passed)) setFeedback("enemy");
+      if (mode === "test") setFeedback(result.battle && battle && result.battle.lives < battle.lives ? "player" : result.ok || result.results?.some((item) => item.passed) ? "enemy" : "player");
     } catch { setSubmission({ ok: false, message: "Não foi possível validar o preview agora." }); }
     finally { setLoading(null); }
   }

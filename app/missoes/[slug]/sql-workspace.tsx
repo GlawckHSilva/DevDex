@@ -32,7 +32,8 @@ export function SqlWorkspace({ mission, initialBattle }: { mission: SqlMission; 
       if (mode === "run" || mode === "test") setSubmission(result);
       if (result.battle && battle) setBattle({ ...battle, ...result.battle });
       if (result.battle?.hint) setHint(result.battle.hint);
-      if (mode === "test") setFeedback(result.ok ? "enemy" : "player");
+      if (mode === "run" && result.results?.some((item) => item.passed)) setFeedback("enemy");
+      if (mode === "test") setFeedback(result.battle && battle && result.battle.lives < battle.lives ? "player" : result.ok || result.results?.some((item) => item.passed) ? "enemy" : "player");
     } catch { setSubmission({ ok: false, message: "Não foi possível consultar o banco agora." }); }
     finally { setLoading(null); }
   }

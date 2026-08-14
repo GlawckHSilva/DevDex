@@ -279,6 +279,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await page.keyboard.insertText("<main><h1>Oficina DevDex</h1></main>");
   await page.getByRole("button", { name: /Testar código/ }).click();
   await expect(page.getByTestId("enemy-hp")).toContainText("50 / 100 HP");
+  await expect(page.getByTestId("battle-panel")).toHaveClass(/hit-enemy/);
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
   await expect(page.getByTestId("battle-objectives").locator(".passed")).toHaveCount(1);
   await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
