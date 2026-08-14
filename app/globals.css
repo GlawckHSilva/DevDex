@@ -137,7 +137,7 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 @keyframes playerHit { 30% { transform:translateX(-7px); filter:sepia(1) saturate(3); } 60% { transform:translateX(5px); } }
 @keyframes heartDrop { 50% { transform:scale(1.18); } }
 @keyframes enemyDefeatShake { 18% { transform:translateX(11px); } 34% { transform:translateX(-9px); } 50% { transform:translateX(6px); } 68% { transform:translateX(-3px); } }
-@keyframes enemyDefeated { 0%,18% { filter:brightness(1.8) saturate(1.5) drop-shadow(0 0 18px #ff244d); } 32%,100% { filter:grayscale(1) brightness(.18) contrast(1.8) drop-shadow(0 0 11px #050914); opacity:.76; } }
+@keyframes enemyDefeated { 0%,12% { filter:brightness(0) saturate(100%) invert(24%) sepia(99%) saturate(6500%) hue-rotate(343deg) brightness(112%) contrast(120%) drop-shadow(0 0 22px #ff244d); } 20% { filter:brightness(1.8) saturate(1.5) drop-shadow(0 0 18px #ff244d); } 32%,100% { filter:grayscale(1) brightness(.18) contrast(1.8) drop-shadow(0 0 11px #050914); opacity:.76; } }
 @keyframes defeatSkull { 0% { opacity:0; transform:translate(-50%,-50%) scale(.35); } 22%,82% { opacity:1; transform:translate(-50%,-50%) scale(1); } 100% { opacity:.85; transform:translate(-50%,-50%) scale(.92); } }
 @keyframes victoryText { from { opacity:0; transform:translateY(7px) scale(.94); } to { opacity:1; transform:none; } }
 @media (max-width:1180px) { .battle-ide-layout { grid-template-columns:330px minmax(350px,1fr) minmax(330px,1fr); }.battle-page-header { padding-inline:22px; }.battle-action { min-width:145px; }.battle-action.attack { min-width:210px; } }
