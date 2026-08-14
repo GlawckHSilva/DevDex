@@ -219,7 +219,7 @@ export const battleEvents = sqliteTable("battle_events", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
   missionId: integer("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
   action: text("action", { enum: ["test", "attack", "research", "revive"] }).notNull(),
-  outcome: text("outcome", { enum: ["passed", "failed", "error", "shown", "reset"] }).notNull(),
+  outcome: text("outcome", { enum: ["passed", "progress", "failed", "error", "shown", "reset"] }).notNull(),
   livesAfter: integer("lives_after").notNull(),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [index("idx_battle_events_user_created").on(table.userId, table.createdAt)]);

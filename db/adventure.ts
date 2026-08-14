@@ -72,15 +72,15 @@ export async function getRecentBattleEventCount(userId: string, minutes = 5) {
   return row?.count ?? 0;
 }
 
-export async function recordBattleAction(userId: string, missionId: number, action: "test" | "attack", outcome: "passed" | "failed" | "error") {
+export async function recordBattleAction(userId: string, missionId: number, action: "test" | "attack", outcome: "passed" | "progress" | "failed" | "error") {
   const db = getDb();
   if (action === "attack") {
     await db.prepare(`UPDATE user_battles SET
-      lives=CASE WHEN ?='passed' THEN lives ELSE MAX(0,lives-1) END,
-      state=CASE WHEN ?='passed' THEN 'completed' WHEN lives<=1 THEN 'defeated' ELSE 'active' END,
-      defeats=defeats+CASE WHEN ?<>'passed' AND lives<=1 THEN 1 ELSE 0 END,
+      lives=CASE WHEN ? IN ('passed','progress') THEN lives ELSE MAX(0,lives-1) END,
+      state=CASE WHEN ?='passed' THEN 'completed' WHEN ? NOT IN ('passed','progress') AND lives<=1 THEN 'defeated' ELSE 'active' END,
+      defeats=defeats+CASE WHEN ? NOT IN ('passed','progress') AND lives<=1 THEN 1 ELSE 0 END,
       completed_at=CASE WHEN ?='passed' THEN COALESCE(completed_at,CURRENT_TIMESTAMP) ELSE completed_at END,
-      updated_at=CURRENT_TIMESTAMP WHERE user_id=? AND mission_id=?`).bind(outcome, outcome, outcome, outcome, userId, missionId).run();
+      updated_at=CURRENT_TIMESTAMP WHERE user_id=? AND mission_id=?`).bind(outcome, outcome, outcome, outcome, outcome, userId, missionId).run();
   }
   const state = await getBattleState(userId, missionId);
   if (!state) return null;

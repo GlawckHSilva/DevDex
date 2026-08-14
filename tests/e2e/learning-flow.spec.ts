@@ -280,12 +280,14 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await page.getByRole("button", { name: /Testar código/ }).click();
   await expect(page.getByTestId("enemy-hp")).toContainText("50 / 100 HP");
   await expect(page.getByTestId("battle-panel")).toHaveClass(/hit-enemy/);
+  await expect(page.locator(".battle-enemy img")).toHaveCSS("animation-name", "enemyDamageFlash");
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
   await expect(page.getByTestId("battle-objectives").locator(".passed")).toHaveCount(1);
   await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
   await page.getByRole("button", { name: /Atacar com a solução/ }).click();
-  await expect(page.getByLabel("2 vidas restantes")).toBeVisible();
+  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await expect(page.getByTestId("battle-panel")).toHaveClass(/hit-enemy/);
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByTestId("battle-panel")).toBeVisible();
   await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeVisible();

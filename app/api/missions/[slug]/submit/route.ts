@@ -64,15 +64,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
         maxLength: config.maxLength,
       });
       const passed = result.passed;
-      status = passed ? "passed" : "failed";
-      if (payload.mode === "run") return Response.json({ ok: true, message: passed ? "Código seguro; todos os critérios foram atendidos." : "Código seguro; alguns critérios ainda precisam de atenção.", results: result.results.map((item, index) => ({ name: `Critério ${index + 1}`, passed: item.passed })), battle: battle ? await recordBattleAction(user.userId, mission.id, "test", passed ? "passed" : "failed") : undefined });
       passedTests = result.results.filter((item) => item.passed).length;
       failedTests = result.results.length - passedTests;
+      const battleOutcome = passed ? "passed" : passedTests > 0 ? "progress" : "failed";
+      status = passed ? "passed" : "failed";
+      if (payload.mode === "run") return Response.json({ ok: true, message: passed ? "Código seguro; todos os critérios foram atendidos." : "Código seguro; alguns critérios ainda precisam de atenção.", results: result.results.map((item, index) => ({ name: `Critério ${index + 1}`, passed: item.passed })), battle: battle ? await recordBattleAction(user.userId, mission.id, "test", battleOutcome) : undefined });
       const progress = await recordAttempt(user.userId, mission, passed);
-      const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", passed ? "passed" : "failed") : null;
+      const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", battleOutcome) : null;
       return Response.json({
         ok: passed,
-        message: passed ? "Todos os critérios visuais foram atendidos." : "O preview ainda não atende a todos os critérios.",
+        message: passed ? "Todos os critérios visuais foram atendidos." : passedTests > 0 ? "Objetivo atingido; continue com os critérios restantes." : "O preview ainda não atende aos critérios.",
         results: result.results.map((item, index) => ({ name: `Critério ${index + 1}`, passed: item.passed })),
         battle: battleState,
         ...progress,
@@ -120,13 +121,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     const passed = results.every((result) => result.passed);
     passedTests = results.filter((result) => result.passed).length;
     failedTests = results.length - passedTests;
+    const battleOutcome = passed ? "passed" : passedTests > 0 ? "progress" : "failed";
     status = passed ? "passed" : "failed";
-    if (payload.mode === "run") return Response.json({ ok: true, compiled: true, message: passed ? "Código seguro; todos os testes passaram." : "Código seguro; alguns testes ainda falharam.", results: results.map((result, index) => ({ name: `Teste ${index + 1}`, passed: result.passed })), battle: battle ? await recordBattleAction(user.userId, mission.id, "test", passed ? "passed" : "failed") : undefined });
+    if (payload.mode === "run") return Response.json({ ok: true, compiled: true, message: passed ? "Código seguro; todos os testes passaram." : "Código seguro; alguns testes ainda falharam.", results: results.map((result, index) => ({ name: `Teste ${index + 1}`, passed: result.passed })), battle: battle ? await recordBattleAction(user.userId, mission.id, "test", battleOutcome) : undefined });
     const progress = await recordAttempt(user.userId, mission, passed);
-    const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", passed ? "passed" : "failed") : null;
+    const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", battleOutcome) : null;
     return Response.json({
       ok: passed,
-      message: passed ? "Todos os testes passaram." : "Alguns testes ainda falharam.",
+      message: passed ? "Todos os testes passaram." : passedTests > 0 ? "Objetivo atingido; continue com os testes restantes." : "Alguns testes ainda falharam.",
       results: results.map((result, index) => ({ name: `Teste ${index + 1}`, passed: result.passed })),
       battle: battleState,
       ...progress,
