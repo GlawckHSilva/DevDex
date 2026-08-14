@@ -1,11 +1,11 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { ensureUser, getMission, getMissionTests, getSqlMissionConfig, getWebMissionConfig, recordAttempt } from "@/db";
+import { ensureUser, getMission, getMissionTests, getSqlMissionConfig, getWebMissionConfig, recordAttempt, recordBattleAttack } from "@/db";
 import { getRecentSubmissionCount, recordSubmission, type SubmissionStatus } from "@/db/runner";
 import { JavaScriptRunnerAdapter } from "@/lib/runners/javascript-adapter";
 import { SqlRunnerAdapter, type SqlExpectedResult } from "@/lib/runners/sql-adapter";
 import { WebRunnerAdapter, type WebValidationRule } from "@/lib/runners/web-adapter";
 
-type Payload = { code?: string; mode?: "run" | "test" };
+type Payload = { code?: string; mode?: "run" | "test" | "attack" };
 const MAX_CODE_LENGTH = 12_000;
 const RATE_LIMIT = 20;
 
@@ -25,7 +25,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
 
   let payload: Payload;
   try { payload = await request.json() as Payload; } catch { return Response.json({ ok: false, message: "Envio inválido." }, { status: 400 }); }
-  if (typeof payload.code !== "string" || (payload.mode !== "run" && payload.mode !== "test")) return Response.json({ ok: false, message: "Código e modo são obrigatórios." }, { status: 400 });
+  if (typeof payload.code !== "string" || (payload.mode !== "run" && payload.mode !== "test" && payload.mode !== "attack")) return Response.json({ ok: false, message: "Código e modo são obrigatórios." }, { status: 400 });
+  if (payload.mode === "attack" && mission.runtime !== "javascript") return Response.json({ ok: false, message: "Esta batalha ainda não está disponível para este runtime." }, { status: 400 });
   if (payload.code.length > MAX_CODE_LENGTH) return Response.json({ ok: false, message: "O código excede 12.000 caracteres." }, { status: 413 });
   if (await getRecentSubmissionCount(user.userId) >= RATE_LIMIT) {
     return Response.json({ ok: false, message: "Muitas execuções. Tente novamente em alguns minutos." }, { status: 429, headers: { "Retry-After": "300" } });
@@ -109,16 +110,27 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     failedTests = results.length - passedTests;
     status = passed ? "passed" : "failed";
     const progress = await recordAttempt(user.userId, mission, passed);
+    const battle = payload.mode === "attack" ? await recordBattleAttack(user.userId, mission.slug, passed) : null;
     return Response.json({
       ok: passed,
       message: passed ? "Todos os testes passaram." : "Alguns testes ainda falharam.",
       results: results.map((result, index) => ({ name: `Teste ${index + 1}`, passed: result.passed })),
+      battle,
+      enemyHpPercent: passed ? 0 : Math.ceil((failedTests / Math.max(results.length, 1)) * 100),
       ...progress,
     });
   } catch (error) {
     errorType = error instanceof Error ? error.name : "UnknownError";
+    const message = error instanceof Error ? error.message : "Não foi possível avaliar o código.";
     if (payload.mode === "test") await recordAttempt(user.userId, mission, false);
-    return Response.json({ ok: false, message: error instanceof Error ? error.message : "Não foi possível avaliar o código." }, { status: 422 });
+    if (payload.mode === "attack") {
+      const [progress, battle] = await Promise.all([
+        recordAttempt(user.userId, mission, false),
+        recordBattleAttack(user.userId, mission.slug, false),
+      ]);
+      return Response.json({ ok: false, message, battle, enemyHpPercent: 100, ...progress }, { status: 422 });
+    }
+    return Response.json({ ok: false, message }, { status: 422 });
   } finally {
     await recordSubmission({ userId: user.userId, missionId: mission.id, mode: payload.mode, status, codeHash, runtime: mission.runtime, runnerVersion: mission.runnerVersion, durationMs: Date.now() - startedAt, passedTests, failedTests, resultRows, errorType }).catch(console.error);
   }

@@ -1,10 +1,10 @@
 # Project Status
 
-Atualizado em: 2026-08-13
+Atualizado em: 2026-08-14
 
 ## Situação
 
-Fase 1D concluída e publicada em Cloudflare Sites.
+Fase 1E concluída: primeira zona RPG sobre a infraestrutura educacional existente.
 
 ## Implementado
 
@@ -24,6 +24,12 @@ Fase 1D concluída e publicada em Cloudflare Sites.
 - Project Mode com To-do App em cinco etapas e três arquivos;
 - progresso de projeto próprio, XP idempotente e autosave local do código;
 - E2E de autenticação, persistência, isolamento, bloqueio e XP concorrente.
+- escolha persistente de avatar visual, separada de XP e progresso pedagógico;
+- mapa de jornada com JavaScript City · Foundations District e cinco nós ligados às missões JavaScript existentes;
+- encontros, elite e chefe com apresentação RPG; HP representa resultados dos requisitos/testes da missão;
+- TESTAR livre e ATACAR oficial separados; apenas ATACAR pode reduzir as três vidas persistidas no servidor;
+- derrota reinicia somente a batalha atual, sem apagar XP, progresso ou inimigos já derrotados;
+- DevDex Codex com pesquisa/documentação orientada, sem revelar a resposta da missão.
 
 ## Não implementado
 
@@ -32,4 +38,4 @@ Fase 1D concluída e publicada em Cloudflare Sites.
 
 ## Próxima tarefa
 
-Adicionar métricas agregadas e alertas de execução antes de Python.
+Expandir a próxima zona somente depois de medir retenção e qualidade da primeira campanha.

@@ -17,12 +17,13 @@ export default async function Dashboard() {
   return <main className="dashboard-shell">
     <aside className="sidebar">
       <a className="brand" href="/"><span className="brand-mark">D_</span>DevDex</a>
-      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Visão geral</a><a href="/projetos/lista-de-tarefas">▣ Project Mode</a><a href="/trilhas/html-fundamentals">◇ HTML</a><a href="/trilhas/css-fundamentals">◇ CSS</a><a href="/trilhas/javascript-fundamentals">◇ JavaScript</a><a href="/trilhas/sql-fundamentals-sqlite">◇ SQL · SQLite</a><span>☆ Conquistas</span></nav>
+      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Visão geral</a><a href="/jornada">◈ Jornada RPG</a><a href="/projetos/lista-de-tarefas">▣ Project Mode</a><a href="/trilhas/html-fundamentals">◇ HTML</a><a href="/trilhas/css-fundamentals">◇ CSS</a><a href="/trilhas/javascript-fundamentals">◇ JavaScript</a><a href="/trilhas/sql-fundamentals-sqlite">◇ SQL · SQLite</a><span>☆ Conquistas</span></nav>
       <a className="signout" href={chatGPTSignOutPath("/")}>Sair</a>
     </aside>
     <section className="dashboard-content">
       <header className="dashboard-top"><div><span className="kicker">CENTRAL DO AVENTUREIRO</span><h1>Olá, {user.displayName.split("@")[0]}.</h1></div><div className="level-chip"><small>NÍVEL {profile.level}</small><strong>{profile.totalXp} XP</strong></div></header>
       <div className="path-progress-grid">{paths.map((path) => <a className="progress-panel" href={`/trilhas/${path.slug}`} key={path.slug}><div><span>{path.name}</span><strong>{path.progress}%</strong></div><div className="progress-track"><i style={{ width: `${path.progress}%` }} /></div><small>{path.completed} de {path.total} missões concluídas</small></a>)}</div>
+      <section className="journey-cta"><div><span className="kicker">NOVA EXPERIÊNCIA</span><h2>JavaScript City está sob ataque.</h2><p>Aprenda enfrentando conceitos reais, com testes seguros, 3 vidas e chefes baseados em requisitos.</p></div><a className="button" href="/jornada">Abrir jornada →</a></section>
       <div className="mission-list-heading"><div><span className="kicker">PROJECTS</span><h2>Construa algo real</h2></div><span>{projects.length} projeto</span></div>
       <div className="project-card-grid">{projects.map((project) => <a className={`project-card state-${project.state}`} href={`/projetos/${project.slug}`} key={project.slug}><span>{project.state === "completed" ? "🏆 CONCLUÍDO" : "PROJECT MODE"}</span><h3>{project.title}</h3><p>{project.description}</p><div><small>{project.completedSteps}/{project.totalSteps} etapas</small><strong>{project.xpReward} XP</strong></div></a>)}</div>
       <div className="mission-list">

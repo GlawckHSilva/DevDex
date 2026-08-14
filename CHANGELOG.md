@@ -1,3 +1,13 @@
+## [0.8.0] — 2026-08-14
+
+### Added
+
+- primeira camada de RPG educacional: avatares, jornada, JavaScript City e mentor Dex;
+- cinco missões JavaScript apresentadas como encontros, elite e chefe;
+- três vidas persistidas no backend, histórico de ataques e reinício isolado da batalha;
+- modo `attack` separado do modo livre `run`, sem enfraquecer runners ou testes privados;
+- E2E do fluxo de avatar, TESTAR, ATACAR, derrota e persistência de XP.
+
 # Changelog
 
 ## [0.7.0] — 2026-08-13
