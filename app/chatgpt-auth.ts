@@ -7,7 +7,20 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const userId = requestHeaders.get("oai-authenticated-user-id");
   const email = requestHeaders.get("oai-authenticated-user-email");
-  if (!userId || !email) return null;
+  // SIWC headers are injected by the hosted environment. A local preview has
+  // no such proxy, so provide an explicitly development-only adventurer.
+  // Production never takes this path.
+  if (!userId || !email) {
+    if (process.env.NODE_ENV === "development") {
+      return {
+        userId: "local-dev-user",
+        email: "local@devdex.local",
+        fullName: "Aventureiro local",
+        displayName: "Aventureiro local",
+      };
+    }
+    return null;
+  }
   const encodedName = requestHeaders.get("oai-authenticated-user-full-name");
   const fullName = encodedName && requestHeaders.get("oai-authenticated-user-full-name-encoding") === "percent-encoded-utf-8" ? safeDecode(encodedName) : null;
   return { userId, email, fullName, displayName: fullName ?? email };
