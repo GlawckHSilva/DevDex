@@ -27,6 +27,8 @@ Public Beta v0.1 pronta para publicação em Cloudflare Sites.
 - acesso público com SIWC, limite configurável de participantes e administrador único;
 - painel administrativo com métricas agregadas de usuários, missões, runtimes e projetos;
 - status derivado do currículo publicado e favicon configurado.
+- primeira zona RPG com personagem, mapa, cinco batalhas, três vidas, pesquisa, elite e chefe;
+- telemetria de batalhas, derrotas, vidas perdidas, pesquisas e tempo de conclusão.
 
 ## Não implementado
 
@@ -35,4 +37,4 @@ Public Beta v0.1 pronta para publicação em Cloudflare Sites.
 
 ## Próxima tarefa
 
-Executar a beta com 3–10 pessoas e consolidar o loop RPG a partir dos dados coletados.
+Testar a primeira zona RPG e ajustar dificuldade, dicas e ritmo a partir das métricas.

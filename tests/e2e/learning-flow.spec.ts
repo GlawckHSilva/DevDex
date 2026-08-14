@@ -49,6 +49,35 @@ test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ pa
   await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/);
 });
 
+test("escolhe personagem e vence a primeira batalha com três vidas", async ({ page, request }) => {
+  const userId = "rpg-user";
+  const headers = userHeaders(userId);
+  await page.setExtraHTTPHeaders(headers);
+  await page.goto("/aventura");
+  await expect(page.getByTestId("character-select")).toBeVisible();
+  const character = await request.post("/api/character", { headers, data: { archetype: "adventuress" } });
+  expect(await character.json()).toMatchObject({ ok: true, character: { archetype: "adventuress" } });
+  await page.goto("/aventura");
+  await expect(page.getByRole("heading", { name: "O código despertou criaturas antigas." })).toBeVisible();
+  await expect(page.getByText("Slime da Sintaxe")).toBeVisible();
+  await page.goto("/missoes/guardar-nome");
+  await expect(page.getByTestId("battle-workspace")).toBeVisible();
+  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+
+  const action = (mode: "test" | "research" | "revive", code = "") => request.post("/api/missions/guardar-nome/submit", { headers, data: { mode, code } });
+  const research = await action("research");
+  expect(await research.json()).toMatchObject({ ok: true, battle: { lives: 3, state: "active" } });
+  for (const lives of [2, 1, 0]) {
+    const failed = await action("test", "function criarSaudacao() { return ''; }");
+    expect(await failed.json()).toMatchObject({ ok: false, battle: { lives } });
+  }
+  expect((await action("test", solution)).status()).toBe(409);
+  expect(await (await action("revive")).json()).toMatchObject({ ok: true, battle: { lives: 3, state: "active" } });
+  expect(await (await action("test", solution)).json()).toMatchObject({ ok: true, gainedXp: 100, battle: { state: "completed" } });
+  await page.goto("/aventura");
+  await expect(page.getByText("1/5 inimigos vencidos")).toBeVisible();
+});
+
 test("percorre trilha, conclui missão e persiste apó novo login", async ({ browser, page, request }) => {
   const userId = "journey-user";
   await page.setExtraHTTPHeaders(userHeaders(userId));

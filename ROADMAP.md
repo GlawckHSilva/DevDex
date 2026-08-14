@@ -46,9 +46,17 @@ Primeiro fluxo vertical JavaScript:
 
 ## Próximo
 
-- beta assistida com 3–10 pessoas;
-- consolidar personagem, zona inicial e loop de batalha;
-- instrumentar vidas, PESQUISAR, inimigos, elites e bosses quando essas ações existirem.
+- testar a primeira zona RPG com usuários reais;
+- ajustar vidas, PESQUISAR, inimigos, elite e chefe com base nas métricas;
+- preparar a segunda zona somente após validar o loop.
+
+## Implementado — RPG Zone 01
+
+- escolha persistente entre aventureiro e aventureira;
+- mapa do Bosque dos Fundamentos com cinco batalhas JavaScript;
+- três vidas, TESTAR, ATACAR, PESQUISAR e renascimento;
+- Mago das Funções como elite e Hidra dos Arrays como chefe;
+- métricas agregadas de vitórias, derrotas, vidas, pesquisa e duração.
 
 ## Implementado — Fase 1D
 

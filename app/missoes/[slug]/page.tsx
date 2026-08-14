@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
-import { getMission, getSqlMissionConfig, getWebMissionConfig } from "@/db";
+import { getBattle, getCharacter, getMission, getSqlMissionConfig, getWebMissionConfig } from "@/db";
 import { MissionWorkspace } from "./workspace";
 import { SqlWorkspace } from "./sql-workspace";
 import { WebWorkspace } from "./web-workspace";
@@ -20,6 +20,8 @@ async function MissionContent({ slug }: { slug: string }) {
 
   const sqlConfig = mission.runtime === "sqlite" ? await getSqlMissionConfig(mission.id) : null;
   const webConfig = mission.runtime === "html" || mission.runtime === "css" ? await getWebMissionConfig(mission.id) : null;
+  const character = mission.runtime === "javascript" ? await getCharacter(user.userId) : null;
+  const battle = character ? await getBattle(user.userId, mission.id, mission.state === "completed") : null;
   if (mission.runtime === "sqlite" && !sqlConfig) notFound();
   if ((mission.runtime === "html" || mission.runtime === "css") && !webConfig) notFound();
   const isSql = sqlConfig !== null;
@@ -29,6 +31,6 @@ async function MissionContent({ slug }: { slug: string }) {
     <header className="workspace-header"><a className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</a><div><small>{pathLabel}</small><strong>{mission.title}</strong></div><span className="workspace-xp">+{mission.xpReward} XP</span></header>
     {sqlConfig ? <SqlWorkspace mission={{ slug: mission.slug, title: mission.title, briefing: mission.briefing, objective: mission.objective, starterSql: sqlConfig.starterSql, completed: mission.state === "completed", nextMissionSlug: mission.nextMissionSlug, dialect: sqlConfig.dialect, tableSchema: JSON.parse(sqlConfig.tableSchemaJson), tablePreview: JSON.parse(sqlConfig.tablePreviewJson) }} />
       : webConfig ? <WebWorkspace mission={{ slug: mission.slug, title: mission.title, briefing: mission.briefing, objective: mission.objective, starterCode: webConfig.starterCode, completed: mission.state === "completed", nextMissionSlug: mission.nextMissionSlug, documentType: webConfig.documentType, previewHtml: webConfig.previewHtml, previewCss: webConfig.previewCss }} />
-      : <MissionWorkspace mission={{ slug: mission.slug, title: mission.title, briefing: mission.briefing, objective: mission.objective, starterCode: mission.starterCode, functionName: mission.functionName, completed: mission.state === "completed", nextMissionSlug: mission.nextMissionSlug }} />}
+      : <MissionWorkspace mission={{ slug: mission.slug, title: mission.title, briefing: mission.briefing, objective: mission.objective, starterCode: mission.starterCode, functionName: mission.functionName, completed: mission.state === "completed", nextMissionSlug: mission.nextMissionSlug }} initialBattle={battle ? { enemyName: battle.enemyName, enemyType: battle.enemyType, enemyLevel: battle.enemyLevel, lives: battle.lives, state: battle.state, archetype: character!.archetype } : undefined} />}
   </main>;
 }

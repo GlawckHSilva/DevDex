@@ -3,6 +3,7 @@ import { getDb } from "./client";
 type Summary = { totalUsers: number; activeUsers7d: number; missionStarts: number; missionCompletions: number; submissions: number; runnerErrors: number; averageDurationMs: number };
 type MissionMetric = { title: string; runtime: string; attempts: number; defeats: number; errors: number; completions: number; averageDurationMs: number };
 type RuntimeMetric = { runtime: string; attempts: number; errors: number; averageDurationMs: number };
+type BattleMetric = { enemyName: string; enemyType: string; battles: number; victories: number; defeats: number; researches: number; averageLivesLost: number; averageDurationSeconds: number };
 
 export async function getPublicStatus() {
   const db = getDb();
@@ -18,7 +19,7 @@ export async function getPublicStatus() {
 
 export async function getAdminMetrics() {
   const db = getDb();
-  const [summary, missions, runtimes, projects] = await Promise.all([
+  const [summary, missions, runtimes, projects, battles] = await Promise.all([
     db.prepare(`SELECT
       (SELECT COUNT(*) FROM profiles) AS totalUsers,
       (SELECT COUNT(*) FROM profiles WHERE updated_at>=datetime('now','-7 days')) AS activeUsers7d,
@@ -42,11 +43,19 @@ export async function getAdminMetrics() {
       COALESCE(SUM(CASE WHEN status='error' THEN 1 ELSE 0 END),0) AS errors,
       COALESCE(SUM(CASE WHEN status='passed' THEN 1 ELSE 0 END),0) AS passed,
       COALESCE(ROUND(AVG(duration_ms)),0) AS averageDurationMs FROM project_submissions`).first<{ attempts: number; errors: number; passed: number; averageDurationMs: number }>(),
+    db.prepare(`SELECT mbc.enemy_name AS enemyName,mbc.enemy_type AS enemyType,COUNT(ub.user_id) AS battles,
+      COALESCE(SUM(CASE WHEN ub.state='completed' THEN 1 ELSE 0 END),0) AS victories,
+      COALESCE(SUM(ub.defeats),0) AS defeats,COALESCE(SUM(ub.researches),0) AS researches,
+      COALESCE(ROUND(AVG(CASE WHEN ub.state='completed' THEN 3-ub.lives END),1),0) AS averageLivesLost,
+      COALESCE(ROUND(AVG(CASE WHEN ub.completed_at IS NOT NULL THEN (julianday(ub.completed_at)-julianday(ub.started_at))*86400 END)),0) AS averageDurationSeconds
+      FROM mission_battle_configs mbc LEFT JOIN user_battles ub ON ub.mission_id=mbc.mission_id
+      GROUP BY mbc.mission_id ORDER BY mbc.sort_order`).all<BattleMetric>(),
   ]);
   return {
     summary: summary ?? { totalUsers: 0, activeUsers7d: 0, missionStarts: 0, missionCompletions: 0, submissions: 0, runnerErrors: 0, averageDurationMs: 0 },
     missions: missions.results,
     runtimes: runtimes.results,
     projects: projects ?? { attempts: 0, errors: 0, passed: 0, averageDurationMs: 0 },
+    battles: battles.results,
   };
 }

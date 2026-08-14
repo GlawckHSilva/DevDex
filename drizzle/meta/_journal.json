@@ -50,6 +50,13 @@
       "when": 1786706757471,
       "tag": "0006_square_wallflower",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1786708567004,
+      "tag": "0007_cloudy_mandroid",
+      "breakpoints": true
     }
   ]
 }

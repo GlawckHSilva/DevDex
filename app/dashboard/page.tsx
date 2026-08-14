@@ -1,5 +1,5 @@
 import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
-import { getDashboard, getProjectSummaries } from "@/db";
+import { getAdventure, getDashboard, getProjectSummaries } from "@/db";
 import { isAdminEmail } from "@/lib/runtime-config";
 
 export const metadata = { title: "Dashboard" };
@@ -7,8 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
   const user = await requireChatGPTUser("/dashboard");
-  const { profile, missions } = await getDashboard(user);
-  const projects = await getProjectSummaries(user.userId);
+  const [{ profile, missions }, projects, adventure] = await Promise.all([getDashboard(user), getProjectSummaries(user.userId), getAdventure(user.userId)]);
   const paths = Object.values(Object.groupBy(missions, (mission) => mission.pathSlug ?? "trilha")).map((pathMissions) => {
     const items = pathMissions ?? [];
     const completed = items.filter((mission) => mission.state === "completed").length;
@@ -18,11 +17,12 @@ export default async function Dashboard() {
   return <main className="dashboard-shell">
     <aside className="sidebar">
       <a className="brand" href="/"><span className="brand-mark">D_</span>DevDex</a>
-      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Visão geral</a><a href="/projetos/lista-de-tarefas">▣ Project Mode</a><a href="/trilhas/html-fundamentals">◇ HTML</a><a href="/trilhas/css-fundamentals">◇ CSS</a><a href="/trilhas/javascript-fundamentals">◇ JavaScript</a><a href="/trilhas/sql-fundamentals-sqlite">◇ SQL · SQLite</a>{isAdminEmail(user.email) ? <a href="/admin/metricas">◉ Métricas</a> : null}<span>☆ Conquistas</span></nav>
+      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Visão geral</a><a href="/aventura">⚔ Aventura</a><a href="/projetos/lista-de-tarefas">▣ Project Mode</a><a href="/trilhas/html-fundamentals">◇ HTML</a><a href="/trilhas/css-fundamentals">◇ CSS</a><a href="/trilhas/javascript-fundamentals">◇ JavaScript</a><a href="/trilhas/sql-fundamentals-sqlite">◇ SQL · SQLite</a>{isAdminEmail(user.email) ? <a href="/admin/metricas">◉ Métricas</a> : null}<span>☆ Conquistas</span></nav>
       <a className="signout" href={chatGPTSignOutPath("/")}>Sair</a>
     </aside>
     <section className="dashboard-content">
       <header className="dashboard-top"><div><span className="kicker">CENTRAL DO AVENTUREIRO</span><h1>Olá, {user.displayName.split("@")[0]}.</h1></div><div className="level-chip"><small>NÍVEL {profile.level}</small><strong>{profile.totalXp} XP</strong></div></header>
+      <a className="adventure-banner" href="/aventura"><div><span className="kicker">ZONA 01 · RPG MODE</span><h2>Bosque dos Fundamentos</h2><p>{adventure.character ? `${adventure.nodes.filter((node) => node.missionState === "completed").length}/5 inimigos derrotados` : "Escolha seu personagem e comece a primeira batalha."}</p></div><span>JOGAR AGORA →</span></a>
       <div className="path-progress-grid">{paths.map((path) => <a className="progress-panel" href={`/trilhas/${path.slug}`} key={path.slug}><div><span>{path.name}</span><strong>{path.progress}%</strong></div><div className="progress-track"><i style={{ width: `${path.progress}%` }} /></div><small>{path.completed} de {path.total} missões concluídas</small></a>)}</div>
       <div className="mission-list-heading"><div><span className="kicker">PROJECTS</span><h2>Construa algo real</h2></div><span>{projects.length} projeto</span></div>
       <div className="project-card-grid">{projects.map((project) => <a className={`project-card state-${project.state}`} href={`/projetos/${project.slug}`} key={project.slug}><span>{project.state === "completed" ? "🏆 CONCLUÍDO" : "PROJECT MODE"}</span><h3>{project.title}</h3><p>{project.description}</p><div><small>{project.completedSteps}/{project.totalSteps} etapas</small><strong>{project.xpReward} XP</strong></div></a>)}</div>

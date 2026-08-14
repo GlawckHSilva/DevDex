@@ -147,6 +147,44 @@ export const betaMembers = sqliteTable("beta_members", {
   joinedAt: text("joined_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const userCharacters = sqliteTable("user_characters", {
+  userId: text("user_id").primaryKey().references(() => profiles.userId, { onDelete: "cascade" }),
+  archetype: text("archetype", { enum: ["adventurer", "adventuress"] }).notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const missionBattleConfigs = sqliteTable("mission_battle_configs", {
+  missionId: integer("mission_id").primaryKey().references(() => missions.id, { onDelete: "cascade" }),
+  zoneSlug: text("zone_slug").notNull(),
+  enemyName: text("enemy_name").notNull(),
+  enemyType: text("enemy_type", { enum: ["enemy", "elite", "boss"] }).notNull().default("enemy"),
+  enemyLevel: integer("enemy_level").notNull().default(1),
+  hint: text("hint").notNull(),
+  sortOrder: integer("sort_order").notNull(),
+}, (table) => [index("idx_battle_configs_zone_order").on(table.zoneSlug, table.sortOrder)]);
+
+export const userBattles = sqliteTable("user_battles", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  missionId: integer("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
+  state: text("state", { enum: ["active", "defeated", "completed"] }).notNull().default("active"),
+  lives: integer("lives").notNull().default(3),
+  researches: integer("researches").notNull().default(0),
+  defeats: integer("defeats").notNull().default(0),
+  startedAt: text("started_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  completedAt: text("completed_at"),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.missionId] })]);
+
+export const battleEvents = sqliteTable("battle_events", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  missionId: integer("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
+  action: text("action", { enum: ["test", "attack", "research", "revive"] }).notNull(),
+  outcome: text("outcome", { enum: ["passed", "failed", "error", "shown", "reset"] }).notNull(),
+  livesAfter: integer("lives_after").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [index("idx_battle_events_user_created").on(table.userId, table.createdAt)]);
+
 export const userLearningPaths = sqliteTable("user_learning_paths", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
   learningPathId: integer("learning_path_id").notNull().references(() => learningPaths.id),

@@ -5,6 +5,7 @@
 - Public Beta v0.1 com SIWC, limite de participantes e administrador único.
 - Métricas agregadas por missão, runtime e projeto sem armazenar código-fonte.
 - `/status` sincronizado com D1 e favicon configurado.
+- RPG Zone 01 com personagens, mapa, cinco inimigos, três vidas, pesquisa, elite e chefe.
 
 ## [0.7.0] — 2026-08-13
 

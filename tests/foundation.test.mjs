@@ -8,6 +8,7 @@ const sqlEngineUrl = new URL("../drizzle/0003_clammy_screwball.sql", import.meta
 const routeUrl = new URL("../app/api/missions/[slug]/submit/route.ts", import.meta.url);
 const betaUrl = new URL("../drizzle/0006_square_wallflower.sql", import.meta.url);
 const metricsUrl = new URL("../db/metrics.ts", import.meta.url);
+const rpgUrl = new URL("../drizzle/0007_cloudy_mandroid.sql", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
   const sql = await readFile(engineUrl, "utf8");
@@ -37,4 +38,13 @@ test("public beta caps admissions and exposes only aggregate metrics", async () 
   assert.match(beta, /CREATE TABLE `beta_members`/);
   assert.match(metrics, /AVG\(duration_ms\)/);
   assert.doesNotMatch(metrics, /starter_code|source_hash|code_hash/);
+});
+
+test("RPG zone persists isolated characters, lives and battle events", async () => {
+  const sql = await readFile(rpgUrl, "utf8");
+  assert.match(sql, /CREATE TABLE `user_characters`/);
+  assert.match(sql, /CREATE TABLE `user_battles`/);
+  assert.match(sql, /CREATE TABLE `battle_events`/);
+  assert.match(sql, /'Slime da Sintaxe'.*'Hidra dos Arrays'/s);
+  assert.doesNotMatch(sql, /source_code|student_code/);
 });
