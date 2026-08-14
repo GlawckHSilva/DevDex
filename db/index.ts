@@ -109,7 +109,7 @@ export async function recordAttempt(userId: string, mission: Mission, passed: bo
       db.prepare(`INSERT INTO user_skill_progress (user_id,skill_id,failed_attempts) VALUES (?,?,1)
         ON CONFLICT(user_id,skill_id) DO UPDATE SET failed_attempts=failed_attempts+1`).bind(userId, mission.skillId),
     ]);
-    return { gainedXp: 0, totalXp: null, unlockedSlug: null };
+    return { gainedXp: 0, totalXp: null, unlockedSlug: null, newlyCompleted: false };
   }
 
   const statements = [
@@ -128,8 +128,9 @@ export async function recordAttempt(userId: string, mission: Mission, passed: bo
   }
   const results = await db.batch(statements);
   const profile = await db.prepare("SELECT total_xp AS totalXp FROM profiles WHERE user_id=?").bind(userId).first<{ totalXp: number }>();
-  const gainedXp = results[1]?.meta?.changes === 1 ? mission.xpReward : 0;
-  return { gainedXp, totalXp: profile?.totalXp ?? 0, unlockedSlug: mission.nextMissionSlug };
+  const newlyCompleted = results[1]?.meta?.changes === 1;
+  const gainedXp = newlyCompleted ? mission.xpReward : 0;
+  return { gainedXp, totalXp: profile?.totalXp ?? 0, unlockedSlug: mission.nextMissionSlug, newlyCompleted };
 }
 
 export * from "./schema";

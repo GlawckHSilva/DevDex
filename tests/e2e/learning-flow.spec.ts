@@ -294,14 +294,34 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeVisible();
   await page.setViewportSize({ width: 1280, height: 900 });
 
+  await page.getByTestId("web-editor").locator(".monaco-editor").click();
+  await page.keyboard.press("Control+A");
+  await page.keyboard.insertText("<main><h1>Oficina DevDex</h1><p>Aprenda código na prática.</p></main>");
+  await page.getByRole("button", { name: /Atacar com a solução/ }).click();
+  await expect(page.getByTestId("enemy-hp")).toContainText("0 / 100 HP");
+  await expect(page.getByTestId("victory-sequence")).toContainText("INIMIGO DERROTADO");
+  await expect(page.getByTestId("victory-sequence")).toContainText("CONCLUÍDO");
+  await expect(page.getByTestId("victory-sequence")).toContainText("+100 XP");
+  await expect(page.locator(".battle-enemy img")).toHaveCSS("animation-name", "enemyDefeated");
+  await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/, { timeout: 5000 });
+  await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveAttribute("aria-label", /Concluída/);
+  await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveClass(/state-completed/);
+  await expect(page.getByTestId("map-node-navegacao-da-oficina")).toHaveAttribute("aria-label", /Disponível/);
+  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*39%;top:\s*38%/);
+
   const unsafe = await submit(request, "web-unsafe", "pagina-da-oficina", "<script>alert(1)</script>");
   expect(unsafe.status()).toBe(422);
   const wrong = await submit(request, "web-wrong", "pagina-da-oficina", "<h2>Oficina DevDex</h2>");
   expect(wrong.status()).toBe(200);
   expect(await wrong.json()).toMatchObject({ ok: false, gainedXp: 0 });
 
-  const html = await submit(request, userId, "pagina-da-oficina", "<main><h1>Oficina DevDex</h1><p>Aprenda código na prática.</p></main>");
-  expect(await html.json()).toMatchObject({ ok: true, gainedXp: 100, unlockedSlug: "navegacao-da-oficina" });
+  const review = await submit(request, userId, "pagina-da-oficina", "<main><h1>Oficina DevDex</h1><p>Aprenda código na prática.</p></main>");
+  expect(await review.json()).toMatchObject({ ok: true, gainedXp: 0, newlyCompleted: false, unlockedSlug: "navegacao-da-oficina" });
+  await page.goto("/missoes/pagina-da-oficina");
+  await expect(page.locator(".battle-victory-banner")).toContainText("REVISÃO");
+  await expect(page.getByTestId("victory-sequence")).toHaveCount(0);
+  await page.waitForTimeout(2800);
+  await expect(page).toHaveURL(/\/missoes\/pagina-da-oficina$/);
 
   await page.goto("/missoes/cores-do-cartao");
   await expect(page.getByTestId("web-editor")).toBeVisible();
@@ -311,6 +331,20 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByText("200 XP", { exact: true })).toBeVisible();
   await expect(page.locator(".campaign-card", { hasText: "Cidade da Lógica" }).getByText("0%", { exact: true })).toBeVisible();
   await expect(page.locator(".campaign-card", { hasText: "Minas dos Dados" }).getByText("0%", { exact: true })).toBeVisible();
+});
+
+test("backend ignora tentativa do frontend de forjar vitória e desbloqueio", async ({ page, request }) => {
+  const userId = "forged-victory";
+  await chooseCharacter(request, userId);
+  const response = await request.post("/api/missions/pagina-da-oficina/submit", {
+    headers: userHeaders(userId),
+    data: { mode: "test", code: "<div>incompleto</div>", newlyCompleted: true, gainedXp: 9999, unlockedSlug: "navegacao-da-oficina", battle: { state: "completed" } },
+  });
+  expect(await response.json()).toMatchObject({ ok: false, gainedXp: 0, newlyCompleted: false, unlockedSlug: null, battle: { state: "active" } });
+  await page.setExtraHTTPHeaders(userHeaders(userId));
+  await page.goto("/trilhas/html-fundamentals");
+  await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveAttribute("aria-label", /Em andamento/);
+  await expect(page.getByTestId("map-node-navegacao-da-oficina")).toHaveAttribute("aria-label", /Bloqueada/);
 });
 
 test("constrói um To-do App em cinco etapas com autosave local", async ({ page, request }) => {
