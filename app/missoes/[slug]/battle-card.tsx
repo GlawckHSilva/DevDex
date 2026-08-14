@@ -46,7 +46,7 @@ export function useBattleVictory(pathSlug: string, review: boolean) {
   const [victoryXp, setVictoryXp] = useState<number | null>(null);
   useEffect(() => {
     if (victoryXp === null) return;
-    const timer = window.setTimeout(() => window.location.assign(`/trilhas/${pathSlug}`), 2600);
+    const timer = window.setTimeout(() => window.location.assign(`/trilhas/${pathSlug}?victory=1`), 2600);
     return () => window.clearTimeout(timer);
   }, [pathSlug, victoryXp]);
   return {

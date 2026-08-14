@@ -109,6 +109,66 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 .theme-logic-city { --map-background:url('/campaigns/javascript/bosque-fundamentos-v1.png'); }
 .theme-data-mines { --map-cyan:#36e0bb; --map-purple:#47a9d8; --map-background:url('/campaigns/sql/arquivo-perdido-v1.png'); }
 .adventure-map-canvas { background-image:linear-gradient(#04101bbb,#06111bbf),var(--map-background); }
+.game-player-card .pixel-small { width:54px; height:68px; margin:0; transform:none; }
+
+/* Campaign RPG world map */
+.adventure-map-section { box-shadow:0 30px 90px #000a,inset 0 1px #ffffff09; }
+.adventure-map-canvas { isolation:isolate; min-height:650px; background-image:linear-gradient(90deg,#03101ac7 0,#0715228c 52%,#020711d6 100%),var(--map-background); background-position:center; background-size:cover; }
+.adventure-map-canvas::before { z-index:1; background:radial-gradient(ellipse at 38% 48%,transparent 0 22%,#0207115e 69%,#01040be8 100%),linear-gradient(180deg,#0207117d,transparent 18% 75%,#020711da); }
+.adventure-map-canvas::after { content:""; position:absolute; z-index:1; inset:0; background:repeating-linear-gradient(0deg,transparent 0 3px,#9cecff05 4px),radial-gradient(circle at 24% 18%,#3fe8e20d 0 1px,transparent 2px),radial-gradient(circle at 57% 31%,#b36aff12 0 1px,transparent 2px); background-size:auto,33px 39px,45px 53px; pointer-events:none; }
+.map-atmosphere { position:absolute; z-index:1; inset:-8%; background:radial-gradient(ellipse at 23% 63%,#1de1da18,transparent 25%),radial-gradient(ellipse at 66% 43%,#8b43d91b,transparent 29%),linear-gradient(112deg,transparent 40%,#6ce2ff08 50%,transparent 61%); filter:blur(12px); opacity:.85; pointer-events:none; animation:mapAtmosphere 13s ease-in-out infinite alternate; }
+.adventure-paths { z-index:2; }
+.adventure-paths path { stroke-width:4; stroke-linecap:round; }
+.adventure-paths .path-completed { stroke:#39e5dd; filter:drop-shadow(0 0 5px #2fe0da) drop-shadow(0 0 12px #2fe0da77); }
+.adventure-paths .path-available,.adventure-paths .path-in_progress { stroke:#a66aff; stroke-dasharray:5 11; filter:drop-shadow(0 0 5px #9a58f2) drop-shadow(0 0 13px #9a58f288); animation:mapEnergy 1.35s linear infinite; }
+.adventure-paths .path-locked { stroke:#3b4957; stroke-dasharray:3 13; opacity:.42; }
+.path-mobile { display:none; }
+.map-fog { position:absolute; z-index:6; inset:0; overflow:hidden; background:linear-gradient(90deg,transparent 0 calc(var(--fog-reveal) - 12%),#07101a5c var(--fog-reveal),#02060cdb calc(var(--fog-reveal) + 16%),#010309f2 100%); pointer-events:none; }
+.map-fog::after { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at var(--fog-reveal) 20%,#9b66cf10,transparent 22%),repeating-radial-gradient(ellipse at 80% 50%,#a2d9e807 0 8px,transparent 10px 28px); filter:blur(7px); animation:fogDrift 9s ease-in-out infinite alternate; }
+.map-fog i { position:absolute; right:2%; width:38%; height:28%; border-radius:50%; background:#b7dbea0a; filter:blur(25px); }.map-fog i:nth-child(1) { top:5%; }.map-fog i:nth-child(2) { top:38%; right:12%; }.map-fog i:nth-child(3) { top:70%; right:-4%; }
+.adventure-start { z-index:7; }.adventure-start>span { border-color:#64f5ec; background:#071b22; box-shadow:0 0 0 6px #2fe0da17,0 0 24px #2fe0da7d; }
+.adventure-map-node { z-index:7; width:148px; min-height:150px; color:#edf7fa; transition:opacity .2s,filter .2s,transform .2s; }
+.adventure-map-node:hover { transform:translate(-50%,-50%) scale(1.045); }
+.adventure-map-node:focus-visible { outline:2px solid #f4ffff; outline-offset:5px; border-radius:14px; }
+.map-node-encounter { position:relative; display:block; width:86px; height:89px; margin:0 auto 7px; }
+.map-enemy-silhouette { position:absolute; z-index:2; inset:5px 12px 15px; display:grid; place-items:center; border:2px solid #37ded8; border-radius:48% 48% 34% 34%; background:linear-gradient(145deg,#153d46,#08141b 64%); color:#d5ffff; box-shadow:inset -11px -8px #0007,0 0 18px #24d9d66b; font:800 20px var(--font-geist-mono); font-style:normal; }
+.map-node-pedestal { position:absolute; z-index:1; width:90px; height:20px; left:50%; bottom:2px; border:2px solid #315364; border-radius:50%; background:#07121a; transform:translateX(-50%); box-shadow:inset 0 5px #142635,0 0 16px #21d9d555; }
+.map-node-encounter>b { position:absolute; z-index:4; right:2px; top:0; display:grid; place-items:center; width:25px; height:25px; border:1px solid #6ef4ec; border-radius:50%; background:#07131be8; color:#5df0e7; box-shadow:0 0 12px #2fe0da99; font:900 13px var(--font-geist-mono); }
+.map-node-encounter.has-sprite .map-enemy-silhouette { inset:-9px 1px 9px; border:0; border-radius:0; background:url('/battles/enemies/espectro-do-esqueleto-v1.png') center bottom/contain no-repeat; box-shadow:none; filter:drop-shadow(0 0 8px #9f61ff99); }
+.adventure-map-node.type-bug .map-enemy-silhouette { border-color:#c275ff; background:radial-gradient(circle at 50% 34%,#9b5dd2,#36194f 60%,#11091a); box-shadow:inset -11px -8px #160820,0 0 23px #9a58f2a6; }
+.adventure-map-node.type-elite .map-enemy-silhouette { inset:-4px 7px 12px; border-color:#c3d3dd; background:linear-gradient(145deg,#62717b,#18232b 65%); box-shadow:inset -13px -9px #0b1015,0 0 21px #c8edff7a; }
+.adventure-map-node.type-boss { width:180px; min-height:190px; }.adventure-map-node.type-boss .map-node-encounter { width:130px; height:125px; }.adventure-map-node.type-boss .map-enemy-silhouette { inset:-3px 9px 17px; border:3px solid #b56cff; border-radius:45% 45% 22% 22%; background:radial-gradient(circle at 50% 24%,#654087,#1c102d 67%); box-shadow:inset -18px -14px #09040f,0 0 30px #9348e6bf; font-size:34px; }.adventure-map-node.type-boss .map-node-pedestal { width:136px; height:28px; border-color:#804bb2; box-shadow:inset 0 7px #251337,0 0 25px #9348e688; }
+.adventure-map-node>strong { display:block; overflow:hidden; margin:3px auto 0; color:#f2f7fb; font-size:10px; line-height:1.25; text-overflow:ellipsis; text-shadow:0 2px 4px #000; white-space:nowrap; }.adventure-map-node>small { display:block; overflow:hidden; margin:4px auto 0; color:#8ea5b5; font:9px var(--font-geist-mono); text-overflow:ellipsis; white-space:nowrap; }.adventure-map-node>em { display:block; margin-top:4px; color:#50deda; font:700 7px var(--font-geist-mono); font-style:normal; letter-spacing:.08em; }
+.adventure-map-node.state-completed .map-enemy-silhouette { filter:grayscale(.8) brightness(.55); }.adventure-map-node.state-completed .map-node-encounter.has-sprite .map-enemy-silhouette { filter:grayscale(.9) brightness(.45) drop-shadow(0 0 7px #2fe0da88); }.adventure-map-node.state-locked { filter:grayscale(.9) brightness(.55); opacity:.48; }.adventure-map-node.state-available .map-node-encounter,.adventure-map-node.state-in_progress .map-node-encounter { animation:mapPulse 2.2s ease-in-out infinite; }.adventure-map-node.current::before { content:"BATALHA ATUAL"; display:block; width:max-content; margin:0 auto 5px; padding:3px 6px; border:1px solid #a76aff66; border-radius:99px; background:#1e1033d9; color:#c998ff; font:700 6px var(--font-geist-mono); letter-spacing:.08em; }.adventure-map-node.selected .map-node-encounter { filter:drop-shadow(0 0 8px #efffff); }
+.map-player-position { z-index:10; transition:none; }.player-pedestal { position:relative; width:94px; height:31px; border:2px solid #40e9e2; border-radius:50%; background:#07151de8; box-shadow:inset 0 8px #17363d,0 0 0 7px #2fe0da15,0 0 24px #2fe0da9e; }.player-pedestal .pixel-hero { position:absolute; left:50%; bottom:-1px; transform:translateX(-50%) scale(.62)!important; transform-origin:bottom; margin:0; }.map-player-position>span { margin-top:8px; color:#6af8ef; font-size:8px; letter-spacing:.08em; }.map-player-position.arriving { animation:mapPlayerAdvance 1.55s cubic-bezier(.2,.72,.24,1) both; }.map-player-position.arriving .player-pedestal { animation:playerArrivalGlow 1.8s ease-out; }
+.map-unlock-toast { position:absolute; z-index:15; top:18px; left:50%; padding:10px 15px; border:1px solid #ac70ff88; border-radius:8px; background:#120c20e8; color:#d8bcff; box-shadow:0 8px 28px #0009,0 0 18px #9a58f244; font:800 9px var(--font-geist-mono); letter-spacing:.08em; transform:translateX(-50%); animation:unlockToast 3s both; }
+.adventure-legend { z-index:9; right:324px; background:#06101acf; backdrop-filter:blur(8px); }
+.mission-detail-panel { position:absolute; z-index:12; top:20px; right:20px; bottom:20px; width:285px; padding:20px; border:1px solid #314354; border-radius:12px; background:linear-gradient(160deg,#0b1721dc,#070d17ed); box-shadow:0 18px 55px #0009,inset 0 1px #ffffff0b; backdrop-filter:blur(12px); }.mission-detail-panel .detail-node-icon { width:54px; height:54px; margin:18px 0 19px; }.mission-detail-panel>small { color:#71879a; font:700 8px var(--font-geist-mono); letter-spacing:.08em; }.mission-detail-panel h3 { margin:7px 0 6px; font-size:22px; }.mission-detail-panel>strong { color:#50e3dd; }.mission-detail-panel>p { min-height:76px; margin:16px 0; font-size:12px; line-height:1.55; }.mission-detail-panel dl { margin:auto 0 17px; }.mission-detail-panel dl>div { padding:12px 0; }.mission-detail-panel .button { min-height:48px; padding-inline:9px; font-size:10px; }
+@keyframes mapEnergy { to { stroke-dashoffset:-32; } }
+@keyframes mapAtmosphere { to { transform:translate3d(2.5%,1%,0) scale(1.02); opacity:1; } }
+@keyframes fogDrift { to { transform:translate3d(-2%,1.5%,0) scale(1.03); } }
+@keyframes mapPlayerAdvance { from { left:var(--from-x); top:var(--from-y); opacity:.72; } 65% { filter:drop-shadow(0 0 15px #31e5df); } to { left:var(--to-x); top:var(--to-y); opacity:1; } }
+@keyframes playerArrivalGlow { 40% { box-shadow:inset 0 8px #17363d,0 0 0 13px #2fe0da22,0 0 38px #2fe0dacc; } }
+@keyframes unlockToast { 0%,100% { opacity:0; transform:translate(-50%,-8px); } 12%,82% { opacity:1; transform:translate(-50%,0); } }
+@media (max-width:1050px) and (min-width:761px) { .adventure-map-canvas { min-height:1050px; }.mission-detail-panel { top:665px; left:24px; right:24px; bottom:24px; width:auto; }.mission-detail-panel .detail-node-icon { float:left; margin:18px 20px 12px 0; }.adventure-legend { right:18px; bottom:18px; transform:translateY(-400px); } }
+@media (max-width:760px) {
+  .adventure-map-canvas { min-height:calc(var(--mobile-height) + 650px); background-position:43% top; }
+  .path-desktop { display:none; }.path-mobile { display:block; width:100%; height:var(--mobile-height); }
+  .map-fog { bottom:auto; height:var(--mobile-height); background:linear-gradient(180deg,transparent 0 calc(var(--fog-reveal) - 10%),#07101a66 var(--fog-reveal),#02060cdc calc(var(--fog-reveal) + 15%),#010309f2 100%); }
+  .adventure-map-canvas::after { inset:0; bottom:auto; width:auto; height:var(--mobile-height); border-radius:0; background:repeating-linear-gradient(0deg,transparent 0 3px,#9cecff05 4px),radial-gradient(circle at 24% 18%,#3fe8e20d 0 1px,transparent 2px),radial-gradient(circle at 57% 31%,#b36aff12 0 1px,transparent 2px); background-size:auto,33px 39px,45px 53px; box-shadow:none; }
+  .adventure-start { left:var(--mobile-x)!important; top:var(--mobile-y)!important; }
+  .map-player-position { left:var(--mobile-x)!important; top:var(--mobile-y)!important; }
+  .map-player-position.arriving { animation-name:mapPlayerAdvanceMobile; }
+  .adventure-map-node { left:var(--mobile-x)!important; top:var(--mobile-y)!important; }
+  .adventure-map-node:nth-of-type(n) { top:var(--mobile-y)!important; }
+  .adventure-map-node.type-boss { transform:translate(-50%,-50%) scale(.9); }.adventure-map-node.type-boss:hover { transform:translate(-50%,-50%) scale(.93); }
+  .adventure-legend { top:calc(var(--mobile-height) - 112px); right:10px; bottom:auto; }
+  .mission-detail-panel { top:var(--mobile-height); right:12px; bottom:18px; left:12px; width:auto; min-height:0; border:1px solid #314354; }
+  .mission-detail-panel .detail-node-icon { margin:18px 0; }
+  .map-unlock-toast { position:fixed; top:76px; width:max-content; max-width:calc(100vw - 30px); }
+  @keyframes mapPlayerAdvanceMobile { from { left:var(--mobile-from-x); top:var(--mobile-from-y); opacity:.72; } to { left:var(--mobile-to-x); top:var(--mobile-to-y); opacity:1; } }
+}
+@media (prefers-reduced-motion:reduce) { .map-atmosphere,.map-fog::after,.adventure-paths .path-available,.adventure-paths .path-in_progress,.adventure-map-node.state-available .map-node-encounter,.adventure-map-node.state-in_progress .map-node-encounter,.map-player-position.arriving,.map-player-position.arriving .player-pedestal,.map-unlock-toast { animation:none!important; }.map-unlock-toast { opacity:1; } }
 
 /* RPG battle IDE */
 .battle-page { height:100vh; overflow:hidden; background:#050914; }
