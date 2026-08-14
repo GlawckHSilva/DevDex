@@ -102,3 +102,10 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 .game-campaign-topbar>a:last-child { color:#94a5b6; font-size:12px; }
 .game-campaign-topbar>a:last-child:hover { color:#eef5fa; }
 @media (max-width:760px) { .game-campaign-topbar { padding-inline:4px; } }
+
+/* Campaign world variants */
+.theme-structure-ruins { --map-cyan:#f0a754; --map-purple:#c96f4d; --map-background:url('/campaigns/html/ruinas-da-estrutura-v1.png'); }
+.theme-style-realm { --map-cyan:#58a6ff; --map-purple:#e44bda; --map-background:url('/campaigns/css/distrito-sem-cor-v1.png'); }
+.theme-logic-city { --map-background:url('/campaigns/javascript/bosque-fundamentos-v1.png'); }
+.theme-data-mines { --map-cyan:#36e0bb; --map-purple:#47a9d8; --map-background:url('/campaigns/sql/arquivo-perdido-v1.png'); }
+.adventure-map-canvas { background-image:linear-gradient(#04101bbb,#06111bbf),var(--map-background); }

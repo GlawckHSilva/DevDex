@@ -6,17 +6,24 @@ import type { Archetype, CampaignNode, CampaignZone } from "@/db";
 
 type NodeState = "completed" | "available" | "in_progress" | "locked";
 type MapType = "enemy" | "bug" | "elite" | "boss";
-type LayoutNode = { type: MapType; title: string; x: number; y: number; icon: string; path: string };
-type SelectedNode = CampaignNode & LayoutNode & { state: NodeState; order: number; description: string; href: string | null };
+type LayoutNode = { x: number; y: number; path: string };
+type SelectedNode = CampaignNode & LayoutNode & { type: MapType; title: string; icon: string; state: NodeState; order: number; description: string; href: string | null };
 
 const MAP_LAYOUT: LayoutNode[] = [
-  { type: "enemy", title: "Variáveis", x: 22, y: 55, icon: "◇", path: "M90 410 C140 410 160 330 220 310" },
-  { type: "enemy", title: "Tipos", x: 39, y: 38, icon: "[]", path: "M220 310 C285 250 330 230 390 215" },
-  { type: "enemy", title: "Operadores", x: 49, y: 70, icon: "+", path: "M390 215 C430 250 435 380 490 390" },
-  { type: "bug", title: "Bug Battle", x: 63, y: 42, icon: "!", path: "M490 390 C550 385 560 245 630 235" },
-  { type: "elite", title: "Elite", x: 75, y: 68, icon: "✦", path: "M630 235 C680 255 690 365 750 380" },
+  { x: 22, y: 55, path: "M90 410 C140 410 160 330 220 310" },
+  { x: 39, y: 38, path: "M220 310 C285 250 330 230 390 215" },
+  { x: 49, y: 70, path: "M390 215 C430 250 435 380 490 390" },
+  { x: 63, y: 42, path: "M490 390 C550 385 560 245 630 235" },
+  { x: 75, y: 68, path: "M630 235 C680 255 690 365 750 380" },
+  { x: 89, y: 45, path: "M750 380 C815 380 825 280 890 255" },
 ];
-const BOSS_LAYOUT: LayoutNode = { type: "boss", title: "Boss", x: 89, y: 45, icon: "♛", path: "M750 380 C815 380 825 280 890 255" };
+const BOSS_LAYOUT: LayoutNode = { x: 89, y: 45, path: "M750 380 C815 380 825 280 890 255" };
+const CAMPAIGN_ICONS: Record<string, string[]> = {
+  "html-fundamentals": ["<>", "↗", "≡", "▣"],
+  "css-fundamentals": ["#", "↔", "▢", "☷"],
+  "javascript-fundamentals": ["◇", "[]", "+", "!", "✦"],
+  "sql-fundamentals-sqlite": ["▦", "?", "↑", "↔", "%", "∈"],
+};
 
 export function CampaignAdventureMap({ zone, archetype, boss, campaignPath }: {
   zone: CampaignZone;
@@ -26,15 +33,16 @@ export function CampaignAdventureMap({ zone, archetype, boss, campaignPath }: {
 }) {
   const nodes = useMemo<SelectedNode[]>(() => zone.nodes.map((node, index) => {
     const layout = MAP_LAYOUT[index] ?? MAP_LAYOUT.at(-1)!;
-    return { ...node, ...layout, order: index + 1, state: node.missionState, description: node.enemyIntro || node.battleDialogue, href: node.missionState === "locked" ? null : `/missoes/${node.missionSlug}` };
-  }), [zone.nodes]);
-  const bossNode = boss ? { ...BOSS_LAYOUT, order: nodes.length + 1, state: boss.state, description: "Construa uma aplicação real para restaurar o sistema central da zona.", href: boss.state === "locked" ? null : boss.href, missionSlug: "boss-project", missionTitle: boss.title, skillName: "Project Mode", xpReward: 720, enemyName: boss.title, enemyType: "boss" as const, enemyLevel: nodes.length + 1, enemyIntro: "", battleDialogue: "", sortOrder: nodes.length + 1, zoneId: zone.id, missionState: boss.state } : null;
+    const type = campaignPath === "javascript-fundamentals" && index === 3 ? "bug" : node.enemyType;
+    return { ...node, ...layout, type, title: node.skillName, icon: CAMPAIGN_ICONS[campaignPath]?.[index] ?? (type === "boss" ? "♛" : type === "elite" ? "✦" : "◇"), order: index + 1, state: node.missionState, description: node.enemyIntro || node.battleDialogue, href: node.missionState === "locked" ? null : `/missoes/${node.missionSlug}` };
+  }), [campaignPath, zone.nodes]);
+  const bossNode = boss ? { ...BOSS_LAYOUT, type: "boss" as const, title: "Boss", icon: "♛", order: nodes.length + 1, state: boss.state, description: "Construa uma aplicação real para restaurar o sistema central da zona.", href: boss.state === "locked" ? null : boss.href, missionSlug: "boss-project", missionTitle: boss.title, skillName: "Project Mode", xpReward: 720, enemyName: boss.title, enemyType: "boss" as const, enemyLevel: nodes.length + 1, enemyIntro: "", battleDialogue: "", sortOrder: nodes.length + 1, zoneId: zone.id, missionState: boss.state } : null;
   const allNodes = bossNode ? [...nodes, bossNode] : nodes;
   const initial = allNodes.find((node) => node.state === "available" || node.state === "in_progress") ?? allNodes.at(-1)!;
   const [selectedSlug, setSelectedSlug] = useState(initial.missionSlug);
   const selected = allNodes.find((node) => node.missionSlug === selectedSlug) ?? initial;
   const completed = nodes.filter((node) => node.state === "completed").length;
-  const playerPosition = completed === 0 ? { x: 8, y: 73 } : completed < nodes.length ? MAP_LAYOUT[completed] : BOSS_LAYOUT;
+  const playerPosition = completed === 0 ? { x: 8, y: 73 } : completed < nodes.length ? MAP_LAYOUT[completed] : bossNode ? BOSS_LAYOUT : MAP_LAYOUT[nodes.length - 1];
 
   return <section className="adventure-map-section" id="mapa" data-testid="campaign-map">
     <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona 01 — {zone.title}</h2><p>{zone.storyIntro}</p></div><a href={`#${campaignPath}`}>Ver zonas</a></header>

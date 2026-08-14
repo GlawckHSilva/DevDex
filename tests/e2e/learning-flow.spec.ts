@@ -160,16 +160,16 @@ test("alterna entre campanhas sem bloquear tecnologias independentes", async ({ 
   const userId = "campaign-switch-user";
   await chooseCharacter(request, userId);
   await page.setExtraHTTPHeaders(userHeaders(userId));
-  for (const [path, title] of [
-    ["html-fundamentals", "Crônicas da Estrutura"],
-    ["sql-fundamentals-sqlite", "Minas dos Dados"],
-    ["javascript-fundamentals", "Cidade da Lógica"],
-    ["css-fundamentals", "Reino dos Estilos"],
+  for (const [path, title, theme] of [
+    ["html-fundamentals", "Crônicas da Estrutura", "theme-structure-ruins"],
+    ["sql-fundamentals-sqlite", "Minas dos Dados", "theme-data-mines"],
+    ["javascript-fundamentals", "Cidade da Lógica", "theme-logic-city"],
+    ["css-fundamentals", "Reino dos Estilos", "theme-style-realm"],
   ]) {
     await page.goto(`/trilhas/${path}`);
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
-    if (path === "javascript-fundamentals") await expect(page.getByTestId("campaign-map")).toBeVisible();
-    else await expect(page.getByText("Enfrentar →").first()).toBeVisible();
+    await expect(page.locator(`main.${theme}`)).toBeVisible();
+    await expect(page.getByTestId("campaign-map")).toBeVisible();
   }
 });
 
