@@ -3,6 +3,7 @@
 import { PixelHero } from "@/app/aventura/character-select";
 import type { Archetype } from "@/db";
 import Image from "next/image";
+import type { CSSProperties } from "react";
 
 export type BattleView = { enemyName: string; enemyType: "enemy" | "elite" | "boss"; enemyLevel: number; playerLevel: number; lives: number; state: "active" | "defeated" | "completed"; archetype: Archetype };
 export type BattleResultItem = { name: string; passed: boolean };
@@ -11,6 +12,12 @@ export type BattleFeedback = "enemy" | "player" | null;
 
 const ENEMY_ASSETS: Record<string, string> = {
   "Espectro do Esqueleto": "/battles/enemies/espectro-do-esqueleto-v1.png",
+};
+const ARENA_ASSETS: Record<string, string> = {
+  HTML: "/campaigns/html/ruinas-da-estrutura-v1.png",
+  CSS: "/campaigns/css/distrito-sem-cor-v1.png",
+  JAVASCRIPT: "/campaigns/javascript/bosque-fundamentos-v1.png",
+  SQL: "/campaigns/sql/arquivo-perdido-v1.png",
 };
 
 export function BattleHeader({ battle, pathSlug, pathLabel, title, xpReward }: { battle?: BattleView; pathSlug: string; pathLabel: string; title: string; xpReward: number }) {
@@ -36,10 +43,11 @@ export function BattlePanel({ battle, technology, objective, results, hint, feed
   const passed = results?.filter((result) => result.passed).length ?? 0;
   const hp = battle.state === "completed" ? 0 : results?.length ? Math.round((results.length - passed) / results.length * 100) : 100;
   const enemyAsset = ENEMY_ASSETS[battle.enemyName];
+  const arenaAsset = ARENA_ASSETS[technology.toUpperCase()];
 
   return <aside className={`battle-panel battle-${battle.state} type-${battle.enemyType}${feedback ? ` hit-${feedback}` : ""}`} data-testid="battle-panel">
     <span className="battle-panel-kicker">BATALHA · {technology.toUpperCase()}</span>
-    <div className="battle-arena" aria-label={`Você contra ${battle.enemyName}`}>
+    <div className="battle-arena" style={arenaAsset ? { "--battle-arena-image": `url('${arenaAsset}')` } as CSSProperties : undefined} aria-label={`Você contra ${battle.enemyName}`}>
       <div className="battle-combatant battle-player"><PixelHero archetype={battle.archetype} /><strong>VOCÊ</strong><small>Nível {battle.playerLevel}</small></div>
       <b className="battle-vs">VS</b>
       <div className="battle-combatant battle-enemy">{enemyAsset ? <Image src={enemyAsset} alt={`Sprite de ${battle.enemyName}`} width={190} height={210} /> : <div className={`pixel-enemy pixel-enemy-${battle.enemyType}`} aria-hidden="true"><i className="enemy-eye" /><i className="enemy-eye" /><i className="enemy-body" /><i className="enemy-crown" /></div>}<strong>{battle.enemyName}</strong><small>Nível {battle.enemyLevel}</small><div className="enemy-hp" data-testid="enemy-hp"><div><span>HP DO INIMIGO</span><b>{hp} / 100 HP</b></div><div className="enemy-hp-track" role="meter" aria-label={`${battle.enemyName} com ${hp} de 100 HP`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={hp}><i style={{ width: `${hp}%` }} /></div></div></div>

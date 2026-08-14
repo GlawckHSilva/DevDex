@@ -261,6 +261,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByRole("heading", { name: "Crônicas da Estrutura" })).toBeVisible();
   await page.goto("/missoes/pagina-da-oficina");
   await expect(page.getByTestId("web-editor")).toBeVisible();
+  await expect(page.locator(".battle-arena")).toHaveAttribute("style", /ruinas-da-estrutura-v1/);
   await expect(page.getByText("Espectro do Esqueleto", { exact: true })).toBeVisible();
   await expect(page.getByTestId("enemy-hp")).toContainText("100 / 100 HP");
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
