@@ -124,3 +124,4 @@ export async function recordAttempt(userId: string, mission: Mission, passed: bo
 
 export * from "./schema";
 export * from "./projects";
+export * from "./gameplay";

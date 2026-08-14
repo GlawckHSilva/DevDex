@@ -195,3 +195,33 @@ test("constrói um To-do App em cinco etapas com autosave local", async ({ page,
   await expect(page.locator("header").getByText("720 XP", { exact: true })).toBeVisible();
   await expect(page.getByText("🏆 CONCLUÍDO")).toBeVisible();
 });
+
+test("batalhas separam testar de atacar e reiniciam somente o encontro", async ({ page, request }) => {
+  const userId = "battle-user";
+  const headers = userHeaders(userId);
+  const choose = await request.post("/api/player/avatar", { headers, data: { avatarId: "nova" } });
+  expect(choose.status()).toBe(200);
+  await page.setExtraHTTPHeaders(headers);
+  await page.goto("/jornada");
+  await expect(page.getByText("JavaScript City · Foundations District")).toBeVisible();
+  await page.getByRole("link", { name: /Variable Scout/ }).click();
+  await expect(page.getByRole("button", { name: /TESTAR/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /ATACAR/ })).toBeVisible();
+
+  const experimental = await request.post("/api/missions/guardar-nome/submit", { headers, data: { mode: "run", code: "function criarSaudacao(){ return ''; }" } });
+  expect(experimental.status()).toBe(200);
+  expect((await experimental.json()).battle).toBeUndefined();
+
+  for (const lives of [2, 1]) {
+    const response = await request.post("/api/missions/guardar-nome/submit", { headers, data: { mode: "attack", code: "function criarSaudacao(){ return ''; }" } });
+    expect(response.status()).toBe(200);
+    expect((await response.json()).battle).toMatchObject({ lives, defeated: false });
+  }
+  const defeat = await request.post("/api/missions/guardar-nome/submit", { headers, data: { mode: "attack", code: "function criarSaudacao(){ return ''; }" } });
+  expect((await defeat.json()).battle).toMatchObject({ lives: 0, defeated: true, nextBattleLives: 3 });
+
+  const victory = await request.post("/api/missions/guardar-nome/submit", { headers, data: { mode: "attack", code: solution } });
+  expect((await victory.json())).toMatchObject({ ok: true, gainedXp: 100, battle: { lives: 3, defeated: false } });
+  await page.goto("/dashboard");
+  await expect(page.getByText("100 XP", { exact: true })).toBeVisible();
+});

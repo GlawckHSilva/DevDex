@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
-import { ensureUser, getMission, getSqlMissionConfig, getWebMissionConfig } from "@/db";
+import { ensureUser, getBattlePresentation, getMission, getPlayerProfile, getSqlMissionConfig, getWebMissionConfig } from "@/db";
+import { BattleWorkspace } from "./battle-workspace";
 import { MissionWorkspace } from "./workspace";
 import { SqlWorkspace } from "./sql-workspace";
 import { WebWorkspace } from "./web-workspace";
@@ -21,10 +22,14 @@ async function MissionContent({ slug }: { slug: string }) {
 
   const sqlConfig = mission.runtime === "sqlite" ? await getSqlMissionConfig(mission.id) : null;
   const webConfig = mission.runtime === "html" || mission.runtime === "css" ? await getWebMissionConfig(mission.id) : null;
+  const playerProfile = await getPlayerProfile(user.userId);
+  const battle = mission.runtime === "javascript" && playerProfile?.avatarId ? await getBattlePresentation(user.userId, mission.slug) : null;
   if (mission.runtime === "sqlite" && !sqlConfig) notFound();
   if ((mission.runtime === "html" || mission.runtime === "css") && !webConfig) notFound();
   const isSql = sqlConfig !== null;
   const pathLabel = isSql ? "SQL FUNDAMENTALS · SQLITE" : webConfig ? `${webConfig.documentType.toUpperCase()} FUNDAMENTALS` : "JAVASCRIPT FUNDAMENTALS";
+
+  if (battle) return <main className="battle-shell"><BattleWorkspace mission={{ slug: mission.slug, title: mission.title, briefing: mission.briefing, objective: mission.objective, starterCode: mission.starterCode, functionName: mission.functionName, xpReward: mission.xpReward }} battle={{ zoneName: battle.zone.name, kind: battle.node.kind, enemyName: battle.node.enemyName, enemyClass: battle.node.enemyClass, enemySprite: battle.node.enemySprite, mentorBrief: battle.node.mentorBrief, lives: battle.node.lives }} /></main>;
 
   return <main className="workspace-page">
     <header className="workspace-header"><a className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</a><div><small>{pathLabel}</small><strong>{mission.title}</strong></div><span className="workspace-xp">+{mission.xpReward} XP</span></header>

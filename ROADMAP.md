@@ -1,3 +1,12 @@
+## Implementado — Fase 1E · RPG educacional
+
+- perfil visual do jogador e dois avatares iniciais, sem acoplamento ao currículo;
+- JavaScript City · Foundations District como primeira zona jogável;
+- cinco missões JavaScript apresentadas como três encontros, uma elite e um chefe;
+- batalha de três vidas, backend como fonte de verdade, e reinício isolado do encontro;
+- TESTAR experimental separado de ATACAR, que realiza a validação oficial;
+- jornada visual, mentor Dex e acesso contextual à documentação.
+
 # Roadmap
 
 ## Implementado — Fase 0

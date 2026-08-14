@@ -142,6 +142,62 @@ export const profiles = sqliteTable("profiles", {
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Gameplay is deliberately a presentation layer over the existing curriculum.
+// A player's visual avatar never changes their pedagogical progress.
+export const playerProfiles = sqliteTable("player_profiles", {
+  userId: text("user_id").primaryKey().references(() => profiles.userId, { onDelete: "cascade" }),
+  avatarId: text("avatar_id", { enum: ["nova", "kai"] }),
+  mentorSeen: integer("mentor_seen", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const gameZones = sqliteTable("game_zones", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  slug: text("slug").notNull().unique(),
+  learningPathId: integer("learning_path_id").notNull().references(() => learningPaths.id),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  theme: text("theme").notNull().default("javascript-city"),
+  sortOrder: integer("sort_order").notNull(),
+  status: text("status", { enum: ["draft", "published", "deprecated"] }).notNull().default("published"),
+});
+
+export const gameZoneNodes = sqliteTable("game_zone_nodes", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  zoneId: integer("zone_id").notNull().references(() => gameZones.id, { onDelete: "cascade" }),
+  missionId: integer("mission_id").references(() => missions.id, { onDelete: "cascade" }),
+  projectId: integer("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  slug: text("slug").notNull().unique(),
+  kind: text("kind", { enum: ["enemy", "elite", "boss", "checkpoint"] }).notNull(),
+  title: text("title").notNull(),
+  enemyName: text("enemy_name").notNull(),
+  enemyClass: text("enemy_class").notNull(),
+  enemySprite: text("enemy_sprite").notNull().default("bug-hacker"),
+  mentorBrief: text("mentor_brief").notNull().default(""),
+  sortOrder: integer("sort_order").notNull(),
+}, (table) => [index("idx_game_zone_nodes_zone_order").on(table.zoneId, table.sortOrder)]);
+
+// The server owns this ephemeral battle state. It is intentionally separate
+// from mission progress so a defeat can restart only the active encounter.
+export const userBattleStates = sqliteTable("user_battle_states", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  nodeId: integer("node_id").notNull().references(() => gameZoneNodes.id, { onDelete: "cascade" }),
+  lives: integer("lives").notNull().default(3),
+  failedInBattle: integer("failed_in_battle").notNull().default(0),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.nodeId] })]);
+
+export const battleAttempts = sqliteTable("battle_attempts", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  nodeId: integer("node_id").notNull().references(() => gameZoneNodes.id, { onDelete: "cascade" }),
+  status: text("status", { enum: ["passed", "failed"] }).notNull(),
+  livesBefore: integer("lives_before").notNull(),
+  livesAfter: integer("lives_after").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [index("idx_battle_attempts_user_node").on(table.userId, table.nodeId, table.createdAt)]);
+
 export const userLearningPaths = sqliteTable("user_learning_paths", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
   learningPathId: integer("learning_path_id").notNull().references(() => learningPaths.id),
@@ -221,7 +277,7 @@ export const submissions = sqliteTable("submissions", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
   missionId: integer("mission_id").notNull().references(() => missions.id),
-  mode: text("mode", { enum: ["run", "test"] }).notNull(),
+  mode: text("mode", { enum: ["run", "test", "attack"] }).notNull(),
   status: text("status", { enum: ["passed", "failed", "error"] }).notNull(),
   codeHash: text("code_hash").notNull(),
   runtime: text("runtime").notNull().default("javascript"),

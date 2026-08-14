@@ -1,6 +1,6 @@
 import { getDb } from "./client";
 
-export type SubmissionMode = "run" | "test";
+export type SubmissionMode = "run" | "test" | "attack";
 export type SubmissionStatus = "passed" | "failed" | "error";
 export const RUNNER_VERSION = "javascript-quickjs-1";
 

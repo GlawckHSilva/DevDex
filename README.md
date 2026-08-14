@@ -4,7 +4,7 @@ Plataforma gamificada para aprender programação escrevendo, executando, testan
 
 ## Estado
 
-Fase 1D concluída: quatro motores e Project Mode funcionam ponta a ponta com autenticação, sandboxes, XP idempotente e desbloqueio.
+Fase 1E concluída: o currículo existente ganhou uma camada de RPG educacional, sem alterar os motores, sandboxes, XP idempotente ou desbloqueios originais.
 
 ## Stack
 

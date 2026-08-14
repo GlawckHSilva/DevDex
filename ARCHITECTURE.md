@@ -1,3 +1,5 @@
+> Gameplay é uma camada de apresentação: zonas e nós apontam para missões/projetos existentes; vidas, ataques e reinícios são autorizados no backend e não criam uma segunda fonte de XP ou testes.
+
 # Arquitetura
 
 ## Decisões
