@@ -65,14 +65,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       });
       const passed = payload.mode === "run" || result.passed;
       status = passed ? "passed" : "failed";
-      if (payload.mode === "run") return Response.json({ ok: true, message: "Código seguro e sintaticamente válido." });
+      if (payload.mode === "run") return Response.json({ ok: true, message: "Código seguro e sintaticamente válido.", battle: battle ? await recordBattleAction(user.userId, mission.id, "test", "passed") : undefined });
       passedTests = result.results.filter((item) => item.passed).length;
       failedTests = result.results.length - passedTests;
       const progress = await recordAttempt(user.userId, mission, passed);
+      const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", passed ? "passed" : "failed") : null;
       return Response.json({
         ok: passed,
         message: passed ? "Todos os critérios visuais foram atendidos." : "O preview ainda não atende a todos os critérios.",
         results: result.results.map((item, index) => ({ name: `Critério ${index + 1}`, passed: item.passed })),
+        battle: battleState,
         ...progress,
       });
     }
@@ -92,10 +94,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       resultRows = result.rows.length;
       const passed = payload.mode === "run" || result.passed === true;
       status = passed ? "passed" : "failed";
-      if (payload.mode === "run") return Response.json({ ok: true, message: `${resultRows} linha(s) retornada(s).`, columns: result.columns, rows: result.rows, dialect: config.dialect });
+      if (payload.mode === "run") return Response.json({ ok: true, message: `${resultRows} linha(s) retornada(s).`, columns: result.columns, rows: result.rows, dialect: config.dialect, battle: battle ? await recordBattleAction(user.userId, mission.id, "test", "passed") : undefined });
       passedTests = passed ? 1 : 0;
       failedTests = passed ? 0 : 1;
       const progress = await recordAttempt(user.userId, mission, passed);
+      const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", passed ? "passed" : "failed") : null;
       return Response.json({
         ok: passed,
         message: passed ? "Resultado correto." : "A consulta executou, mas o resultado ainda não corresponde ao objetivo.",
@@ -103,6 +106,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
         rows: result.rows,
         results: [{ name: "Resultado esperado", passed }],
         dialect: config.dialect,
+        battle: battleState,
         ...progress,
       });
     }

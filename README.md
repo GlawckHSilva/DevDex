@@ -4,7 +4,7 @@ Plataforma gamificada para aprender programação escrevendo, executando, testan
 
 ## Estado
 
-Fase 1D concluída: quatro motores e Project Mode funcionam ponta a ponta com autenticação, sandboxes, XP idempotente e desbloqueio.
+Public Beta v0.2: HTML, CSS, JavaScript e SQL funcionam como campanhas RPG independentes, com batalhas, progresso próprio e Project Mode como boss de construção.
 
 ## Stack
 
@@ -45,4 +45,6 @@ O D1 local é criado pelas migrations em `drizzle/`; o teste E2E usa estado isol
 2. [ROADMAP.md](ROADMAP.md)
 3. [ARCHITECTURE.md](ARCHITECTURE.md)
 4. [CHANGELOG.md](CHANGELOG.md)
-5. [docs/](docs/README.md)
+5. [CURRICULUM.md](CURRICULUM.md)
+6. [CAMPAIGNS.md](CAMPAIGNS.md)
+7. [docs/](docs/README.md)

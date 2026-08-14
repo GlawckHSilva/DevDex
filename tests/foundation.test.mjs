@@ -9,6 +9,7 @@ const routeUrl = new URL("../app/api/missions/[slug]/submit/route.ts", import.me
 const betaUrl = new URL("../drizzle/0006_square_wallflower.sql", import.meta.url);
 const metricsUrl = new URL("../db/metrics.ts", import.meta.url);
 const rpgUrl = new URL("../drizzle/0007_cloudy_mandroid.sql", import.meta.url);
+const campaignsUrl = new URL("../drizzle/0008_high_chat.sql", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
   const sql = await readFile(engineUrl, "utf8");
@@ -46,5 +47,16 @@ test("RPG zone persists isolated characters, lives and battle events", async () 
   assert.match(sql, /CREATE TABLE `user_battles`/);
   assert.match(sql, /CREATE TABLE `battle_events`/);
   assert.match(sql, /'Slime da Sintaxe'.*'Hidra dos Arrays'/s);
+  assert.doesNotMatch(sql, /source_code|student_code/);
+});
+
+test("each technology is an independent configurable RPG campaign", async () => {
+  const sql = await readFile(campaignsUrl, "utf8");
+  assert.match(sql, /CREATE TABLE `campaigns`/);
+  assert.match(sql, /CREATE TABLE `campaign_zones`/);
+  assert.match(sql, /'Crônicas da Estrutura'.*'Reino dos Estilos'.*'Cidade da Lógica'.*'Minas dos Dados'/s);
+  assert.match(sql, /'ruinas-da-estrutura'.*'distrito-sem-cor'.*'bosque-dos-fundamentos'.*'arquivo-perdido'/s);
+  assert.match(sql, /'bosque-dos-fundamentos'.*'published',5,1/);
+  assert.match(sql, /\(12,1.*\(16,2.*\(6,4/s);
   assert.doesNotMatch(sql, /source_code|student_code/);
 });

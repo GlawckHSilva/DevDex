@@ -8,7 +8,7 @@ O DevDex começa como monólito modular para produto e dados. JavaScript roda em
 Browser
   └─ Web App (React/TypeScript)
        ├─ Identity (Sign in with ChatGPT)
-       ├─ Curriculum + Progress (Cloudflare D1)
+       ├─ Campaigns + Curriculum + Progress (Cloudflare D1)
        └─ Runner adapters
             ├─ QuickJS/Wasm
             ├─ SQLite/Wasm efêmero
@@ -19,6 +19,7 @@ Browser
 
 - `identity`: conta, perfil e autorização.
 - `curriculum`: tecnologias, versões, trilhas, skills, aulas, missões e testes.
+- `campaigns`: narrativa, zonas, inimigos, bosses e recomendações por tecnologia.
 - `progression`: domínio, tentativas, XP, desbloqueios e revisões.
 - `execution`: submissões, sandbox, limites e resultados.
 - `updates`: fontes oficiais, mudanças detectadas e revisão editorial.
@@ -45,6 +46,8 @@ db/projects.ts         progresso e XP do Project Mode
 - Conclusão, domínio e XP são gravados por batch transacional e idempotente no servidor.
 - O runner não compartilha banco, filesystem ou credenciais com o app.
 - Projetos, etapas, arquivos e progresso não usam campos opcionais de `missions`.
+- Pré-requisitos técnicos são avaliados somente dentro da trilha da campanha; recomendações entre tecnologias não bloqueiam conteúdo.
+- Campanhas, zonas e textos narrativos são dados versionados no D1, não condicionais fixas na interface.
 - O código do projeto permanece no navegador; o D1 guarda apenas progresso, hash e métricas.
 - Conteúdo publicado é versionado; progresso aponta para a versão estudada.
 

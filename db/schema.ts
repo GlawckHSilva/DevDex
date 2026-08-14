@@ -17,6 +17,26 @@ export const learningPaths = sqliteTable("learning_paths", {
   status: text("status", { enum: ["draft", "published", "deprecated"] }).notNull().default("published"),
 });
 
+export const campaigns = sqliteTable("campaigns", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  technologyId: integer("technology_id").notNull().references(() => technologies.id),
+  learningPathId: integer("learning_path_id").notNull().references(() => learningPaths.id),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  subtitle: text("subtitle").notNull(),
+  storyIntro: text("story_intro").notNull(),
+  theme: text("theme").notNull(),
+  status: text("status", { enum: ["draft", "published", "deprecated"] }).notNull().default("published"),
+  sortOrder: integer("sort_order").notNull(),
+  visualConfig: text("visual_config").notNull().default("{}"),
+}, (table) => [uniqueIndex("idx_campaigns_learning_path").on(table.learningPathId)]);
+
+export const campaignRecommendations = sqliteTable("campaign_recommendations", {
+  campaignId: integer("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  recommendedTechnologyId: integer("recommended_technology_id").notNull().references(() => technologies.id),
+  label: text("label").notNull(),
+}, (table) => [primaryKey({ columns: [table.campaignId, table.recommendedTechnologyId] })]);
+
 export const skills = sqliteTable("skills", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   learningPathId: integer("learning_path_id").notNull().references(() => learningPaths.id),
@@ -132,6 +152,20 @@ export const projectFiles = sqliteTable("project_files", {
   sortOrder: integer("sort_order").notNull(),
 }, (table) => [uniqueIndex("idx_project_files_project_path").on(table.projectId, table.path)]);
 
+export const campaignZones = sqliteTable("campaign_zones", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  campaignId: integer("campaign_id").notNull().references(() => campaigns.id, { onDelete: "cascade" }),
+  slug: text("slug").notNull(),
+  title: text("title").notNull(),
+  storyIntro: text("story_intro").notNull(),
+  storyOutro: text("story_outro").notNull().default(""),
+  sortOrder: integer("sort_order").notNull(),
+  status: text("status", { enum: ["draft", "published", "deprecated"] }).notNull().default("published"),
+  backgroundAsset: text("background_asset"),
+  bossMissionId: integer("boss_mission_id").references(() => missions.id),
+  bossProjectId: integer("boss_project_id").references(() => projects.id),
+}, (table) => [uniqueIndex("idx_campaign_zones_campaign_slug").on(table.campaignId, table.slug)]);
+
 export const profiles = sqliteTable("profiles", {
   userId: text("user_id").primaryKey(),
   email: text("email").notNull(),
@@ -155,13 +189,18 @@ export const userCharacters = sqliteTable("user_characters", {
 
 export const missionBattleConfigs = sqliteTable("mission_battle_configs", {
   missionId: integer("mission_id").primaryKey().references(() => missions.id, { onDelete: "cascade" }),
+  zoneId: integer("zone_id").references(() => campaignZones.id),
   zoneSlug: text("zone_slug").notNull(),
   enemyName: text("enemy_name").notNull(),
   enemyType: text("enemy_type", { enum: ["enemy", "elite", "boss"] }).notNull().default("enemy"),
   enemyLevel: integer("enemy_level").notNull().default(1),
   hint: text("hint").notNull(),
+  enemyIntro: text("enemy_intro").notNull().default(""),
+  battleDialogue: text("battle_dialogue").notNull().default(""),
+  bossIntro: text("boss_intro").notNull().default(""),
+  bossVictory: text("boss_victory").notNull().default(""),
   sortOrder: integer("sort_order").notNull(),
-}, (table) => [index("idx_battle_configs_zone_order").on(table.zoneSlug, table.sortOrder)]);
+}, (table) => [index("idx_battle_configs_zone_order").on(table.zoneId, table.sortOrder)]);
 
 export const userBattles = sqliteTable("user_battles", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),

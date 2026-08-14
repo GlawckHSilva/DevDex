@@ -23,5 +23,5 @@ test("renders the DevDex foundation landing page", async () => {
 test("project status reads the published curriculum", async () => {
   const source = await readFile(new URL("../app/status/page.tsx", import.meta.url), "utf8");
   assert.match(source, /getPublicStatus/);
-  assert.match(source, /Public Beta v0\.1/);
+  assert.match(source, /Public Beta v0\.2/);
 });

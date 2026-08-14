@@ -1,5 +1,5 @@
 import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
-import { getAdventure, getDashboard, getProjectSummaries } from "@/db";
+import { getCampaignSummaries, getDashboard, getProjectSummaries } from "@/db";
 import { isAdminEmail } from "@/lib/runtime-config";
 
 export const metadata = { title: "Dashboard" };
@@ -7,33 +7,23 @@ export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
   const user = await requireChatGPTUser("/dashboard");
-  const [{ profile, missions }, projects, adventure] = await Promise.all([getDashboard(user), getProjectSummaries(user.userId), getAdventure(user.userId)]);
-  const paths = Object.values(Object.groupBy(missions, (mission) => mission.pathSlug ?? "trilha")).map((pathMissions) => {
-    const items = pathMissions ?? [];
-    const completed = items.filter((mission) => mission.state === "completed").length;
-    return { slug: items[0]?.pathSlug ?? "", name: items[0]?.pathName ?? "Trilha", completed, total: items.length, progress: Math.round((completed / items.length) * 100) };
-  });
+  const [{ profile }, projects, campaigns] = await Promise.all([getDashboard(user), getProjectSummaries(user.userId), getCampaignSummaries(user.userId)]);
+  const activeCampaign = campaigns.find((campaign) => campaign.progress > 0 && campaign.progress < 100)
+    ?? campaigns.find((campaign) => campaign.slug === "cidade-da-logica") ?? campaigns[0];
 
   return <main className="dashboard-shell">
     <aside className="sidebar">
       <a className="brand" href="/"><span className="brand-mark">D_</span>DevDex</a>
-      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Visão geral</a><a href="/aventura">⚔ Aventura</a><a href="/projetos/lista-de-tarefas">▣ Project Mode</a><a href="/trilhas/html-fundamentals">◇ HTML</a><a href="/trilhas/css-fundamentals">◇ CSS</a><a href="/trilhas/javascript-fundamentals">◇ JavaScript</a><a href="/trilhas/sql-fundamentals-sqlite">◇ SQL · SQLite</a>{isAdminEmail(user.email) ? <a href="/admin/metricas">◉ Métricas</a> : null}<span>☆ Conquistas</span></nav>
+      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Campanhas</a>{campaigns.map((campaign) => <a href={`/trilhas/${campaign.pathSlug}`} key={campaign.slug}>◇ {campaign.technologyName}</a>)}<a href="/projetos/lista-de-tarefas">▣ Projetos</a>{isAdminEmail(user.email) ? <a href="/admin/metricas">◉ Métricas</a> : null}<span>☆ Conquistas</span></nav>
       <a className="signout" href={chatGPTSignOutPath("/")}>Sair</a>
     </aside>
     <section className="dashboard-content">
-      <header className="dashboard-top"><div><span className="kicker">CENTRAL DO AVENTUREIRO</span><h1>Olá, {user.displayName.split("@")[0]}.</h1></div><div className="level-chip"><small>NÍVEL {profile.level}</small><strong>{profile.totalXp} XP</strong></div></header>
-      <a className="adventure-banner" href="/aventura"><div><span className="kicker">ZONA 01 · RPG MODE</span><h2>Bosque dos Fundamentos</h2><p>{adventure.character ? `${adventure.nodes.filter((node) => node.missionState === "completed").length}/5 inimigos derrotados` : "Escolha seu personagem e comece a primeira batalha."}</p></div><span>JOGAR AGORA →</span></a>
-      <div className="path-progress-grid">{paths.map((path) => <a className="progress-panel" href={`/trilhas/${path.slug}`} key={path.slug}><div><span>{path.name}</span><strong>{path.progress}%</strong></div><div className="progress-track"><i style={{ width: `${path.progress}%` }} /></div><small>{path.completed} de {path.total} missões concluídas</small></a>)}</div>
+      <header className="dashboard-top"><div><span className="kicker">UNIVERSO DEVDEX</span><h1>Escolha sua próxima aventura, {user.displayName.split("@")[0]}.</h1></div><div className="level-chip"><small>NÍVEL GLOBAL {profile.level}</small><strong>{profile.totalXp} XP</strong></div></header>
+      {activeCampaign ? <section className={`campaign-continue theme-${activeCampaign.theme}`}><div><span className="kicker">CONTINUE SUA JORNADA · {activeCampaign.technologyName}</span><h2>{activeCampaign.title}</h2><p>Zona atual: <strong>{activeCampaign.zoneTitle}</strong></p><small>{activeCampaign.completedMissions}/{activeCampaign.totalMissions} inimigos derrotados</small></div><a href={`/trilhas/${activeCampaign.pathSlug}`}>CONTINUAR →</a></section> : null}
+      <div className="campaign-heading"><div><span className="kicker">CAMPANHAS INDEPENDENTES</span><h2>Explore qualquer tecnologia</h2></div><p>Troque de mundo quando quiser. O progresso de cada campanha permanece separado.</p></div>
+      <div className="campaign-grid">{campaigns.map((campaign) => <a className={`campaign-card theme-${campaign.theme}`} href={`/trilhas/${campaign.pathSlug}`} key={campaign.slug}><span>{campaign.technologyName}</span><h3>{campaign.title}</h3><p>{campaign.subtitle}</p><small>Zona atual · {campaign.zoneTitle}</small><div className="progress-track"><i style={{ width: `${campaign.progress}%` }} /></div><footer><strong>{campaign.progress}%</strong><em>{campaign.progress ? "CONTINUAR →" : "COMEÇAR →"}</em></footer></a>)}</div>
       <div className="mission-list-heading"><div><span className="kicker">PROJECTS</span><h2>Construa algo real</h2></div><span>{projects.length} projeto</span></div>
       <div className="project-card-grid">{projects.map((project) => <a className={`project-card state-${project.state}`} href={`/projetos/${project.slug}`} key={project.slug}><span>{project.state === "completed" ? "🏆 CONCLUÍDO" : "PROJECT MODE"}</span><h3>{project.title}</h3><p>{project.description}</p><div><small>{project.completedSteps}/{project.totalSteps} etapas</small><strong>{project.xpReward} XP</strong></div></a>)}</div>
-      <div className="mission-list">
-        <div className="mission-list-heading"><div><span className="kicker">MISSÕES</span><h2>Continue sua jornada</h2></div><span>{missions.length} missões</span></div>
-        {missions.map((mission, index) => {
-          const enabled = mission.state !== "locked";
-          const card = <><span className={`mission-index state-${mission.state}`}>{mission.state === "completed" ? "✓" : String(index + 1).padStart(2, "0")}</span><div><small>{mission.skillName}</small><h3>{mission.title}</h3></div><span className="mission-reward">+{mission.xpReward} XP</span><span className="mission-action">{mission.state === "locked" ? "Bloqueada" : mission.state === "completed" ? "Revisar →" : "Iniciar →"}</span></>;
-          return enabled ? <a className="mission-row" href={`/missoes/${mission.slug}`} key={mission.slug}>{card}</a> : <div className="mission-row mission-locked" key={mission.slug}>{card}</div>;
-        })}
-      </div>
     </section>
   </main>;
 }

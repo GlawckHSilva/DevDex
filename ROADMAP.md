@@ -46,9 +46,18 @@ Primeiro fluxo vertical JavaScript:
 
 ## Próximo
 
-- testar a primeira zona RPG com usuários reais;
-- ajustar vidas, PESQUISAR, inimigos, elite e chefe com base nas métricas;
-- preparar a segunda zona somente após validar o loop.
+- testar as quatro campanhas com usuários reais;
+- ajustar vidas, PESQUISAR, narrativa e bosses com base nas métricas;
+- criar novas zonas somente após validar o loop atual.
+
+## Implementado — Campaign RPG v0.2
+
+- uma campanha independente para cada tecnologia atual;
+- mapas, zonas, história e visual configurados no D1;
+- HTML, CSS, JavaScript e SQL convertidos em batalhas;
+- progresso técnico separado por campanha e XP global;
+- Project Mode integrado como boss de construção;
+- área RPG genérica removida da navegação.
 
 ## Implementado — RPG Zone 01
 
@@ -82,7 +91,7 @@ Primeiro fluxo vertical JavaScript:
 
 ## Pendente
 
-- Fase 2: JavaScript/SQL intermediário, Python e projetos;
+- Fase 2: expandir as campanhas atuais antes de avaliar novas tecnologias;
 - Fase 3: React, TypeScript, PostgreSQL avançado e mentor IA;
 - Fases 4–6: mobile, backend, Flutter e atualização inteligente.
 

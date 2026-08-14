@@ -5,8 +5,10 @@ import { ProjectWorkspace } from "./project-workspace";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProjectPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ campaign?: string }> }) {
   const { slug } = await params;
+  const requestedCampaign = (await searchParams).campaign;
+  const campaignPath = requestedCampaign && /^[a-z0-9-]+$/.test(requestedCampaign) ? requestedCampaign : null;
   const user = await requireChatGPTUser(`/projetos/${slug}`);
   const project = await getProject(user.userId, slug);
   if (!project) notFound();
@@ -14,11 +16,11 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   if (!activeStep) notFound();
 
   return <main className="workspace-page">
-    <header className="workspace-header project-header"><a className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</a><div><small>PROJECT MODE · TO-DO APP</small><strong>{activeStep.title}</strong></div><span className="workspace-xp">{project.completedSteps}/{project.steps.length} ETAPAS</span></header>
+    <header className="workspace-header project-header"><a className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</a><div><small>{campaignPath ? `BOSS BATTLE · ${project.title.toUpperCase()}` : "PROJECT MODE · TO-DO APP"}</small><strong>{activeStep.title}</strong></div><span className="workspace-xp">{project.completedSteps}/{project.steps.length} ETAPAS</span></header>
     <ProjectWorkspace project={{
       slug: project.slug, title: project.title, description: project.description, state: project.state, completedSteps: project.completedSteps,
       files: project.files,
       steps: project.steps.map(({ slug: stepSlug, title, briefing, objective, activeFile, requirementsJson, xpReward, state }) => ({ slug: stepSlug, title, briefing, objective, activeFile, requirements: JSON.parse(requirementsJson) as string[], xpReward, state })),
-    }} />
+    }} backHref={campaignPath ? `/trilhas/${campaignPath}` : "/dashboard"} />
   </main>;
 }

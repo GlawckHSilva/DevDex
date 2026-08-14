@@ -2,6 +2,10 @@
 
 ## 2026-08-14
 
+- Campaign RPG v0.2 com quatro campanhas independentes e mapas próprios.
+- As 19 missões de HTML, CSS, JavaScript e SQL agora são batalhas com três vidas.
+- Campanhas, zonas, narrativa e vínculo de boss com Project Mode configuráveis no D1.
+- Dashboard reorganizado por campanhas; `/aventura` mantido apenas como redirecionamento compatível.
 - Public Beta v0.1 com SIWC, limite de participantes e administrador único.
 - Métricas agregadas por missão, runtime e projeto sem armazenar código-fonte.
 - `/status` sincronizado com D1 e favicon configurado.

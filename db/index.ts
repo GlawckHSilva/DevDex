@@ -1,21 +1,15 @@
 import type { ChatGPTUser } from "@/app/chatgpt-auth";
 import { getBetaConfig, isAdminEmail } from "@/lib/runtime-config";
 import { getDb } from "./client";
+import { missionState } from "./mission-state";
+export { missionState } from "./mission-state";
 
 export type MissionSummary = { slug: string; title: string; xpReward: number; skillName: string; pathSlug?: string; pathName?: string; state: "locked" | "available" | "in_progress" | "completed" };
-export type Mission = { id: number; skillId: number; slug: string; title: string; briefing: string; objective: string; starterCode: string; functionName: string; parametersJson: string; runtime: string; runnerVersion: string; difficulty: string; version: number; xpReward: number; nextMissionSlug: string | null; state: MissionSummary["state"]; awardedXp: number };
+export type Mission = { id: number; skillId: number; slug: string; title: string; briefing: string; objective: string; starterCode: string; functionName: string; parametersJson: string; runtime: string; runnerVersion: string; difficulty: string; version: number; xpReward: number; nextMissionSlug: string | null; pathSlug: string; campaignTitle: string; technologyName: string; state: MissionSummary["state"]; awardedXp: number };
 export type MissionTest = { name: string; inputJson: string; expectedJson: string };
 export type LearningPathView = { slug: string; name: string; description: string; version: number; missions: MissionSummary[] };
 export type SqlMissionConfig = { dialect: string; runtimeVersion: string; schemaSql: string; seedSql: string; starterSql: string; expectedResultJson: string; tableSchemaJson: string; tablePreviewJson: string; maxRows: number; timeoutMs: number; maxStatements: number };
 export type WebMissionConfig = { documentType: "html" | "css"; runtimeVersion: string; starterCode: string; previewHtml: string; previewCss: string; validatorJson: string; maxLength: number };
-
-const missionState = `CASE
-  WHEN um.state='completed' THEN 'completed'
-  WHEN EXISTS (SELECT 1 FROM mission_prerequisites mp
-    LEFT JOIN user_missions required ON required.mission_id=mp.prerequisite_mission_id AND required.user_id=?
-    WHERE mp.mission_id=m.id AND COALESCE(required.state,'locked')<>'completed') THEN 'locked'
-  WHEN um.state='in_progress' THEN 'in_progress'
-  ELSE 'available' END`;
 
 export class BetaAccessError extends Error {
   constructor(public reason: "closed" | "full") { super(reason === "closed" ? "Beta fechada." : "Beta lotada."); }
@@ -74,9 +68,12 @@ export async function getMission(userId: string, slug: string): Promise<Mission 
   const mission = await getDb().prepare(`SELECT m.id,m.skill_id AS skillId,m.slug,m.title,m.briefing,m.objective,
     m.starter_code AS starterCode,m.function_name AS functionName,m.parameters_json AS parametersJson,
     m.runtime,m.runner_version AS runnerVersion,m.difficulty,m.version,
-    m.xp_reward AS xpReward,m.next_mission_slug AS nextMissionSlug,${missionState} AS state,
+    m.xp_reward AS xpReward,m.next_mission_slug AS nextMissionSlug,lp.slug AS pathSlug,
+    COALESCE(c.title,lp.name) AS campaignTitle,t.name AS technologyName,${missionState} AS state,
     COALESCE(um.awarded_xp,0) AS awardedXp
-    FROM missions m LEFT JOIN user_missions um ON um.mission_id=m.id AND um.user_id=?
+    FROM missions m JOIN skills s ON s.id=m.skill_id JOIN learning_paths lp ON lp.id=s.learning_path_id
+    JOIN technologies t ON t.id=lp.technology_id LEFT JOIN campaigns c ON c.learning_path_id=lp.id
+    LEFT JOIN user_missions um ON um.mission_id=m.id AND um.user_id=?
     WHERE m.slug=? AND m.status='published'`).bind(userId, userId, slug).first<Mission>();
   return mission ? { ...mission, starterCode: mission.starterCode.replaceAll("\\n", "\n") } : null;
 }
@@ -139,3 +136,4 @@ export * from "./schema";
 export * from "./projects";
 export * from "./metrics";
 export * from "./adventure";
+export * from "./campaigns";

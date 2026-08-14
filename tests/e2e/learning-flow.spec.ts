@@ -19,6 +19,10 @@ async function submitProject(request: APIRequestContext, userId: string, files: 
   return request.post("/api/projects/lista-de-tarefas/submit", { headers: userHeaders(userId), data: { mode: "test", files } });
 }
 
+async function chooseCharacter(request: APIRequestContext, userId: string) {
+  return request.post("/api/character", { headers: userHeaders(userId), data: { archetype: "adventurer" } });
+}
+
 test("protege rotas sem sessão", async ({ request }) => {
   expect((await request.get("/favicon.ico")).status()).toBe(200);
   const response = await request.get("/dashboard", { maxRedirects: 0 });
@@ -41,7 +45,7 @@ test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ pa
   await page.goto("/");
   await page.getByRole("link", { name: "Abrir plataforma" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
-  await page.getByRole("link", { name: /Project Mode/ }).click();
+  await page.getByRole("link", { name: /To-do App/ }).click();
   await expect(page).toHaveURL(/\/projetos\/lista-de-tarefas$/);
   await expect(page.getByTestId("project-editor")).toBeVisible();
   await page.getByRole("link", { name: "Dashboard" }).click();
@@ -53,12 +57,12 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   const userId = "rpg-user";
   const headers = userHeaders(userId);
   await page.setExtraHTTPHeaders(headers);
-  await page.goto("/aventura");
+  await page.goto("/trilhas/javascript-fundamentals");
   await expect(page.getByTestId("character-select")).toBeVisible();
   const character = await request.post("/api/character", { headers, data: { archetype: "adventuress" } });
   expect(await character.json()).toMatchObject({ ok: true, character: { archetype: "adventuress" } });
-  await page.goto("/aventura");
-  await expect(page.getByRole("heading", { name: "O código despertou criaturas antigas." })).toBeVisible();
+  await page.goto("/trilhas/javascript-fundamentals");
+  await expect(page.getByRole("heading", { name: "Cidade da Lógica" })).toBeVisible();
   await expect(page.getByText("Slime da Sintaxe")).toBeVisible();
   await page.goto("/missoes/guardar-nome");
   await expect(page.getByTestId("battle-workspace")).toBeVisible();
@@ -74,20 +78,21 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   expect((await action("test", solution)).status()).toBe(409);
   expect(await (await action("revive")).json()).toMatchObject({ ok: true, battle: { lives: 3, state: "active" } });
   expect(await (await action("test", solution)).json()).toMatchObject({ ok: true, gainedXp: 100, battle: { state: "completed" } });
-  await page.goto("/aventura");
-  await expect(page.getByText("1/5 inimigos vencidos")).toBeVisible();
+  await page.goto("/trilhas/javascript-fundamentals");
+  await expect(page.getByText("Vencido")).toBeVisible();
 });
 
 test("percorre trilha, conclui missão e persiste apó novo login", async ({ browser, page, request }) => {
   const userId = "journey-user";
+  await chooseCharacter(request, userId);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/dashboard");
   await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
-  await expect(page.getByText("O nome do aventureiro")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cidade da Lógica" }).first()).toBeVisible();
 
   await page.goto("/trilhas/javascript-fundamentals");
-  await expect(page.getByRole("heading", { name: "JavaScript Fundamentals" })).toBeVisible();
-  await expect(page.getByText("Bloqueada")).toHaveCount(4);
+  await expect(page.getByRole("heading", { name: "Cidade da Lógica" })).toBeVisible();
+  await expect(page.getByText("Bloqueado")).toHaveCount(4);
 
   await page.goto("/missoes/guardar-nome");
   await expect(page.getByTestId("code-editor")).toBeVisible();
@@ -103,8 +108,8 @@ test("percorre trilha, conclui missão e persiste apó novo login", async ({ bro
   await restored.goto("/dashboard");
   await expect(restored.getByText("100 XP", { exact: true })).toBeVisible();
   await restored.goto("/trilhas/javascript-fundamentals");
-  await expect(restored.getByText("Revisar →")).toBeVisible();
-  await expect(restored.getByText("Começar →")).toBeVisible();
+  await expect(restored.getByText("Vencido")).toBeVisible();
+  await expect(restored.getByText("Enfrentar →")).toBeVisible();
   await relogin.close();
 });
 
@@ -143,11 +148,40 @@ test("credita XP uma vez sob repetição e concorrência", async ({ page, reques
   await expect(page.getByText("100 XP", { exact: true })).toBeVisible();
 });
 
+test("alterna entre campanhas sem bloquear tecnologias independentes", async ({ page, request }) => {
+  const userId = "campaign-switch-user";
+  await chooseCharacter(request, userId);
+  await page.setExtraHTTPHeaders(userHeaders(userId));
+  for (const [path, title] of [
+    ["html-fundamentals", "Crônicas da Estrutura"],
+    ["sql-fundamentals-sqlite", "Minas dos Dados"],
+    ["javascript-fundamentals", "Cidade da Lógica"],
+    ["css-fundamentals", "Reino dos Estilos"],
+  ]) {
+    await page.goto(`/trilhas/${path}`);
+    await expect(page.getByRole("heading", { name: title })).toBeVisible();
+    await expect(page.getByText("Enfrentar →").first()).toBeVisible();
+  }
+});
+
+test("abre o Project Mode seguro como boss da zona JavaScript", async ({ page, request }) => {
+  const userId = "campaign-boss-user";
+  await chooseCharacter(request, userId);
+  await page.setExtraHTTPHeaders(userHeaders(userId));
+  await page.goto("/trilhas/javascript-fundamentals");
+  await page.locator(".zone-project-boss").click();
+  await expect(page).toHaveURL(/\/projetos\/lista-de-tarefas\?campaign=javascript-fundamentals$/);
+  await expect(page.getByText(/BOSS BATTLE · LISTA DE TAREFAS/)).toBeVisible();
+  await expect(page.getByTitle("Preview do projeto")).toHaveAttribute("sandbox", "allow-scripts");
+  expect(await page.getByTitle("Preview do projeto").getAttribute("srcdoc")).toContain("default-src 'none'");
+});
+
 test("executa SQLite/Wasm descartável sem misturar progresso", async ({ page, request }) => {
   const correct = "SELECT ID, DESCRICAO, VALOR, ATIVO FROM PRODUTOS";
+  await chooseCharacter(request, "sql-ui-user");
   await page.setExtraHTTPHeaders(userHeaders("sql-ui-user"));
   await page.goto("/trilhas/sql-fundamentals-sqlite");
-  await expect(page.getByRole("heading", { name: "SQL Fundamentals · SQLite" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Minas dos Dados" })).toBeVisible();
   await page.goto("/missoes/listar-produtos");
   await expect(page.getByTestId("sql-editor")).toBeVisible();
   await expect(page.getByText(/PRODUTOS/).first()).toBeVisible();
@@ -179,9 +213,10 @@ test("executa SQLite/Wasm descartável sem misturar progresso", async ({ page, r
 
 test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, request }) => {
   const userId = "web-ui-user";
+  await chooseCharacter(request, userId);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/trilhas/html-fundamentals");
-  await expect(page.getByRole("heading", { name: "HTML Fundamentals" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Crônicas da Estrutura" })).toBeVisible();
   await page.goto("/missoes/pagina-da-oficina");
   await expect(page.getByTestId("web-editor")).toBeVisible();
 
@@ -205,6 +240,8 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   expect(await css.json()).toMatchObject({ ok: true, gainedXp: 100, unlockedSlug: "espaco-do-cartao" });
   await page.goto("/dashboard");
   await expect(page.getByText("200 XP", { exact: true })).toBeVisible();
+  await expect(page.locator(".campaign-card", { hasText: "Cidade da Lógica" }).getByText("0%", { exact: true })).toBeVisible();
+  await expect(page.locator(".campaign-card", { hasText: "Minas dos Dados" }).getByText("0%", { exact: true })).toBeVisible();
 });
 
 test("constrói um To-do App em cinco etapas com autosave local", async ({ page, request }) => {

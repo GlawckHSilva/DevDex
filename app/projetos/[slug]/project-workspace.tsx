@@ -20,7 +20,7 @@ function makePreview(files: Sources) {
   return `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${CSP}"><style>${css}</style></head><body>${files["index.html"]}<script>${MEMORY_STORAGE}\n${js}</script></body></html>`;
 }
 
-export function ProjectWorkspace({ project }: { project: Project }) {
+export function ProjectWorkspace({ project, backHref = "/dashboard" }: { project: Project; backHref?: string }) {
   const router = useRouter();
   const starter = useMemo(() => Object.fromEntries(project.files.map((file) => [file.path, file.starterCode])) as Sources, [project.files]);
   const currentStep = project.steps.find((step) => step.state === "available" || step.state === "in_progress") ?? project.steps.at(-1)!;
@@ -59,7 +59,7 @@ export function ProjectWorkspace({ project }: { project: Project }) {
   const preview = useMemo(() => makePreview(previewFiles), [previewFiles]);
   return <div className="project-workspace-grid">
     <aside className="project-explorer">
-      <a href="/dashboard">← Dashboard</a><span className="kicker">ARQUIVOS</span>
+      <a href={backHref}>← {backHref === "/dashboard" ? "Dashboard" : "Campanha"}</a><span className="kicker">ARQUIVOS</span>
       <div className="project-files">{project.files.map((file) => <button className={activePath === file.path ? "active" : ""} key={file.path} onClick={() => setActivePath(file.path)}><span>{file.language === "html" ? "◇" : file.language === "css" ? "#" : "JS"}</span>{file.path}</button>)}</div>
       <span className="kicker project-steps-label">ETAPAS</span><ol className="project-steps">{project.steps.map((step, index) => <li className={`state-${step.state}`} key={step.slug}><span>{step.state === "completed" ? "✓" : index + 1}</span><small>{step.title}</small></li>)}</ol>
       <small className="autosave-state">● Autosave neste navegador</small>
