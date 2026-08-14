@@ -2,6 +2,11 @@
 
 ## 2026-08-14
 
+- Tela de batalha redesenhada como RPG Battle + IDE para HTML, CSS, JavaScript e SQL.
+- Vidas e XP movidos para o header; arena agora mostra jogador, inimigo e HP determinístico pelos critérios.
+- Objetivos reativos, sprite original do Espectro do Esqueleto, preview em navegador, console compacto e ações PESQUISAR/TESTAR/ATACAR.
+- TESTAR passa a mostrar os critérios sem gastar vida, conceder XP ou concluir oficialmente a batalha.
+- Estados visuais de ataque, erro, derrota, retry e vitória, com fluxo mobile vertical.
 - Cidade da Lógica redesenhada como mapa de aventura com cenário pixel art original.
 - Caminho SVG, nodes interativos, personagem no progresso atual e painel de missão selecionada.
 - Layout mobile convertido em trilha vertical sem alterar batalhas, runners ou autoridade do backend.

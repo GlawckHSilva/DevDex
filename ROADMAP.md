@@ -46,9 +46,17 @@ Primeiro fluxo vertical JavaScript:
 
 ## Próximo
 
-- testar o mapa da Cidade da Lógica com usuários reais;
+- testar os quatro mapas e a nova Battle IDE com usuários reais;
 - ajustar vidas, PESQUISAR, narrativa e bosses com base nas métricas;
-- reaproveitar o componente de mapa nas demais campanhas somente após aprovação.
+- expandir conteúdo apenas após validar o loop batalha → código → teste → ataque.
+
+## Implementado — Battle IDE
+
+- header de batalha com retorno ao mapa, breadcrumb, vidas e XP;
+- arena com personagem persistido, inimigo, HP por critérios e objetivos reativos;
+- editor Monaco, preview/browser ou banco isolado e console compacto;
+- PESQUISAR, TESTAR e ATACAR em hierarquia clara, sem alterar as regras de vidas e XP;
+- derrota com retry, vitória, feedback de dano e layout mobile em fluxo vertical.
 
 ## Implementado — Adventure Map JavaScript
 

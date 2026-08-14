@@ -76,7 +76,12 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   await expect(page.getByTestId("battle-workspace")).toBeVisible();
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
 
-  const action = (mode: "test" | "research" | "revive", code = "") => request.post("/api/missions/guardar-nome/submit", { headers, data: { mode, code } });
+  const action = (mode: "run" | "test" | "research" | "revive", code = "") => request.post("/api/missions/guardar-nome/submit", { headers, data: { mode, code } });
+  const run = await action("run", "function criarSaudacao() { return ''; }");
+  const runResult = await run.json();
+  expect(runResult).toMatchObject({ ok: true, battle: { lives: 3, state: "active" } });
+  expect(runResult.results).toHaveLength(2);
+  expect(runResult.results.every((result: { passed: boolean }) => !result.passed)).toBe(true);
   const research = await action("research");
   expect(await research.json()).toMatchObject({ ok: true, battle: { lives: 3, state: "active" } });
   for (const lives of [2, 1, 0]) {
@@ -85,7 +90,7 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   }
   expect((await action("test", solution)).status()).toBe(409);
   expect(await (await action("revive")).json()).toMatchObject({ ok: true, battle: { lives: 3, state: "active" } });
-  expect(await (await action("test", solution)).json()).toMatchObject({ ok: true, gainedXp: 100, battle: { state: "completed" } });
+  expect(await (await action("test", solution)).json()).toMatchObject({ ok: true, gainedXp: 100, battle: { lives: 3, state: "completed" } });
   await page.goto("/trilhas/javascript-fundamentals");
   await expect(page.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Concluída/);
 });
@@ -256,11 +261,34 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByRole("heading", { name: "Crônicas da Estrutura" })).toBeVisible();
   await page.goto("/missoes/pagina-da-oficina");
   await expect(page.getByTestId("web-editor")).toBeVisible();
+  await expect(page.getByText("Espectro do Esqueleto", { exact: true })).toBeVisible();
+  await expect(page.getByTestId("enemy-hp")).toContainText("100 / 100 HP");
+  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Voltar ao mapa/ })).toHaveAttribute("href", "/trilhas/html-fundamentals");
+  await expect(page.getByRole("button", { name: /Pesquisar uma dica/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Testar código/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeVisible();
 
   const preview = page.getByTitle("Preview da missão");
   await expect(preview).toHaveAttribute("sandbox", "");
   await expect(preview).toHaveAttribute("referrerpolicy", "no-referrer");
   expect(await preview.getAttribute("srcdoc")).toContain("default-src 'none'");
+
+  await page.getByTestId("web-editor").locator(".monaco-editor").click();
+  await page.keyboard.press("Control+A");
+  await page.keyboard.insertText("<main><h1>Oficina DevDex</h1></main>");
+  await page.getByRole("button", { name: /Testar código/ }).click();
+  await expect(page.getByTestId("enemy-hp")).toContainText("50 / 100 HP");
+  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await expect(page.getByTestId("battle-objectives").locator(".passed")).toHaveCount(1);
+  await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
+  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await page.getByRole("button", { name: /Atacar com a solução/ }).click();
+  await expect(page.getByLabel("2 vidas restantes")).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByTestId("battle-panel")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 900 });
 
   const unsafe = await submit(request, "web-unsafe", "pagina-da-oficina", "<script>alert(1)</script>");
   expect(unsafe.status()).toBe(422);

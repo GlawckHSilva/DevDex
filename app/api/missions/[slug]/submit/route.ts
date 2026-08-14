@@ -60,12 +60,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       const result = await WebRunnerAdapter.execute({
         code: payload.code,
         documentType: config.documentType,
-        rules: payload.mode === "test" ? JSON.parse(config.validatorJson) as WebValidationRule[] : undefined,
+        rules: JSON.parse(config.validatorJson) as WebValidationRule[],
         maxLength: config.maxLength,
       });
-      const passed = payload.mode === "run" || result.passed;
+      const passed = result.passed;
       status = passed ? "passed" : "failed";
-      if (payload.mode === "run") return Response.json({ ok: true, message: "Código seguro e sintaticamente válido.", battle: battle ? await recordBattleAction(user.userId, mission.id, "test", "passed") : undefined });
+      if (payload.mode === "run") return Response.json({ ok: true, message: passed ? "Código seguro; todos os critérios foram atendidos." : "Código seguro; alguns critérios ainda precisam de atenção.", results: result.results.map((item, index) => ({ name: `Critério ${index + 1}`, passed: item.passed })), battle: battle ? await recordBattleAction(user.userId, mission.id, "test", passed ? "passed" : "failed") : undefined });
       passedTests = result.results.filter((item) => item.passed).length;
       failedTests = result.results.length - passedTests;
       const progress = await recordAttempt(user.userId, mission, passed);
@@ -86,15 +86,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
         query: payload.code,
         schemaSql: config.schemaSql,
         seedSql: config.seedSql,
-        expected: payload.mode === "test" ? JSON.parse(config.expectedResultJson) as SqlExpectedResult : undefined,
+        expected: JSON.parse(config.expectedResultJson) as SqlExpectedResult,
         maxRows: config.maxRows,
         timeoutMs: config.timeoutMs,
         maxStatements: config.maxStatements,
       });
       resultRows = result.rows.length;
-      const passed = payload.mode === "run" || result.passed === true;
+      const passed = result.passed === true;
       status = passed ? "passed" : "failed";
-      if (payload.mode === "run") return Response.json({ ok: true, message: `${resultRows} linha(s) retornada(s).`, columns: result.columns, rows: result.rows, dialect: config.dialect, battle: battle ? await recordBattleAction(user.userId, mission.id, "test", "passed") : undefined });
+      if (payload.mode === "run") return Response.json({ ok: true, message: `${resultRows} linha(s) retornada(s).`, columns: result.columns, rows: result.rows, results: [{ name: "Resultado esperado", passed }], dialect: config.dialect, battle: battle ? await recordBattleAction(user.userId, mission.id, "test", passed ? "passed" : "failed") : undefined });
       passedTests = passed ? 1 : 0;
       failedTests = passed ? 0 : 1;
       const progress = await recordAttempt(user.userId, mission, passed);
@@ -111,12 +111,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       });
     }
 
-    if (payload.mode === "run") {
-      await JavaScriptRunnerAdapter.execute({ code: payload.code, functionName: mission.functionName });
-      status = "passed";
-      return Response.json({ ok: true, compiled: true, message: "Código validado no ambiente isolado.", battle: battle ? await recordBattleAction(user.userId, mission.id, "test", "passed") : undefined });
-    }
-
     const tests = await getMissionTests(mission.id);
     const results = await JavaScriptRunnerAdapter.execute({ code: payload.code, functionName: mission.functionName, tests: tests.map((test) => ({
       name: test.name,
@@ -127,6 +121,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     passedTests = results.filter((result) => result.passed).length;
     failedTests = results.length - passedTests;
     status = passed ? "passed" : "failed";
+    if (payload.mode === "run") return Response.json({ ok: true, compiled: true, message: passed ? "Código seguro; todos os testes passaram." : "Código seguro; alguns testes ainda falharam.", results: results.map((result, index) => ({ name: `Teste ${index + 1}`, passed: result.passed })), battle: battle ? await recordBattleAction(user.userId, mission.id, "test", passed ? "passed" : "failed") : undefined });
     const progress = await recordAttempt(user.userId, mission, passed);
     const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", passed ? "passed" : "failed") : null;
     return Response.json({
