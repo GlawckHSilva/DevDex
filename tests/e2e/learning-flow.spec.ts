@@ -74,6 +74,7 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   await expect(page.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Disponível/);
   await page.goto("/missoes/guardar-nome");
   await expect(page.getByTestId("battle-workspace")).toBeVisible();
+  await expect(page.locator(".battle-player .pixel-hero")).toHaveAttribute("style", /adventuress-female-v1/);
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
 
   const action = (mode: "run" | "test" | "research" | "revive", code = "") => request.post("/api/missions/guardar-nome/submit", { headers, data: { mode, code } });
