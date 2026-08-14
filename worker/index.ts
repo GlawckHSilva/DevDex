@@ -28,6 +28,10 @@ const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
+    if (url.pathname === "/favicon.ico") {
+      return Response.redirect(new URL("/og.png", request.url), 302);
+    }
+
     if (url.pathname.startsWith("/api/missions/") || url.pathname.startsWith("/api/projects/")) {
       const workerScope = globalThis as unknown as { location?: URL };
       workerScope.location ??= new URL(request.url);

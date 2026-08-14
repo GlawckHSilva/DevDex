@@ -20,6 +20,7 @@ async function submitProject(request: APIRequestContext, userId: string, files: 
 }
 
 test("protege rotas sem sessão", async ({ request }) => {
+  expect((await request.get("/favicon.ico")).status()).toBe(200);
   const response = await request.get("/dashboard", { maxRedirects: 0 });
   expect(response.status()).toBe(307);
   expect(response.headers().location).toContain("/signin-with-chatgpt");
