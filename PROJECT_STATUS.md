@@ -31,8 +31,9 @@ Public Beta v0.2 pronta para publicação em Cloudflare Sites.
 - todas as 19 missões publicadas representadas por inimigos, elites ou bosses em zonas configuráveis no D1;
 - personagem compartilhado, três vidas, TESTAR, ATACAR, PESQUISAR e renascimento em todos os runners;
 - Project Mode ligado à Cidade da Lógica como boss de construção, mantendo domínio e sandbox próprios;
+- Cidade da Lógica com mapa pixel art interativo, caminho SVG por estado, painel contextual e trilha mobile vertical;
 - telemetria de batalhas, derrotas, vidas perdidas, pesquisas e tempo de conclusão.
-- 23 testes de fundação/runners e 12 cenários E2E passando.
+- 23 testes de fundação/runners e 13 cenários E2E passando.
 
 ## Não implementado
 
@@ -41,4 +42,4 @@ Public Beta v0.2 pronta para publicação em Cloudflare Sites.
 
 ## Próxima tarefa
 
-Testar as quatro campanhas com usuários reais e ajustar narrativa, dificuldade e ordem das próximas zonas.
+Validar o mapa da Cidade da Lógica com usuários reais antes de reaplicar o sistema em HTML, CSS e SQL.

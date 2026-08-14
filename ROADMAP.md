@@ -46,9 +46,18 @@ Primeiro fluxo vertical JavaScript:
 
 ## Próximo
 
-- testar as quatro campanhas com usuários reais;
+- testar o mapa da Cidade da Lógica com usuários reais;
 - ajustar vidas, PESQUISAR, narrativa e bosses com base nas métricas;
-- criar novas zonas somente após validar o loop atual.
+- reaproveitar o componente de mapa nas demais campanhas somente após aprovação.
+
+## Implementado — Adventure Map JavaScript
+
+- Bosque dos Fundamentos como cenário pixel art original;
+- caminho SVG sinuoso com estados concluído, disponível e bloqueado;
+- nodes selecionáveis, painel contextual e navegação em duas etapas;
+- personagem posicionado conforme o progresso real;
+- boss de construção bloqueado no mapa até concluir as cinco missões;
+- trilha vertical responsiva e acessível por teclado.
 
 ## Implementado — Campaign RPG v0.2
 

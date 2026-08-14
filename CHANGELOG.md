@@ -2,6 +2,9 @@
 
 ## 2026-08-14
 
+- Cidade da Lógica redesenhada como mapa de aventura com cenário pixel art original.
+- Caminho SVG, nodes interativos, personagem no progresso atual e painel de missão selecionada.
+- Layout mobile convertido em trilha vertical sem alterar batalhas, runners ou autoridade do backend.
 - Campaign RPG v0.2 com quatro campanhas independentes e mapas próprios.
 - As 19 missões de HTML, CSS, JavaScript e SQL agora são batalhas com três vidas.
 - Campanhas, zonas, narrativa e vínculo de boss com Project Mode configuráveis no D1.

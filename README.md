@@ -4,7 +4,7 @@ Plataforma gamificada para aprender programação escrevendo, executando, testan
 
 ## Estado
 
-Public Beta v0.2: HTML, CSS, JavaScript e SQL funcionam como campanhas RPG independentes, com batalhas, progresso próprio e Project Mode como boss de construção.
+Public Beta v0.2: quatro campanhas RPG independentes; JavaScript já possui um mapa de aventura interativo com caminho, personagem, inimigos, elite e boss.
 
 ## Stack
 

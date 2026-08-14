@@ -7,6 +7,13 @@ const userHeaders = (id: string) => ({
   "oai-authenticated-user-full-name-encoding": "percent-encoded-utf-8",
 });
 const solution = `function criarSaudacao(nome) { return \`Olá, ${"${nome}"}!\`; }`;
+const javascriptSolutions = [
+  ["guardar-nome", solution],
+  ["verificar-maioridade", "function podeEntrar(idade) { return idade >= 18; }"],
+  ["somar-lista", "function somarLista(valores) { return valores.reduce((total, valor) => total + valor, 0); }"],
+  ["calcular-dobro", "function dobro(numero) { return numero * 2; }"],
+  ["filtrar-pares", "function pares(valores) { return valores.filter((valor) => valor % 2 === 0); }"],
+] as const;
 
 async function submit(request: APIRequestContext, userId: string, slug: string, code: string) {
   return request.post(`/api/missions/${slug}/submit`, {
@@ -63,7 +70,8 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   expect(await character.json()).toMatchObject({ ok: true, character: { archetype: "adventuress" } });
   await page.goto("/trilhas/javascript-fundamentals");
   await expect(page.getByRole("heading", { name: "Cidade da Lógica" })).toBeVisible();
-  await expect(page.getByText("Slime da Sintaxe")).toBeVisible();
+  await expect(page.getByTestId("campaign-map")).toBeVisible();
+  await expect(page.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Disponível/);
   await page.goto("/missoes/guardar-nome");
   await expect(page.getByTestId("battle-workspace")).toBeVisible();
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
@@ -79,7 +87,7 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   expect(await (await action("revive")).json()).toMatchObject({ ok: true, battle: { lives: 3, state: "active" } });
   expect(await (await action("test", solution)).json()).toMatchObject({ ok: true, gainedXp: 100, battle: { state: "completed" } });
   await page.goto("/trilhas/javascript-fundamentals");
-  await expect(page.getByText("Vencido")).toBeVisible();
+  await expect(page.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Concluída/);
 });
 
 test("percorre trilha, conclui missão e persiste apó novo login", async ({ browser, page, request }) => {
@@ -92,7 +100,7 @@ test("percorre trilha, conclui missão e persiste apó novo login", async ({ bro
 
   await page.goto("/trilhas/javascript-fundamentals");
   await expect(page.getByRole("heading", { name: "Cidade da Lógica" })).toBeVisible();
-  await expect(page.getByText("Bloqueado")).toHaveCount(4);
+  await expect(page.getByRole("button", { name: /Bloqueada/ })).toHaveCount(5);
 
   await page.goto("/missoes/guardar-nome");
   await expect(page.getByTestId("code-editor")).toBeVisible();
@@ -108,8 +116,8 @@ test("percorre trilha, conclui missão e persiste apó novo login", async ({ bro
   await restored.goto("/dashboard");
   await expect(restored.getByText("100 XP", { exact: true })).toBeVisible();
   await restored.goto("/trilhas/javascript-fundamentals");
-  await expect(restored.getByText("Vencido")).toBeVisible();
-  await expect(restored.getByText("Enfrentar →")).toBeVisible();
+  await expect(restored.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Concluída/);
+  await expect(restored.getByTestId("map-node-verificar-maioridade")).toHaveAttribute("aria-label", /Disponível/);
   await relogin.close();
 });
 
@@ -160,16 +168,43 @@ test("alterna entre campanhas sem bloquear tecnologias independentes", async ({ 
   ]) {
     await page.goto(`/trilhas/${path}`);
     await expect(page.getByRole("heading", { name: title })).toBeVisible();
-    await expect(page.getByText("Enfrentar →").first()).toBeVisible();
+    if (path === "javascript-fundamentals") await expect(page.getByTestId("campaign-map")).toBeVisible();
+    else await expect(page.getByText("Enfrentar →").first()).toBeVisible();
   }
+});
+
+test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ page, request }) => {
+  const userId = "campaign-map-user";
+  await chooseCharacter(request, userId);
+  await page.setExtraHTTPHeaders(userHeaders(userId));
+  await page.goto("/trilhas/javascript-fundamentals");
+  const variables = page.getByTestId("map-node-guardar-nome");
+  const locked = page.getByTestId("map-node-verificar-maioridade");
+  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*8%/);
+  await expect(async () => { await locked.click(); await expect(locked).toHaveAttribute("aria-pressed", "true"); }).toPass();
+  await expect(page.getByTestId("mission-panel").getByRole("button")).toBeDisabled();
+  await variables.click();
+  await expect(page.getByTestId("mission-panel").getByRole("link", { name: /JOGAR/ })).toHaveAttribute("href", "/missoes/guardar-nome");
+  expect((await submit(request, userId, "guardar-nome", solution)).status()).toBe(200);
+  await page.reload();
+  await expect(variables).toHaveAttribute("aria-label", /Concluída/);
+  await expect(locked).toHaveAttribute("aria-label", /Disponível/);
+  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*39%/);
+  await variables.click();
+  await expect(page.getByTestId("mission-panel").getByRole("link", { name: /REVISAR/ })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByTestId("campaign-map")).toBeVisible();
+  await expect(variables).toBeVisible();
 });
 
 test("abre o Project Mode seguro como boss da zona JavaScript", async ({ page, request }) => {
   const userId = "campaign-boss-user";
   await chooseCharacter(request, userId);
+  for (const [slug, code] of javascriptSolutions) expect((await submit(request, userId, slug, code)).status()).toBe(200);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/trilhas/javascript-fundamentals");
-  await page.locator(".zone-project-boss").click();
+  await page.getByTestId("map-node-boss-project").click();
+  await page.getByTestId("mission-panel").getByRole("link", { name: /JOGAR/ }).click();
   await expect(page).toHaveURL(/\/projetos\/lista-de-tarefas\?campaign=javascript-fundamentals$/);
   await expect(page.getByText(/BOSS BATTLE · LISTA DE TAREFAS/)).toBeVisible();
   await expect(page.getByTitle("Preview do projeto")).toHaveAttribute("sandbox", "allow-scripts");
