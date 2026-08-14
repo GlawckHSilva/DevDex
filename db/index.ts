@@ -1,4 +1,5 @@
 import type { ChatGPTUser } from "@/app/chatgpt-auth";
+import { getBetaConfig, isAdminEmail } from "@/lib/runtime-config";
 import { getDb } from "./client";
 
 export type MissionSummary = { slug: string; title: string; xpReward: number; skillName: string; pathSlug?: string; pathName?: string; state: "locked" | "available" | "in_progress" | "completed" };
@@ -16,8 +17,22 @@ const missionState = `CASE
   WHEN um.state='in_progress' THEN 'in_progress'
   ELSE 'available' END`;
 
+export class BetaAccessError extends Error {
+  constructor(public reason: "closed" | "full") { super(reason === "closed" ? "Beta fechada." : "Beta lotada."); }
+}
+
 export async function ensureUser(user: ChatGPTUser) {
   const db = getDb();
+  const config = getBetaConfig();
+  const admin = isAdminEmail(user.email);
+  if (!config.enabled && !admin) throw new BetaAccessError("closed");
+  const existing = await db.prepare("SELECT 1 AS found FROM profiles WHERE user_id=?").bind(user.userId).first<{ found: number }>();
+  if (!existing) {
+    await db.prepare(`INSERT OR IGNORE INTO beta_members (user_id)
+      SELECT ? WHERE ? OR ?=0 OR (SELECT COUNT(*) FROM beta_members)<?`).bind(user.userId, admin ? 1 : 0, config.maxUsers, config.maxUsers).run();
+    const admitted = await db.prepare("SELECT 1 AS found FROM beta_members WHERE user_id=?").bind(user.userId).first<{ found: number }>();
+    if (!admitted) throw new BetaAccessError("full");
+  }
   await db.batch([
     db.prepare(`INSERT INTO profiles (user_id,email,display_name) VALUES (?,?,?)
       ON CONFLICT(user_id) DO UPDATE SET email=excluded.email,display_name=excluded.display_name,updated_at=CURRENT_TIMESTAMP`).bind(user.userId, user.email, user.displayName),
@@ -32,7 +47,6 @@ export async function ensureUser(user: ChatGPTUser) {
 }
 
 export async function getDashboard(user: ChatGPTUser) {
-  await ensureUser(user);
   const db = getDb();
   const [profile, missions] = await Promise.all([
     db.prepare("SELECT total_xp AS totalXp,level FROM profiles WHERE user_id=?").bind(user.userId).first<{ totalXp: number; level: number }>(),
@@ -45,7 +59,6 @@ export async function getDashboard(user: ChatGPTUser) {
 }
 
 export async function getLearningPath(user: ChatGPTUser, slug: string): Promise<LearningPathView | null> {
-  await ensureUser(user);
   const db = getDb();
   const path = await db.prepare(`SELECT slug,name,description,version FROM learning_paths
     WHERE slug=? AND status='published'`).bind(slug).first<Omit<LearningPathView, "missions">>();
@@ -124,3 +137,4 @@ export async function recordAttempt(userId: string, mission: Mission, passed: bo
 
 export * from "./schema";
 export * from "./projects";
+export * from "./metrics";

@@ -16,6 +16,6 @@ for (const file of readdirSync(resolve(root, "drizzle")).filter((name) => /^\d+.
 }
 
 const vinext = resolve(root, "node_modules/vinext/dist/cli.js");
-const server = spawn(process.execPath, [vinext, "dev"], { cwd: root, env: { ...process.env, DEVDEX_E2E: "1" }, stdio: "inherit" });
+const server = spawn(process.execPath, [vinext, "dev"], { cwd: root, env: { ...process.env, DEVDEX_E2E: "1", PUBLIC_BETA_ENABLED: "true", PUBLIC_BETA_MAX_USERS: "0", DEVDEX_ADMIN_EMAIL: "admin@example.test" }, stdio: "inherit" });
 for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => server.kill(signal));
 server.on("exit", (code) => process.exit(code ?? 0));

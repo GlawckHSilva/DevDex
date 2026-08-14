@@ -1,5 +1,5 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { ensureUser, getProject, getRecentProjectSubmissionCount, recordProjectAttempt, recordProjectSubmission } from "@/db";
+import { BetaAccessError, ensureUser, getProject, getRecentProjectSubmissionCount, recordProjectAttempt, recordProjectSubmission } from "@/db";
 import { ProjectRunnerAdapter, type ProjectFiles, type ProjectValidator } from "@/lib/runners/project-adapter";
 
 type Payload = { files?: Partial<ProjectFiles>; mode?: "run" | "test" };
@@ -14,7 +14,11 @@ async function hashFiles(files: ProjectFiles) {
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const user = await getChatGPTUser();
   if (!user) return Response.json({ ok: false, message: "Sessão necessária." }, { status: 401 });
-  await ensureUser(user);
+  try { await ensureUser(user); }
+  catch (error) {
+    if (error instanceof BetaAccessError) return Response.json({ ok: false, message: error.message }, { status: 403 });
+    throw error;
+  }
   const project = await getProject(user.userId, (await params).slug);
   if (!project) return Response.json({ ok: false, message: "Projeto não encontrado." }, { status: 404 });
   const step = project.steps.find((item) => item.state === "available" || item.state === "in_progress");
@@ -53,6 +57,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     });
   } catch (error) {
     errorType = error instanceof Error ? error.name : "UnknownError";
+    console.error(JSON.stringify({ event: "project_runner_error", project: project.slug, step: step.slug, errorType }));
     if (payload.mode === "test") await recordProjectAttempt(user.userId, project, step, false);
     return Response.json({ ok: false, message: error instanceof Error ? error.message : "Não foi possível validar o projeto." }, { status: 422 });
   } finally {

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
-import { ensureUser, getMission, getSqlMissionConfig, getWebMissionConfig } from "@/db";
+import { getMission, getSqlMissionConfig, getWebMissionConfig } from "@/db";
 import { MissionWorkspace } from "./workspace";
 import { SqlWorkspace } from "./sql-workspace";
 import { WebWorkspace } from "./web-workspace";
@@ -14,7 +14,6 @@ export default async function MissionPage({ params }: { params: Promise<{ slug: 
 
 async function MissionContent({ slug }: { slug: string }) {
   const user = await requireChatGPTUser(`/missoes/${slug}`);
-  await ensureUser(user);
   const mission = await getMission(user.userId, slug);
   if (!mission) notFound();
   if (mission.state === "locked") return <main className="app-page container"><a className="back" href="/dashboard">← Dashboard</a><h2>Missão bloqueada</h2><p className="notice">Conclua a missão anterior para liberar este desafio.</p></main>;

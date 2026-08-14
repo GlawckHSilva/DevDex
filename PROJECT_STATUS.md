@@ -1,10 +1,10 @@
 # Project Status
 
-Atualizado em: 2026-08-13
+Atualizado em: 2026-08-14
 
 ## Situação
 
-Fase 1D concluída e publicada em Cloudflare Sites.
+Public Beta v0.1 pronta para publicação em Cloudflare Sites.
 
 ## Implementado
 
@@ -24,6 +24,9 @@ Fase 1D concluída e publicada em Cloudflare Sites.
 - Project Mode com To-do App em cinco etapas e três arquivos;
 - progresso de projeto próprio, XP idempotente e autosave local do código;
 - E2E de autenticação, persistência, isolamento, bloqueio e XP concorrente.
+- acesso público com SIWC, limite configurável de participantes e administrador único;
+- painel administrativo com métricas agregadas de usuários, missões, runtimes e projetos;
+- status derivado do currículo publicado e favicon configurado.
 
 ## Não implementado
 
@@ -32,4 +35,4 @@ Fase 1D concluída e publicada em Cloudflare Sites.
 
 ## Próxima tarefa
 
-Adicionar métricas agregadas e alertas de execução antes de Python.
+Executar a beta com 3–10 pessoas e consolidar o loop RPG a partir dos dados coletados.

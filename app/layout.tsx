@@ -23,6 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(`${protocol}://${host}`),
     title: { default: "DevDex", template: "%s · DevDex" },
     description,
+    icons: { icon: "/og.png" },
     openGraph: { title: "DevDex", description, images: [{ url: "/og.png", width: 1731, height: 909, alt: "DevDex — aprenda programação escrevendo código de verdade" }] },
     twitter: { card: "summary_large_image", title: "DevDex", description, images: ["/og.png"] },
   };

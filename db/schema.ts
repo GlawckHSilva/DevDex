@@ -142,6 +142,11 @@ export const profiles = sqliteTable("profiles", {
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const betaMembers = sqliteTable("beta_members", {
+  userId: text("user_id").primaryKey(),
+  joinedAt: text("joined_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const userLearningPaths = sqliteTable("user_learning_paths", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
   learningPathId: integer("learning_path_id").notNull().references(() => learningPaths.id),

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
-import { ensureUser, getProject } from "@/db";
+import { getProject } from "@/db";
 import { ProjectWorkspace } from "./project-workspace";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const user = await requireChatGPTUser(`/projetos/${slug}`);
-  await ensureUser(user);
   const project = await getProject(user.userId, slug);
   if (!project) notFound();
   const activeStep = project.steps.find((step) => step.state === "available" || step.state === "in_progress") ?? project.steps.at(-1);

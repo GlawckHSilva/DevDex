@@ -1,5 +1,5 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { ensureUser, getMission, getMissionTests, getSqlMissionConfig, getWebMissionConfig, recordAttempt } from "@/db";
+import { BetaAccessError, ensureUser, getMission, getMissionTests, getSqlMissionConfig, getWebMissionConfig, recordAttempt } from "@/db";
 import { getRecentSubmissionCount, recordSubmission, type SubmissionStatus } from "@/db/runner";
 import { JavaScriptRunnerAdapter } from "@/lib/runners/javascript-adapter";
 import { SqlRunnerAdapter, type SqlExpectedResult } from "@/lib/runners/sql-adapter";
@@ -18,7 +18,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   const user = await getChatGPTUser();
   if (!user) return Response.json({ ok: false, message: "Sessão necessária." }, { status: 401 });
   const { slug } = await params;
-  await ensureUser(user);
+  try { await ensureUser(user); }
+  catch (error) {
+    if (error instanceof BetaAccessError) return Response.json({ ok: false, message: error.message }, { status: 403 });
+    throw error;
+  }
   const mission = await getMission(user.userId, slug);
   if (!mission) return Response.json({ ok: false, message: "Missão não encontrada." }, { status: 404 });
   if (mission.state === "locked") return Response.json({ ok: false, message: "Conclua a missão anterior." }, { status: 403 });
@@ -117,6 +121,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     });
   } catch (error) {
     errorType = error instanceof Error ? error.name : "UnknownError";
+    console.error(JSON.stringify({ event: "runner_error", runtime: mission.runtime, mission: mission.slug, errorType }));
     if (payload.mode === "test") await recordAttempt(user.userId, mission, false);
     return Response.json({ ok: false, message: error instanceof Error ? error.message : "Não foi possível avaliar o código." }, { status: 422 });
   } finally {

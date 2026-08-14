@@ -1,11 +1,17 @@
 
-export const metadata = { title: "Status do projeto" };
+import { getPublicStatus } from "@/db";
+import { getBetaConfig } from "@/lib/runtime-config";
 
-export default function Status() {
+export const metadata = { title: "Status do projeto" };
+export const dynamic = "force-dynamic";
+
+export default async function Status() {
+  const status = await getPublicStatus();
+  const beta = getBetaConfig();
   return <main className="app-page container">
     <header className="app-header"><a className="brand" href="/"><span className="brand-mark">D_</span>DevDex</a><a className="back" href="/">← Voltar ao início</a></header>
-    <span className="kicker">PROJECT STATUS</span><h2>Fase 1B — JavaScript + SQLite</h2>
-    <div className="status-grid"><div className="status-card"><span>Implementado</span><strong>11 missões + XP</strong></div><div className="status-card"><span>Runtimes</span><strong>QuickJS + SQLite</strong></div><div className="status-card"><span>Próximo</span><strong>HTML/CSS</strong></div></div>
-    <p className="notice">JavaScript e SQL Fundamentals · SQLite funcionam ponta a ponta com sandboxes independentes. React, Python, Flutter, mentor IA e projetos avançados permanecem fora desta etapa.</p>
+    <span className="kicker">PROJECT STATUS</span><h2>DevDex Public Beta v0.1</h2>
+    <div className="status-grid"><div className="status-card"><span>Currículo publicado</span><strong>{status.missions} missões · {status.paths} trilhas</strong></div><div className="status-card"><span>Execução isolada</span><strong>{status.runtimes} runtimes</strong></div><div className="status-card"><span>Project Mode</span><strong>{status.projects} projeto · {status.projectSteps} etapas</strong></div></div>
+    <p className="notice">Beta {beta.enabled ? "aberta" : "pausada"} para usuários autenticados, com progresso individual, limite controlado e métricas agregadas sem armazenamento do código-fonte.</p>
   </main>;
 }

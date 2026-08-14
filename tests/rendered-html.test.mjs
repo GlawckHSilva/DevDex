@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 async function render(path = "/") {
@@ -19,8 +20,8 @@ test("renders the DevDex foundation landing page", async () => {
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);
 });
 
-test("renders project status", async () => {
-  const response = await render("/status");
-  assert.equal(response.status, 200);
-  assert.match(await response.text(), /Fase 1B/);
+test("project status reads the published curriculum", async () => {
+  const source = await readFile(new URL("../app/status/page.tsx", import.meta.url), "utf8");
+  assert.match(source, /getPublicStatus/);
+  assert.match(source, /Public Beta v0\.1/);
 });

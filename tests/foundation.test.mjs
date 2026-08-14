@@ -6,6 +6,8 @@ const foundationUrl = new URL("../drizzle/0000_awesome_scalphunter.sql", import.
 const engineUrl = new URL("../drizzle/0002_nebulous_jean_grey.sql", import.meta.url);
 const sqlEngineUrl = new URL("../drizzle/0003_clammy_screwball.sql", import.meta.url);
 const routeUrl = new URL("../app/api/missions/[slug]/submit/route.ts", import.meta.url);
+const betaUrl = new URL("../drizzle/0006_square_wallflower.sql", import.meta.url);
+const metricsUrl = new URL("../db/metrics.ts", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
   const sql = await readFile(engineUrl, "utf8");
@@ -28,4 +30,11 @@ test("D1 prevents duplicate XP and the API hides private test data", async () =>
   assert.match(foundation, /UNIQUE INDEX `idx_xp_user_mission`/);
   assert.match(route, /name: `Teste \$\{index \+ 1\}`/);
   assert.match(route, /results: results\.map/);
+});
+
+test("public beta caps admissions and exposes only aggregate metrics", async () => {
+  const [beta, metrics] = await Promise.all([readFile(betaUrl, "utf8"), readFile(metricsUrl, "utf8")]);
+  assert.match(beta, /CREATE TABLE `beta_members`/);
+  assert.match(metrics, /AVG\(duration_ms\)/);
+  assert.doesNotMatch(metrics, /starter_code|source_hash|code_hash/);
 });

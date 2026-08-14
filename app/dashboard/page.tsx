@@ -1,5 +1,6 @@
 import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
 import { getDashboard, getProjectSummaries } from "@/db";
+import { isAdminEmail } from "@/lib/runtime-config";
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ export default async function Dashboard() {
   return <main className="dashboard-shell">
     <aside className="sidebar">
       <a className="brand" href="/"><span className="brand-mark">D_</span>DevDex</a>
-      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Visão geral</a><a href="/projetos/lista-de-tarefas">▣ Project Mode</a><a href="/trilhas/html-fundamentals">◇ HTML</a><a href="/trilhas/css-fundamentals">◇ CSS</a><a href="/trilhas/javascript-fundamentals">◇ JavaScript</a><a href="/trilhas/sql-fundamentals-sqlite">◇ SQL · SQLite</a><span>☆ Conquistas</span></nav>
+      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Visão geral</a><a href="/projetos/lista-de-tarefas">▣ Project Mode</a><a href="/trilhas/html-fundamentals">◇ HTML</a><a href="/trilhas/css-fundamentals">◇ CSS</a><a href="/trilhas/javascript-fundamentals">◇ JavaScript</a><a href="/trilhas/sql-fundamentals-sqlite">◇ SQL · SQLite</a>{isAdminEmail(user.email) ? <a href="/admin/metricas">◉ Métricas</a> : null}<span>☆ Conquistas</span></nav>
       <a className="signout" href={chatGPTSignOutPath("/")}>Sair</a>
     </aside>
     <section className="dashboard-content">

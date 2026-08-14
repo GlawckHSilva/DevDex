@@ -25,6 +25,16 @@ test("protege rotas sem sessão", async ({ request }) => {
   expect(response.headers().location).toContain("/signin-with-chatgpt");
 });
 
+test("restringe métricas ao administrador", async ({ page }) => {
+  await page.setExtraHTTPHeaders(userHeaders("regular-user"));
+  await page.goto("/admin/metricas");
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.setExtraHTTPHeaders(userHeaders("admin"));
+  await page.goto("/admin/metricas");
+  await expect(page.getByRole("heading", { name: "Métricas de aprendizagem" })).toBeVisible();
+  await expect(page.getByText(/Nenhuma métrica armazena o código-fonte/)).toBeVisible();
+});
+
 test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ page }) => {
   await page.setExtraHTTPHeaders(userHeaders("navigation-user"));
   await page.goto("/");

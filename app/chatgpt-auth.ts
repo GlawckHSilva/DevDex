@@ -1,5 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { BetaAccessError, ensureUser } from "@/db";
+import { isAdminEmail } from "@/lib/runtime-config";
 
 export type ChatGPTUser = { userId: string; displayName: string; email: string; fullName: string | null };
 
@@ -15,8 +17,19 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
 
 export async function requireChatGPTUser(returnTo: string): Promise<ChatGPTUser> {
   const user = await getChatGPTUser();
-  if (user) return user;
-  redirect(`/signin-with-chatgpt?return_to=${encodeURIComponent(safeReturnPath(returnTo))}`);
+  if (!user) redirect(`/signin-with-chatgpt?return_to=${encodeURIComponent(safeReturnPath(returnTo))}`);
+  try { await ensureUser(user); }
+  catch (error) {
+    if (error instanceof BetaAccessError) redirect(`/beta-indisponivel?reason=${error.reason}`);
+    throw error;
+  }
+  return user;
+}
+
+export async function requireAdminUser(returnTo: string): Promise<ChatGPTUser> {
+  const user = await requireChatGPTUser(returnTo);
+  if (!isAdminEmail(user.email)) redirect("/dashboard");
+  return user;
 }
 
 export function chatGPTSignOutPath(returnTo = "/") {

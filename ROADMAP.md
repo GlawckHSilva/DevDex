@@ -36,9 +36,19 @@ Primeiro fluxo vertical JavaScript:
 - SELECT único, limites de query, linhas, tempo e escopo;
 - E2E de erros, 20 reenvios, concorrência e isolamento.
 
+## Implementado — Public Beta v0.1
+
+- acesso público com autenticação SIWC e progresso isolado;
+- flag e limite configurável de participantes;
+- métricas agregadas sem armazenamento do código-fonte;
+- painel de métricas exclusivo do administrador;
+- status sincronizado com o currículo publicado.
+
 ## Próximo
 
-- métricas agregadas e alertas de execução.
+- beta assistida com 3–10 pessoas;
+- consolidar personagem, zona inicial e loop de batalha;
+- instrumentar vidas, PESQUISAR, inimigos, elites e bosses quando essas ações existirem.
 
 ## Implementado — Fase 1D
 
