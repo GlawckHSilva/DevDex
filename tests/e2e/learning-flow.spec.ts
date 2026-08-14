@@ -178,6 +178,8 @@ test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ p
   await chooseCharacter(request, userId);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/trilhas/javascript-fundamentals");
+  await expect(page.locator(".game-sidebar")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Voltar às campanhas" })).toBeVisible();
   const variables = page.getByTestId("map-node-guardar-nome");
   const locked = page.getByTestId("map-node-verificar-maioridade");
   await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*8%/);
