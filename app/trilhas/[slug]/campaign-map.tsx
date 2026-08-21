@@ -68,8 +68,9 @@ export function CampaignAdventureMap({ zone, archetype, boss, campaignPath }: {
   }
 
   return <section className="adventure-map-section" id="mapa" data-testid="campaign-map">
-    <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona 01 — {zone.title}</h2><p>{zone.storyIntro}</p></div><a href={`#${campaignPath}`}>Ver zonas</a></header>
-    <div className="adventure-map-canvas" style={{ "--mobile-height": `${180 + allNodes.length * 150}px`, "--fog-reveal": `${Math.min(90, 19 + completed * 11)}%` } as CSSProperties}>
+    <div className="adventure-map-layout">
+      <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona 01 — {zone.title}</h2><p>{zone.storyIntro}</p></div><a href={`#${campaignPath}`}>Ver zonas</a></header>
+      <div className="adventure-map-canvas" style={{ "--mobile-height": `${180 + allNodes.length * 150}px`, "--fog-reveal": `${Math.min(90, 19 + completed * 11)}%` } as CSSProperties}>
       <div className="map-atmosphere" aria-hidden="true" />
       <MapPath nodes={allNodes} />
       <FogLayer />
@@ -78,6 +79,7 @@ export function CampaignAdventureMap({ zone, archetype, boss, campaignPath }: {
       {allNodes.map((node, index) => <MapNode node={node} selected={selected.missionSlug === node.missionSlug} current={node.missionSlug === initial.missionSlug} onSelect={() => setSelectedSlug(node.missionSlug)} onKeyDown={(event) => selectByKeyboard(event, index)} key={node.missionSlug} />)}
       {arriving ? <div className="map-unlock-toast" role="status" data-testid="map-unlock-toast"><span>✦</span> NOVA BATALHA DESBLOQUEADA</div> : null}
       <div className="adventure-legend"><strong>CAMINHO</strong><span><i className="completed" />Concluído</span><span><i className="available" />Disponível</span><span><i className="locked" />Bloqueado</span></div>
+      </div>
       <MissionPanel node={selected} />
     </div>
   </section>;
