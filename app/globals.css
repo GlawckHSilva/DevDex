@@ -1,6 +1,73 @@
 @import "tailwindcss";
 
-:root { --background:#080b10; --surface:#0e131b; --border:#202b3a; --foreground:#f1f5f9; --muted:#8e9bad; --accent:#8b5cf6; --accent-2:#22d3a7; }
+:root { --background:#080b10; --surface:#0e131b; --border:#202b3a; --foreground:#f1f5f9; --muted:#8e9bad; --accent:#8b5cf6; --accent-2:#22d3a7; --sidebar-width:224px; --page-gutter:clamp(20px,3vw,64px); --content-max:1560px; --content-max-reading:1280px; }
+
+/* Global width system: wide desktops should use the viewport instead of a narrow column. */
+body { overflow-x:clip; }
+.container { width:min(var(--content-max),calc(100% - (var(--page-gutter) * 2)))!important; margin-inline:auto; min-width:0; }
+.container>*,.code-grid>*,.section-heading>*,.architecture>*,.dashboard-content>*,.dashboard-top>*,.campaign-continue>*,.campaign-heading>*,.campaign-grid>*,.project-card-grid>*,.game-campaign-header>*,.adventure-map-layout>* { min-width:0; }
+
+/* Landing: keep a comfortable reading measure, but let the headline and code demo breathe. */
+.nav.container,.hero.container,.section.container,.footer.container { max-width:1360px; }
+.hero { padding:clamp(84px,8vw,138px) 0 clamp(76px,7vw,118px); }
+.hero h1 { width:min(900px,100%); max-width:none; font-size:clamp(54px,5.55vw,84px); }
+.hero-copy { max-width:720px; }
+.terminal { width:100%; max-width:none; }
+.code-grid { grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); }
+
+/* Dashboard: the fixed sidebar no longer limits the working area to a 1000px column. */
+.dashboard-shell { grid-template-columns:var(--sidebar-width) minmax(0,1fr)!important; }
+.sidebar { width:var(--sidebar-width); min-width:0; }
+.dashboard-content { width:min(var(--content-max),calc(100vw - var(--sidebar-width) - (var(--page-gutter) * 2)))!important; margin-inline:auto; padding:clamp(38px,4vw,64px) 0 96px; min-width:0; }
+.path-progress-grid,.campaign-grid,.project-card-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.campaign-card,.project-card,.campaign-continue { min-width:0; }
+
+/* Campaign map: use all available width and reserve a dependable selected-encounter panel. */
+.game-campaign-main { width:min(var(--content-max),calc(100% - (var(--page-gutter) * 2)))!important; max-width:none!important; margin-inline:auto; padding:0 0 32px!important; min-width:0; }
+.game-campaign-topbar { width:100%; min-width:0; }
+.game-campaign-header { grid-template-columns:minmax(0,1.6fr) minmax(300px,.85fr) minmax(260px,.7fr)!important; gap:20px!important; max-width:none!important; }
+.adventure-map-section,.adventure-map-layout,.adventure-map-canvas { width:100%; min-width:0; }
+.adventure-map-layout { grid-template-columns:minmax(0,1fr) 320px!important; grid-template-rows:52px minmax(650px,1fr)!important; gap:0 20px!important; }
+.mission-detail-panel { min-width:0; }
+.adventure-legend { right:20px!important; }
+
+@media (min-width:1600px) {
+  .game-campaign-main { padding-bottom:40px!important; }
+  .adventure-map-canvas { min-height:720px!important; }
+}
+
+@media (max-width:1199px) and (min-width:900px) {
+  :root { --page-gutter:clamp(20px,2.5vw,36px); }
+  .game-campaign-header { grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr) minmax(240px,.7fr)!important; }
+  .campaign-title-block,.header-campaign-progress,.game-player-card { height:auto!important; min-height:146px; }
+  .adventure-map-layout { grid-template-columns:minmax(0,1fr) 280px!important; }
+  .adventure-map-canvas { min-height:650px!important; }
+  .mission-detail-panel { grid-column:2!important; grid-row:1/3!important; height:100%!important; margin-top:0!important; }
+}
+
+@media (max-width:899px) {
+  :root { --page-gutter:clamp(16px,4vw,28px); }
+  .nav.container,.hero.container,.section.container,.footer.container { max-width:none; }
+  .hero h1 { font-size:clamp(42px,9vw,64px); }
+  .dashboard-shell { display:block!important; }
+  .sidebar { position:static; width:100%; height:auto; display:flex; flex-direction:row; align-items:center; padding:14px var(--page-gutter); }
+  .sidebar nav { display:none; }
+  .signout { margin:0 0 0 auto; }
+  .dashboard-content { width:min(var(--content-max),calc(100% - (var(--page-gutter) * 2)))!important; padding-top:36px; }
+  .game-campaign-header { grid-template-columns:minmax(0,1fr) minmax(250px,.7fr)!important; }
+  .game-player-card { grid-column:1/3; height:auto!important; min-height:104px; }
+  .adventure-map-layout { grid-template-columns:minmax(0,1fr)!important; grid-template-rows:52px minmax(600px,1fr) auto!important; gap:0!important; }
+  .adventure-zone-heading { grid-column:1; grid-row:1; }
+  .adventure-map-canvas { grid-column:1; grid-row:2; min-height:600px!important; }
+  .mission-detail-panel { grid-column:1; grid-row:3; height:auto; min-height:260px; margin-top:16px; }
+}
+
+@media (max-width:620px) {
+  .code-grid,.path-progress-grid,.campaign-grid,.project-card-grid,.game-campaign-header { grid-template-columns:minmax(0,1fr)!important; }
+  .game-player-card { grid-column:auto; }
+  .campaign-continue,.campaign-heading,.dashboard-top { align-items:flex-start; flex-direction:column; }
+  .campaign-title-block,.header-campaign-progress,.game-player-card { height:auto!important; }
+}
 @theme inline { --color-background:var(--background); --color-foreground:var(--foreground); --font-sans:var(--font-geist-sans); --font-mono:var(--font-geist-mono); }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }
