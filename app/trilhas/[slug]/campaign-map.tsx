@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent } from "react";
+import Image from "next/image";
 import { PixelHero } from "@/app/aventura/character-select";
 import type { Archetype, CampaignLore, CampaignNode, CampaignZone } from "@/db";
 import { CampaignTransmission } from "./campaign-transmission";
@@ -102,7 +103,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
       <div className="map-atmosphere" aria-hidden="true" />
       <MapPath nodes={allNodes} />
       <FogLayer />
-      <button aria-label="Abrir transmissão da campanha" className="adventure-start" data-testid="campaign-prologue" onClick={reopenTransmission} style={{ left: `${START.x}%`, top: `${START.y}%`, "--mobile-x": `${START.mobileX}%`, "--mobile-y": `${START.mobileY}px` } as CSSProperties} type="button"><span>▣</span><strong>PRÓLOGO</strong><small>Transmissão</small></button>
+      <button aria-label="Abrir transmissão da campanha" className="adventure-start" data-testid="campaign-prologue" onClick={reopenTransmission} style={{ left: `${START.x}%`, top: `${START.y}%`, "--mobile-x": `${START.mobileX}%`, "--mobile-y": `${START.mobileY}px` } as CSSProperties} type="button"><span><Image alt="" aria-hidden="true" height={48} src="/ui/prologue-terminal-v1.png" width={48} /></span><strong>PRÓLOGO</strong><small>Transmissão</small></button>
       <PlayerMarker archetype={archetype} position={playerPosition} previous={previousPosition} arriving={arriving} />
       {allNodes.map((node, index) => <MapNode node={node} selected={selected.missionSlug === node.missionSlug} current={node.missionSlug === initial.missionSlug} onSelect={() => setSelectedSlug(node.missionSlug)} onKeyDown={(event) => selectByKeyboard(event, index)} key={node.missionSlug} />)}
       {arriving ? <div className="map-unlock-toast" role="status" data-testid="map-unlock-toast"><span>✦</span> NOVA BATALHA DESBLOQUEADA</div> : null}

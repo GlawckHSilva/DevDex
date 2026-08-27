@@ -317,3 +317,4 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 @media (max-width:620px) { .transmission-overlay { align-items:end; padding:10px; }.campaign-transmission { max-height:calc(100vh - 20px); }.campaign-transmission>header { padding:13px 14px; }.campaign-transmission>header code { font-size:8px; }.transmission-content { max-height:calc(100vh - 72px); padding:28px 20px 20px; }.transmission-content h2 { font-size:36px; }.transmission-content>p { min-height:180px; margin:24px 0; font-size:15px; }.transmission-content footer { align-items:stretch; flex-direction:column; }.transmission-content footer .button,.transmission-skip { width:100%; } }
 @media (prefers-reduced-motion:reduce) { .transmission-cursor { animation:none; } }
 .adventure-start { z-index:9; }
+.adventure-start>span img { width:48px; height:48px; object-fit:contain; image-rendering:pixelated; }
