@@ -195,7 +195,9 @@ test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ p
   await expect(async () => { await locked.click(); await expect(locked).toHaveAttribute("aria-pressed", "true"); }).toPass();
   await expect(page.getByTestId("mission-panel").getByRole("button")).toBeDisabled();
   await variables.click();
-  await expect(page.getByTestId("mission-panel").getByRole("link", { name: /PREPARAR BATALHA/ })).toHaveAttribute("href", "/missoes/guardar-nome");
+  await expect(page.getByTestId("mission-panel").getByRole("link", { name: /COMEÇAR AULA/ })).toHaveAttribute("href", "/missoes/guardar-nome");
+  await expect(page.getByText("30 aulas explicativas · 30 práticas · básico ao profissional")).toBeVisible();
+  await expect(page.getByTestId("course-zone-6")).toBeVisible();
   await variables.focus();
   await page.keyboard.press("ArrowRight");
   await expect(locked).toBeFocused();
@@ -219,8 +221,12 @@ test("abre o Project Mode seguro como boss da zona JavaScript", async ({ page, r
   for (const [slug, code] of javascriptSolutions) expect((await submit(request, userId, slug, code)).status()).toBe(200);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/trilhas/javascript-fundamentals");
+  await expect(async () => {
+    await page.getByTestId("course-zone-1").click();
+    await expect(page.getByRole("heading", { name: /Zona 01/ })).toBeVisible();
+  }).toPass();
   await page.getByTestId("map-node-boss-project").click();
-  await page.getByTestId("mission-panel").getByRole("link", { name: /PREPARAR BATALHA/ }).click();
+  await page.getByTestId("mission-panel").getByRole("link", { name: /ENTRAR NO PROJETO/ }).click();
   await expect(page).toHaveURL(/\/projetos\/lista-de-tarefas\?campaign=javascript-fundamentals$/);
   await expect(page.getByText(/BOSS BATTLE · LISTA DE TAREFAS/)).toBeVisible();
   await expect(page.getByTitle("Preview do projeto")).toHaveAttribute("sandbox", "allow-scripts");
@@ -279,7 +285,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
   await expect(study).toContainText("Títulos e parágrafos");
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
-  await expect(page.getByTestId("start-battle")).toContainText("VOLTAR À BATALHA");
+  await expect(page.getByTestId("start-battle")).toContainText("VOLTAR À PRÁTICA");
   await page.getByTestId("start-battle").click();
   await expect(study).toBeHidden();
   await page.goto("/dashboard");
@@ -314,6 +320,8 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByTestId("battle-objectives").locator(".passed")).toHaveCount(1);
   await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
   await expect(study).toBeVisible();
+  await expect(study).toContainText("1 · EXPLICAÇÃO");
+  await expect(study).toContainText("2 · PRÁTICA");
   await page.getByTestId("start-battle").click();
   await expect(study).toBeHidden();
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();

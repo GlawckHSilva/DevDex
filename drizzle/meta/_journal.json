@@ -71,6 +71,13 @@
       "when": 1786736111948,
       "tag": "0009_calm_dreaming_celestial",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1787832000000,
+      "tag": "0010_complete_curriculum",
+      "breakpoints": true
     }
   ]
 }

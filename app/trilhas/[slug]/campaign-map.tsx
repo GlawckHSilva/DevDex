@@ -26,12 +26,17 @@ const CAMPAIGN_ICONS: Record<string, string[]> = {
   "sql-fundamentals-sqlite": ["▦", "?", "↑", "↔", "%", "∈"],
 };
 
-export function CampaignAdventureMap({ zone, archetype, boss, campaignPath }: {
-  zone: CampaignZone;
+export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath }: {
+  zones: CampaignZone[];
   archetype: Archetype;
-  boss: { title: string; state: NodeState; href: string } | null;
+  bosses: Record<number, { title: string; state: NodeState; href: string }>;
   campaignPath: string;
 }) {
+  const availableZoneIndex = zones.findIndex((item) => item.nodes.some((node) => node.missionState === "available" || node.missionState === "in_progress"));
+  const currentZoneIndex = availableZoneIndex >= 0 ? availableZoneIndex : zones.length - 1;
+  const [selectedZoneIndex, setSelectedZoneIndex] = useState(currentZoneIndex);
+  const zone = zones[selectedZoneIndex] ?? zones[currentZoneIndex];
+  const boss = bosses[zone.id] ?? null;
   const nodes = useMemo<SelectedNode[]>(() => zone.nodes.map((node, index) => {
     const layout = MAP_LAYOUT[index] ?? MAP_LAYOUT.at(-1)!;
     const type = campaignPath === "javascript-fundamentals" && index === 3 ? "bug" : node.enemyType;
@@ -68,7 +73,11 @@ export function CampaignAdventureMap({ zone, archetype, boss, campaignPath }: {
   }
 
   return <section className="adventure-map-section" id="mapa" data-testid="campaign-map">
-    <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona 01 — {zone.title}</h2><p>{zone.storyIntro}</p></div><a href={`#${campaignPath}`}>Ver zonas</a></header>
+    <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona {String(zone.sortOrder).padStart(2, "0")} — {zone.title}</h2><p>{zone.storyIntro}</p></div><strong>{zone.nodes.filter((node) => node.missionState === "completed").length}/{zone.nodes.length} missões</strong></header>
+    <nav className="course-zone-nav" aria-label="Zonas do curso">{zones.map((item, index) => {
+      const locked = item.nodes.every((node) => node.missionState === "locked");
+      return <button className={`${index === selectedZoneIndex ? "active" : ""}${locked ? " locked" : ""}`} aria-current={index === selectedZoneIndex ? "step" : undefined} data-testid={`course-zone-${item.sortOrder}`} key={item.id} onClick={() => { setSelectedZoneIndex(index); setSelectedSlug(""); }}><span>{String(item.sortOrder).padStart(2, "0")}</span><strong>{item.title}</strong><small>{item.progress}%</small></button>;
+    })}</nav>
     <div className="adventure-map-canvas" style={{ "--mobile-height": `${180 + allNodes.length * 150}px`, "--fog-reveal": `${Math.min(90, 19 + completed * 11)}%` } as CSSProperties}>
       <div className="map-atmosphere" aria-hidden="true" />
       <MapPath nodes={allNodes} />
@@ -78,7 +87,7 @@ export function CampaignAdventureMap({ zone, archetype, boss, campaignPath }: {
       {allNodes.map((node, index) => <MapNode node={node} selected={selected.missionSlug === node.missionSlug} current={node.missionSlug === initial.missionSlug} onSelect={() => setSelectedSlug(node.missionSlug)} onKeyDown={(event) => selectByKeyboard(event, index)} key={node.missionSlug} />)}
       {arriving ? <div className="map-unlock-toast" role="status" data-testid="map-unlock-toast"><span>✦</span> NOVA BATALHA DESBLOQUEADA</div> : null}
       <div className="adventure-legend"><strong>CAMINHO</strong><span><i className="completed" />Concluído</span><span><i className="available" />Disponível</span><span><i className="locked" />Bloqueado</span></div>
-      <MissionPanel node={selected} />
+      <MissionPanel node={selected} campaignPath={campaignPath} />
     </div>
   </section>;
 }
@@ -112,11 +121,12 @@ function MapNode({ node, selected, current, onSelect, onKeyDown }: { node: Selec
   ><span className={`map-node-encounter${hasSprite ? " has-sprite" : ""}`}><i className="map-enemy-silhouette">{hasSprite ? "" : node.icon}</i><i className="map-node-pedestal" />{node.state === "completed" ? <b aria-hidden="true">✓</b> : node.state === "locked" ? <b aria-hidden="true">⌁</b> : null}</span><strong>{node.enemyName}</strong><small>{node.title}</small><em>{node.type === "boss" ? "CHEFE" : node.type === "bug" ? "DESAFIO" : node.type === "elite" ? "ELITE" : `NÍVEL ${node.enemyLevel}`}</em></button>;
 }
 
-function MissionPanel({ node }: { node: SelectedNode }) {
+function MissionPanel({ node, campaignPath }: { node: SelectedNode; campaignPath: string }) {
+  const projectBoss = node.missionSlug === "boss-project";
   return <aside className="mission-detail-panel" aria-live="polite" data-testid="mission-panel">
-    <span>ENCONTRO SELECIONADO</span><div className={`detail-node-icon type-${node.type}`}>{node.icon}</div><small>{node.type === "boss" ? "CHEFE DA ZONA" : node.type === "bug" ? "DESAFIO DE DEBUG" : node.type === "elite" ? "INIMIGO ELITE" : "INIMIGO COMUM"}</small><h3>{node.enemyName}</h3><strong>{node.title}</strong><p>{node.description}</p>
+    <span>ENCONTRO SELECIONADO</span><div className={`detail-node-icon type-${node.type}`}>{node.icon}</div><small>{node.type === "boss" ? "CHEFE DA ZONA" : node.type === "bug" ? "DESAFIO DE DEBUG" : node.type === "elite" ? "INIMIGO ELITE" : "INIMIGO COMUM"}</small><h3>{node.enemyName}</h3><strong>{node.title}</strong><p>{node.description}</p>{projectBoss ? null : <div className="mission-learning-flow"><span>1 · AULA</span><i>→</i><span>2 · PRÁTICA</span></div>}
     <dl><div><dt>STATUS</dt><dd className={`status-${node.state}`}>{statusLabel(node.state)}</dd></div><div><dt>RECOMPENSA</dt><dd>{node.xpReward} XP</dd></div></dl>
-    {node.href ? <a className="button" href={node.href}>{node.state === "completed" ? "REVISAR" : node.state === "in_progress" ? "⚔ CONTINUAR BATALHA" : "⚔ PREPARAR BATALHA"}</a> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}
+    {node.href ? <a className="button" href={node.href}>{node.state === "completed" ? "REVISAR" : projectBoss ? "⚔ ENTRAR NO PROJETO" : node.state === "in_progress" ? "⚔ CONTINUAR BATALHA" : "⚔ COMEÇAR AULA"}</a> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}<a className="course-back-link" href={`#${campaignPath}`}>Curso completo · 30 aulas + 30 práticas</a>
   </aside>;
 }
 

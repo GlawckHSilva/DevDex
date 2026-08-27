@@ -15,7 +15,8 @@ test("renders the DevDex foundation landing page", async () => {
   const html = await response.text();
   assert.match(html, /<html lang="pt-BR">/);
   assert.match(html, /Escrevendo código de verdade/);
-  assert.match(html, /HTML(?:<!-- -->)? Fundamentals/);
+  assert.match(html, /Quatro cursos\. Do básico ao profissional/);
+  assert.match(html, /30 MISSÕES/);
   assert.match(html, /QuickJS \+ SQLite/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);
 });
@@ -23,5 +24,5 @@ test("renders the DevDex foundation landing page", async () => {
 test("project status reads the published curriculum", async () => {
   const source = await readFile(new URL("../app/status/page.tsx", import.meta.url), "utf8");
   assert.match(source, /getPublicStatus/);
-  assert.match(source, /Public Beta v0\.2/);
+  assert.match(source, /Public Beta v0\.3/);
 });

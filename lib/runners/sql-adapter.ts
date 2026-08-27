@@ -62,10 +62,8 @@ function validateQuery(query: string, maxStatements: number) {
   const safe = sanitize(query);
   const withoutTrailingSemicolon = safe.replace(/;\s*$/, "");
   if (withoutTrailingSemicolon.includes(";")) throw new Error("Execute somente um statement por vez.");
-  if (!/^\s*SELECT\b/i.test(withoutTrailingSemicolon)) throw new Error("Nesta trilha, somente consultas SELECT são permitidas.");
-  if (/\b(PRAGMA|ATTACH|DETACH|VACUUM|REINDEX|ANALYZE|load_extension|readfile|writefile)\b/i.test(safe) || /sqlite_(?:schema|master)/i.test(query)) throw new Error("A consulta tenta acessar um recurso fora do exercício.");
-  const functionCall = safe.match(/\b([A-Za-z_]\w*)\s*\(/);
-  if (functionCall && functionCall[1].toUpperCase() !== "IN") throw new Error("Funções e subconsultas ainda não fazem parte desta trilha.");
+  if (!/^\s*(?:SELECT|WITH)\b/i.test(withoutTrailingSemicolon)) throw new Error("Nesta trilha, somente consultas de leitura são permitidas.");
+  if (/\b(PRAGMA|ATTACH|DETACH|VACUUM|REINDEX|ANALYZE|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|REPLACE|load_extension|readfile|writefile)\b/i.test(safe) || /sqlite_(?:schema|master)/i.test(query)) throw new Error("A consulta tenta acessar um recurso fora do exercício.");
 }
 
 function normalize(result: { columns: string[]; rows: SqlValue[][] }, orderMatters: boolean) {

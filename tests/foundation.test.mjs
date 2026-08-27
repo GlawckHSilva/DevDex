@@ -11,6 +11,7 @@ const metricsUrl = new URL("../db/metrics.ts", import.meta.url);
 const rpgUrl = new URL("../drizzle/0007_cloudy_mandroid.sql", import.meta.url);
 const campaignsUrl = new URL("../drizzle/0008_high_chat.sql", import.meta.url);
 const studyUrl = new URL("../drizzle/0009_calm_dreaming_celestial.sql", import.meta.url);
+const completeCurriculumUrl = new URL("../drizzle/0010_complete_curriculum.sql", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
   const sql = await readFile(engineUrl, "utf8");
@@ -68,4 +69,14 @@ test("D1 stores mission-specific battle study material", async () => {
   assert.match(sql, /'Títulos e parágrafos'.*'Navegação interna'/s);
   assert.match(sql, /href="#contato"/);
   assert.doesNotMatch(sql, /href="#servicos"/);
+});
+
+test("publishes 30 lesson-and-practice missions for every language", async () => {
+  const sql = await readFile(completeCurriculumUrl, "utf8");
+  assert.equal([...sql.matchAll(/'Aula e prática:/g)].length, 101);
+  assert.equal([...sql.matchAll(/'Antes da batalha, entenda/g)].length, 101);
+  assert.match(sql, /30 aulas explicativas e 30 práticas/);
+  assert.match(sql, /'Cidadela Acessível'.*'Torre do Design System'.*'Torre dos Algoritmos'.*'Observatório Analítico'/s);
+  assert.match(sql, /'sql-inner-join'.*'sql-cte'.*'sql-window-row-number'.*'sql-analise-final'/s);
+  assert.doesNotMatch(sql, /student_code|source_code/);
 });

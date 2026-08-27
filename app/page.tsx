@@ -1,8 +1,8 @@
 const tracks = [
-  ["HTML", "Estrutura e semântica", "01"],
-  ["CSS", "Layout e responsividade", "02"],
-  ["JavaScript", "Lógica e funções", "03"],
-  ["SQL", "Consultas e filtros", "04"],
+  ["HTML", "Semântica, formulários e acessibilidade", "01"],
+  ["CSS", "Design systems, layouts e responsividade", "02"],
+  ["JavaScript", "Lógica, coleções e aplicações", "03"],
+  ["SQL", "Consultas, relações e análise de dados", "04"],
 ] as const;
 
 export default function Home() {
@@ -39,9 +39,9 @@ export default function Home() {
       </section>
 
       <section className="section container" id="trilhas">
-        <div className="section-heading"><div><span className="kicker">MVP CURRICULUM</span><h2>Quatro trilhas. Uma base sólida.</h2></div><p>Conteúdo versionado no banco, separado da interface e liberado por pré-requisitos.</p></div>
+        <div className="section-heading"><div><span className="kicker">CURRÍCULO COMPLETO</span><h2>Quatro cursos. Do básico ao profissional.</h2></div><p>30 aulas e 30 práticas em cada linguagem, organizadas por zonas e liberadas por pré-requisitos.</p></div>
         <div className="track-grid">
-          {tracks.map(([title, description, number]) => <article className="track-card" key={title}><span className="track-number">{number}</span><div className="track-icon">{title.slice(0, 2)}</div><h3>{title} Fundamentals{title === "SQL" ? " · SQLite" : ""}</h3><p>{description}</p><span className="track-state">Disponível</span></article>)}
+          {tracks.map(([title, description, number]) => <article className="track-card" key={title}><span className="track-number">{number}</span><div className="track-icon">{title.slice(0, 2)}</div><h3>{title}{title === "SQL" ? " · SQLite" : ""}</h3><p>{description}</p><span className="track-state">30 MISSÕES</span></article>)}
         </div>
       </section>
 

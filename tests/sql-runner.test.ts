@@ -34,8 +34,16 @@ test("reports wrong results without granting a pass", async () => {
 test("limits rows, execution time and scope", async () => {
   await assert.rejects(() => SqlRunnerAdapter.execute({ ...exercise, maxRows: 3, query: "SELECT * FROM PRODUTOS" }), /mais de 3 linhas/i);
   await assert.rejects(() => SqlRunnerAdapter.execute({ ...exercise, timeoutMs: -1, query: "SELECT * FROM PRODUTOS" }), /limite de execução/i);
-  await assert.rejects(() => SqlRunnerAdapter.execute({ ...exercise, query: "DELETE FROM PRODUTOS" }), /somente consultas SELECT/i);
+  await assert.rejects(() => SqlRunnerAdapter.execute({ ...exercise, query: "DELETE FROM PRODUTOS" }), /somente consultas de leitura/i);
   await assert.rejects(() => SqlRunnerAdapter.execute({ ...exercise, query: 'SELECT * FROM "sqlite_schema"' }), /fora do exercício/i);
+});
+
+test("supports professional read-only SQL with aggregates, CTEs and windows", async () => {
+  const aggregate = await SqlRunnerAdapter.execute({ ...exercise, query: "SELECT COUNT(*) AS TOTAL FROM PRODUTOS", expected: { columns: ["TOTAL"], rows: [[4]], orderMatters: true } });
+  assert.equal(aggregate.passed, true);
+  const cte = await SqlRunnerAdapter.execute({ ...exercise, query: "WITH BASE AS (SELECT * FROM PRODUTOS WHERE ID>=2) SELECT NOME,ROW_NUMBER() OVER (ORDER BY ID) AS POSICAO FROM BASE ORDER BY ID" });
+  assert.deepEqual(cte.rows, [["B", 1], ["C", 2], ["D", 3]]);
+  await assert.rejects(() => SqlRunnerAdapter.execute({ ...exercise, query: "WITH X AS (SELECT 1) DELETE FROM PRODUTOS" }), /fora do exercício/i);
 });
 
 test("creates and discards a fresh database for every execution", async () => {
