@@ -21,7 +21,7 @@ const ARENA_ASSETS: Record<string, string> = {
   SQL: "/campaigns/sql/arquivo-perdido-v1.png",
 };
 
-export function BattleStudyOverlay({ material, enemyType, started, onContinue }: { material: MissionStudyMaterial; enemyType: BattleView["enemyType"]; started: boolean; onContinue: () => void }) {
+export function BattleStudyOverlay({ material, enemyType, pathSlug, started, onContinue }: { material: MissionStudyMaterial; enemyType: BattleView["enemyType"]; pathSlug: string; started: boolean; onContinue: () => void }) {
   return <section className="battle-study-overlay" role="dialog" aria-modal="true" aria-labelledby="study-title" data-testid="study-material">
     <article className="battle-study-card">
       <header><span>{enemyType === "boss" ? "AULA DO CHEFÃO" : "AULA EXPLICATIVA"}</span><small>ETAPA 1 DE 2 · APRENDER</small><div className="lesson-stepper" aria-label="Fluxo da missão"><strong>1 · EXPLICAÇÃO</strong><i>→</i><span>2 · PRÁTICA</span></div><h1 id="study-title">{material.title}</h1><p>{material.introduction}</p></header>
@@ -29,7 +29,7 @@ export function BattleStudyOverlay({ material, enemyType, started, onContinue }:
         <section><h2>Antes de enfrentar este inimigo</h2><p>{material.explanation}</p><h2>Exemplo</h2><pre><code>{material.exampleCode}</code></pre><p>{material.exampleExplanation}</p></section>
         <aside><h2>Pontos importantes</h2><ul>{material.keyPoints.map((item) => <li key={item}>{item}</li>)}</ul>{material.commonMistakes.length ? <><h2>Erros comuns</h2><ul className="study-mistakes">{material.commonMistakes.map((item) => <li key={item}>{item}</li>)}</ul></> : null}</aside>
       </div>
-      <footer><p>O exemplo ensina o conceito. Na etapa seguinte você vai aplicá-lo sem receber a solução pronta.</p><button className="button" data-testid="start-battle" onClick={onContinue}>⚔️ {started ? "VOLTAR À PRÁTICA" : "IR PARA A PRÁTICA"}</button></footer>
+      <footer><p>O exemplo ensina o conceito. Na etapa seguinte você vai aplicá-lo sem receber a solução pronta.</p><div className="study-footer-actions"><a className="button study-back-link" href={`/trilhas/${pathSlug}`}>← VOLTAR AO MAPA</a><button className="button" data-testid="start-battle" onClick={onContinue}>⚔️ {started ? "VOLTAR À PRÁTICA" : "IR PARA A PRÁTICA"}</button></div></footer>
     </article>
   </section>;
 }

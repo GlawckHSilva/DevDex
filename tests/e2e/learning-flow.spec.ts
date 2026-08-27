@@ -279,6 +279,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(study).toContainText("Títulos e parágrafos");
   await expect(study).toContainText("Portal da Guilda");
   await expect(study).not.toContainText("Oficina DevDex");
+  await expect(study.getByRole("link", { name: /VOLTAR AO MAPA/ })).toHaveAttribute("href", "/trilhas/html-fundamentals");
   await expect(page.getByTestId("web-editor").locator(".monaco-editor")).toBeVisible();
   await page.getByTestId("start-battle").click();
   await expect(study).toBeHidden();
