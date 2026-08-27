@@ -2,6 +2,7 @@
 
 import { PixelHero } from "@/app/aventura/character-select";
 import type { Archetype, MissionStudyMaterial } from "@/db";
+import { ENEMY_ASSETS } from "@/lib/enemy-assets";
 import Image from "next/image";
 import { useEffect, useState, type CSSProperties } from "react";
 
@@ -11,9 +12,6 @@ export type BattleAction = "run" | "test" | "research" | "revive";
 export type BattleFeedback = "enemy" | "player" | null;
 type VictoryResult = { newlyCompleted?: boolean; gainedXp?: number; battle?: { state: BattleView["state"] } | null };
 
-const ENEMY_ASSETS: Record<string, string> = {
-  "Espectro do Esqueleto": "/battles/enemies/espectro-do-esqueleto-v1.png",
-};
 const ARENA_ASSETS: Record<string, string> = {
   HTML: "/campaigns/html/ruinas-da-estrutura-v1.png",
   CSS: "/campaigns/css/distrito-sem-cor-v1.png",

@@ -15,6 +15,7 @@ const studyUrl = new URL("../drizzle/0009_calm_dreaming_celestial.sql", import.m
 const completeCurriculumUrl = new URL("../drizzle/0010_complete_curriculum.sql", import.meta.url);
 const expandedCurriculumUrl = new URL("../drizzle/0011_eight_missions_per_zone.sql", import.meta.url);
 const campaignLoreUrl = new URL("../drizzle/0012_campaign_lore.sql", import.meta.url);
+const enemyAssetsUrl = new URL("../lib/enemy-assets.ts", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
   const sql = await readFile(engineUrl, "utf8");
@@ -109,4 +110,13 @@ test("campaign lore is campaign-specific and its view state is persistent", asyn
   assert.match(sql, /Crônicas da Estrutura.*Reino dos Estilos.*Cidade da Lógica.*Minas dos Dados/s);
   assert.match(sql, /user_learning_paths.*lore_seen_at/s);
   assert.doesNotMatch(sql, /total_xp|awarded_xp|user_missions/);
+});
+
+test("the first HTML zone maps every encounter to a dedicated sprite", async () => {
+  const [source, files] = await Promise.all([
+    readFile(enemyAssetsUrl, "utf8"),
+    readdir(new URL("../public/battles/enemies/", import.meta.url)),
+  ]);
+  for (const name of ["Espectro do Esqueleto", "Bug de Atalho para serviços", "Bug de Catálogo organizado", "Bug de Contato do cliente", "Bug de Metadados essenciais", "Bug de Parágrafos organizados", "Elite de Link externo seguro", "Guardião de Página de apresentação"]) assert.match(source, new RegExp(name));
+  assert.equal(files.filter((file) => /(?:bug|elite|guardiao|espectro).+\.png$/.test(file)).length >= 8, true);
 });

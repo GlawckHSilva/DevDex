@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent } 
 import Image from "next/image";
 import { PixelHero } from "@/app/aventura/character-select";
 import type { Archetype, CampaignLore, CampaignNode, CampaignZone } from "@/db";
+import { ENEMY_ASSETS } from "@/lib/enemy-assets";
 import { CampaignTransmission } from "./campaign-transmission";
 
 type NodeState = "completed" | "available" | "in_progress" | "locked";
@@ -134,7 +135,7 @@ function betweenWaypoints(from: typeof START, to: typeof START) {
 }
 
 function MapNode({ node, selected, current, onSelect, onKeyDown }: { node: SelectedNode; selected: boolean; current: boolean; onSelect: () => void; onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void }) {
-  const hasSprite = node.enemyName === "Espectro do Esqueleto";
+  const enemyAsset = ENEMY_ASSETS[node.enemyName];
   return <button
     aria-label={`${node.order}. ${node.enemyName}, ${node.title}, ${statusLabel(node.state)}`}
     aria-pressed={selected}
@@ -144,13 +145,14 @@ function MapNode({ node, selected, current, onSelect, onKeyDown }: { node: Selec
     onKeyDown={onKeyDown}
     style={{ left: `${node.x}%`, top: `${node.y}%`, "--mobile-x": `${node.mobileX}%`, "--mobile-y": `${node.mobileY}px` } as CSSProperties}
     type="button"
-  ><span className={`map-node-encounter${hasSprite ? " has-sprite" : ""}`}><i className="map-enemy-silhouette">{hasSprite ? "" : node.icon}</i><i className="map-node-pedestal" />{node.state === "completed" ? <b aria-hidden="true">✓</b> : node.state === "locked" ? <b aria-hidden="true">⌁</b> : null}</span><strong>{node.enemyName}</strong><small>{node.title}</small><em>{node.type === "boss" ? "CHEFE" : node.type === "bug" ? "DESAFIO" : node.type === "elite" ? "ELITE" : `NÍVEL ${node.enemyLevel}`}</em></button>;
+  ><span className={`map-node-encounter${enemyAsset ? " has-sprite" : ""}`}><i className="map-enemy-silhouette">{enemyAsset ? <Image alt="" aria-hidden="true" fill sizes="130px" src={enemyAsset} /> : node.icon}</i><i className="map-node-pedestal" />{node.state === "completed" ? <b aria-hidden="true">✓</b> : node.state === "locked" ? <b aria-hidden="true">⌁</b> : null}</span><strong>{node.enemyName}</strong><small>{node.title}</small><em>{node.type === "boss" ? "CHEFE" : node.type === "bug" ? "DESAFIO" : node.type === "elite" ? "ELITE" : `NÍVEL ${node.enemyLevel}`}</em></button>;
 }
 
 function MissionPanel({ node, campaignPath }: { node: SelectedNode; campaignPath: string }) {
   const projectBoss = node.missionSlug === "boss-project";
+  const enemyAsset = ENEMY_ASSETS[node.enemyName];
   return <aside className="mission-detail-panel" aria-live="polite" data-testid="mission-panel">
-    <span>ENCONTRO SELECIONADO</span><div className={`detail-node-icon type-${node.type}`}>{node.icon}</div><small>{node.type === "boss" ? "CHEFE DA ZONA" : node.type === "bug" ? "DESAFIO DE DEBUG" : node.type === "elite" ? "INIMIGO ELITE" : "INIMIGO COMUM"}</small><h3>{node.enemyName}</h3><strong>{node.title}</strong><p>{node.description}</p>{projectBoss ? null : <div className="mission-learning-flow"><span>1 · AULA</span><i>→</i><span>2 · PRÁTICA</span></div>}
+    <span>ENCONTRO SELECIONADO</span>{enemyAsset ? <div className={`detail-enemy-sprite type-${node.type}`}><Image alt={`Sprite de ${node.enemyName}`} fill sizes="150px" src={enemyAsset} /></div> : <div className={`detail-node-icon type-${node.type}`}>{node.icon}</div>}<small>{node.type === "boss" ? "CHEFE DA ZONA" : node.type === "bug" ? "DESAFIO DE DEBUG" : node.type === "elite" ? "INIMIGO ELITE" : "INIMIGO COMUM"}</small><h3>{node.enemyName}</h3><strong>{node.title}</strong><p>{node.description}</p>{projectBoss ? null : <div className="mission-learning-flow"><span>1 · AULA</span><i>→</i><span>2 · PRÁTICA</span></div>}
     <dl><div><dt>STATUS</dt><dd className={`status-${node.state}`}>{statusLabel(node.state)}</dd></div><div><dt>RECOMPENSA</dt><dd>{node.xpReward} XP</dd></div></dl>
     {node.href ? <a className="button" href={node.href}>{node.state === "completed" ? "REVISAR" : projectBoss ? "⚔ ENTRAR NO PROJETO" : node.state === "in_progress" ? "⚔ CONTINUAR BATALHA" : "⚔ COMEÇAR AULA"}</a> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}<a className="course-back-link" href={`#${campaignPath}`}>Curso completo · 48 aulas + 48 práticas</a>
   </aside>;
