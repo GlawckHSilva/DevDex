@@ -299,7 +299,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByText("Espectro do Esqueleto", { exact: true })).toBeVisible();
   await expect(page.getByTestId("enemy-hp")).toContainText("100 / 100 HP");
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
-  await expect(page.getByRole("link", { name: /Voltar ao mapa/ })).toHaveAttribute("href", "/trilhas/html-fundamentals");
+  await expect(page.getByRole("link", { name: /Voltar (?:para )?o mapa/ })).toHaveAttribute("href", "/trilhas/html-fundamentals");
   await expect(page.getByRole("button", { name: /Pesquisar uma dica/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Testar código/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeVisible();

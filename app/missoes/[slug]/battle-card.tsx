@@ -36,9 +36,9 @@ export function BattleStudyOverlay({ material, enemyType, started, onContinue }:
 
 export function BattleHeader({ battle, pathSlug, pathLabel, title, xpReward }: { battle?: BattleView; pathSlug: string; pathLabel: string; title: string; xpReward: number }) {
   return <header className="battle-page-header">
-    <a href={`/trilhas/${pathSlug}`}>← <span>Voltar ao mapa</span></a>
-    <div><small>{pathLabel}</small><strong>{title}</strong></div>
-    <div className="battle-header-status"><BattleLives lives={battle?.lives ?? 3} /><b>+{xpReward} XP</b></div>
+    <div className="battle-header-start"><a className="battle-brand" href="/dashboard">Dev<span>Dex</span></a><a className="battle-back" href={`/trilhas/${pathSlug}`}>← <span>Voltar para o mapa</span></a></div>
+    <div className="battle-header-mission"><small>{pathLabel}</small><strong>{title}</strong></div>
+    <div className="battle-header-status"><div className="battle-xp"><span>◈ Nível {battle?.playerLevel ?? 1}</span><div><i style={{ width: `${Math.min(88, 34 + xpReward / 3)}%` }} /></div><small>+{xpReward} XP na missão</small></div><BattleLives lives={battle?.lives ?? 3} /></div>
   </header>;
 }
 
@@ -76,27 +76,36 @@ export function BattlePanel({ battle, technology, objective, results, hint, feed
   const enemyAsset = ENEMY_ASSETS[battle.enemyName];
   const arenaAsset = ARENA_ASSETS[technology.toUpperCase()];
 
-  return <aside className={`battle-panel battle-${battle.state} type-${battle.enemyType}${feedback ? ` hit-${feedback}` : ""}${victoryXp !== null ? " victory-sequence" : ""}`} data-testid="battle-panel">
-    <span className="battle-panel-kicker">BATALHA · {technology.toUpperCase()}</span>
+  return <aside className={`battle-panel battle-${battle.state} type-${battle.enemyType}${feedback ? ` hit-${feedback}` : ""}${hint ? " has-hint" : ""}${victoryXp !== null ? " victory-sequence" : ""}`} data-testid="battle-panel">
+    <header className="battle-enemy-heading"><div><strong>{battle.enemyName}</strong><small>Nível {battle.enemyLevel}</small></div><span>BATALHA · {technology.toUpperCase()}</span></header>
     <div className="battle-arena" style={arenaAsset ? { "--battle-arena-image": `url('${arenaAsset}')` } as CSSProperties : undefined} aria-label={`Você contra ${battle.enemyName}`}>
-      <div className="battle-combatant battle-player"><PixelHero archetype={battle.archetype} /><strong>VOCÊ</strong><small>Nível {battle.playerLevel}</small></div>
+      <div className="battle-combatant battle-player" aria-hidden="true"><PixelHero archetype={battle.archetype} /><span>VOCÊ</span></div>
       <b className="battle-vs">VS</b>
-      <div className="battle-combatant battle-enemy">{enemyAsset ? <Image src={enemyAsset} alt={`Sprite de ${battle.enemyName}`} width={190} height={210} /> : <div className={`pixel-enemy pixel-enemy-${battle.enemyType}`} aria-hidden="true"><i className="enemy-eye" /><i className="enemy-eye" /><i className="enemy-body" /><i className="enemy-crown" /></div>}<strong>{battle.enemyName}</strong><small>Nível {battle.enemyLevel}</small><div className="enemy-hp" data-testid="enemy-hp"><div><span>HP DO INIMIGO</span><b>{hp} / 100 HP</b></div><div className="enemy-hp-track" role="meter" aria-label={`${battle.enemyName} com ${hp} de 100 HP`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={hp}><i style={{ width: `${hp}%` }} /></div></div></div>
+      <div className="battle-combatant battle-enemy">{enemyAsset ? <Image src={enemyAsset} alt={`Sprite de ${battle.enemyName}`} width={190} height={210} /> : <div className={`pixel-enemy pixel-enemy-${battle.enemyType}`} aria-hidden="true"><i className="enemy-eye" /><i className="enemy-eye" /><i className="enemy-body" /><i className="enemy-crown" /></div>}<div className="enemy-hp" data-testid="enemy-hp"><div><span>HP</span><b>{hp} / 100 HP</b></div><div className="enemy-hp-track" role="meter" aria-label={`${battle.enemyName} com ${hp} de 100 HP`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={hp}><i style={{ width: `${hp}%` }} /></div></div></div>
       {victoryXp !== null ? <div className="battle-victory-overlay" data-testid="victory-sequence" aria-live="assertive"><span>INIMIGO DERROTADO</span><strong>CONCLUÍDO</strong>{victoryXp > 0 ? <b>+{victoryXp} XP</b> : null}</div> : null}
     </div>
-    <section className="battle-objectives" data-testid="battle-objectives"><h2>◎ OBJETIVOS DA BATALHA</h2>{visibleResults.map((result) => <p className={result.passed ? "passed" : "pending"} key={result.name}><span>{result.passed ? "✓" : "○"}</span>{result.name}</p>)}</section>
-    {hint ? <div className="battle-tip"><b>Dica:</b> {hint}</div> : null}
+    <section className="battle-objectives" data-testid="battle-objectives"><h2>⚗ TESTES <b>{passed}/{visibleResults.length}</b></h2>{visibleResults.map((result) => <p className={result.passed ? "passed" : "pending"} key={result.name}><span>{result.passed ? "✓" : "○"}</span>{result.name}</p>)}</section>
     {battle.state === "defeated" ? <div className="battle-state-overlay"><strong>DERROTADO</strong><p>Você ficou sem vidas nesta batalha.</p><button className="button" disabled={loading !== null} onClick={onRevive}>{loading === "revive" ? "RECUPERANDO…" : "TENTAR NOVAMENTE"}</button></div> : null}
     {battle.state === "completed" && victoryXp === null ? <div className="battle-victory-banner"><strong>{review ? "REVISÃO" : "CONCLUÍDO"}</strong><span>{battle.enemyName} derrotado</span></div> : null}
+  </aside>;
+}
+
+export function BattleBriefPanel({ briefing, objective, hint }: { briefing: string; objective: string; hint?: string | null }) {
+  const objectives = publicObjectives(objective);
+  return <aside className="battle-brief-panel">
+    <section><span className="battle-brief-kicker">⚑ MISSÃO</span><p>{briefing}</p></section>
+    <section className="battle-brief-objectives"><h2>◎ OBJETIVOS</h2>{objectives.map((item) => <p key={item}><span>○</span>{item}</p>)}</section>
+    <details className="battle-brief-hint" open={Boolean(hint)}><summary>💡 PISTA <b>⌄</b></summary><p>{hint ?? "Teste seu código sem medo: somente uma solução atacada incorretamente consome vida."}</p></details>
   </aside>;
 }
 
 export function BattleActions({ battle, loading, onAction, victory = false }: { battle?: BattleView; loading: BattleAction | null; onAction: (action: BattleAction) => void; victory?: boolean }) {
   if (battle?.state === "defeated") return <section className="battle-actions"><button className="battle-action attack" aria-label="Tentar batalha novamente" disabled={loading !== null} onClick={() => onAction("revive")}>{loading === "revive" ? "RECUPERANDO…" : "♥ TENTAR NOVAMENTE"}</button></section>;
   return <section className="battle-actions" aria-label="Ações da batalha">
-    <button className="battle-action research" aria-label="Pesquisar uma dica sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("research")}>⌕ <span>PESQUISAR</span></button>
-    <button className="battle-action run" aria-label="Testar código sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("run")}>△ <span>{loading === "run" ? "TESTANDO…" : "TESTAR"}</span></button>
-    <button className="battle-action attack" aria-label="Atacar com a solução; uma solução incorreta perde uma vida" disabled={loading !== null || battle?.state === "completed" || victory} onClick={() => onAction("test")}>⚔ <span>{loading === "test" ? "ATACANDO…" : "ATACAR"}</span><small>Solução incorreta: −1 ♥</small></button>
+    <span className="battle-safe-note">♢ Testar não consome vida</span>
+    <button className="battle-action research" aria-label="Pesquisar uma dica sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("research")}>💡 <span>Ver dica</span></button>
+    <button className="battle-action run" aria-label="Testar código sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("run")}>▷ <span>{loading === "run" ? "Testando…" : "Testar código"}</span></button>
+    <button className="battle-action attack" aria-label="Atacar com a solução; uma solução incorreta perde uma vida" disabled={loading !== null || battle?.state === "completed" || victory} onClick={() => onAction("test")}>⚔ <span>{loading === "test" ? "Atacando…" : "Atacar solução"}</span></button>
   </section>;
 }
 
