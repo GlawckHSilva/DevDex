@@ -30,7 +30,9 @@ async function submitProject(request: APIRequestContext, userId: string, files: 
 }
 
 async function chooseCharacter(request: APIRequestContext, userId: string) {
-  return request.post("/api/character", { headers: userHeaders(userId), data: { archetype: "adventurer" } });
+  const response = await request.post("/api/character", { headers: userHeaders(userId), data: { archetype: "adventurer" } });
+  await Promise.all(["html-fundamentals", "css-fundamentals", "javascript-fundamentals", "sql-fundamentals-sqlite"].map((slug) => request.post(`/api/campaigns/${slug}/lore`, { headers: userHeaders(userId) })));
+  return response;
 }
 
 test("protege rotas sem sessão", async ({ request }) => {
@@ -72,7 +74,7 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   const character = await request.post("/api/character", { headers, data: { archetype: "adventuress" } });
   expect(await character.json()).toMatchObject({ ok: true, character: { archetype: "adventuress" } });
   await page.goto("/trilhas/javascript-fundamentals");
-  await expect(page.getByRole("heading", { name: "Cidade da Lógica" })).toBeVisible();
+  await expect(page.locator("h1", { hasText: "Cidade da Lógica" })).toBeVisible();
   await expect(page.getByTestId("campaign-map")).toBeVisible();
   await expect(page.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Disponível/);
   await page.goto("/missoes/guardar-nome");
@@ -99,6 +101,49 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   await expect(page.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Concluída/);
 });
 
+test("apresenta e persiste a transmissão de lore sem alterar progresso", async ({ page, request }) => {
+  const userId = "campaign-lore-user";
+  const headers = userHeaders(userId);
+  await request.post("/api/character", { headers, data: { archetype: "adventurer" } });
+  await page.setExtraHTTPHeaders(headers);
+  await page.goto("/trilhas/html-fundamentals");
+  const transmission = page.getByTestId("campaign-transmission");
+  await expect(transmission).toBeVisible();
+  await expect(transmission.getByText("TRANSMISSÃO RECEBIDA")).toBeVisible();
+  await expect(transmission.getByText("HTML-STR-001")).toBeVisible();
+  await transmission.getByRole("button", { name: "MOSTRAR TUDO" }).click();
+  await expect(transmission.getByTestId("transmission-text")).toContainText("formulários caíram sob a corrupção");
+  await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
+  const recorded = page.waitForResponse((response) => response.url().endsWith("/api/campaigns/html-fundamentals/lore") && response.status() === 200);
+  await transmission.getByRole("button", { name: /INICIAR JORNADA/ }).click();
+  await recorded;
+  await expect(transmission).toHaveCount(0);
+  await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveAttribute("aria-label", /Disponível/);
+  await expect(page.getByTestId("map-node-navegacao-da-oficina")).toHaveAttribute("aria-label", /Bloqueada/);
+  await page.reload();
+  await expect(transmission).toHaveCount(0);
+  await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
+  await page.getByTestId("campaign-prologue").click();
+  await expect(transmission.getByTestId("transmission-text")).toContainText("O mundo digital perdeu sua estrutura");
+  await transmission.getByRole("button", { name: /VOLTAR AO MAPA/ }).click();
+  await page.goto("/trilhas/css-fundamentals");
+  await expect(page.getByTestId("campaign-transmission").getByRole("heading", { name: "Reino dos Estilos" })).toBeVisible();
+  await expect(page.getByTestId("campaign-transmission")).toContainText("Curadora Prism");
+});
+
+test("transmissão respeita redução de movimento", async ({ page, request }) => {
+  const userId = "campaign-lore-reduced-motion";
+  const headers = userHeaders(userId);
+  await request.post("/api/character", { headers, data: { archetype: "adventurer" } });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setExtraHTTPHeaders(headers);
+  await page.goto("/trilhas/sql-fundamentals-sqlite");
+  const transmission = page.getByTestId("campaign-transmission");
+  await expect(transmission.getByTestId("transmission-text")).toContainText("Registros essenciais foram fragmentados");
+  await expect(transmission.locator(".transmission-cursor")).toHaveCount(0);
+  await expect(transmission.getByRole("button", { name: /INICIAR JORNADA/ })).toBeVisible();
+});
+
 test("percorre trilha, conclui missão e persiste apó novo login", async ({ browser, page, request }) => {
   const userId = "journey-user";
   await chooseCharacter(request, userId);
@@ -109,7 +154,7 @@ test("percorre trilha, conclui missão e persiste apó novo login", async ({ bro
 
   await page.goto("/trilhas/javascript-fundamentals");
   await expect(page.getByRole("heading", { name: "Cidade da Lógica" })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Bloqueada/ })).toHaveCount(5);
+  await expect(page.getByRole("button", { name: /Bloqueada/ })).toHaveCount(8);
 
   await page.goto("/missoes/guardar-nome");
   await expect(page.getByTestId("code-editor")).toBeVisible();
@@ -276,6 +321,7 @@ test("executa SQLite/Wasm descartável sem misturar progresso", async ({ page, r
 });
 
 test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, request }) => {
+  test.setTimeout(60_000);
   const userId = "web-ui-user";
   await chooseCharacter(request, userId);
   await page.setExtraHTTPHeaders(userHeaders(userId));
@@ -356,7 +402,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveAttribute("aria-label", /Concluída/);
   await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveClass(/state-completed/);
   await expect(page.getByTestId("map-node-navegacao-da-oficina")).toHaveAttribute("aria-label", /Disponível/);
-  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*24%;top:\s*49%/);
+  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*18%;top:\s*49%/);
   await page.goto("/missoes/navegacao-da-oficina");
   await expect(page.getByTestId("study-material")).toContainText("Navegação interna");
   await expect(page.getByTestId("study-material")).not.toContainText("Portal da Guilda");

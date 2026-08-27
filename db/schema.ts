@@ -25,6 +25,13 @@ export const campaigns = sqliteTable("campaigns", {
   title: text("title").notNull(),
   subtitle: text("subtitle").notNull(),
   storyIntro: text("story_intro").notNull(),
+  loreTitle: text("lore_title").notNull().default(""),
+  loreSubtitle: text("lore_subtitle").notNull().default(""),
+  loreSender: text("lore_sender").notNull().default(""),
+  loreIntroText: text("lore_intro_text").notNull().default(""),
+  loreShortDescription: text("lore_short_description").notNull().default(""),
+  loreSignature: text("lore_signature").notNull().default(""),
+  loreTransmissionId: text("lore_transmission_id").notNull().default(""),
   theme: text("theme").notNull(),
   status: text("status", { enum: ["draft", "published", "deprecated"] }).notNull().default("published"),
   sortOrder: integer("sort_order").notNull(),
@@ -240,6 +247,7 @@ export const userLearningPaths = sqliteTable("user_learning_paths", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
   learningPathId: integer("learning_path_id").notNull().references(() => learningPaths.id),
   startedAt: text("started_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  loreSeenAt: text("lore_seen_at"),
 }, (table) => [primaryKey({ columns: [table.userId, table.learningPathId] })]);
 
 export const userMissions = sqliteTable("user_missions", {

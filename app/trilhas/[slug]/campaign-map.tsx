@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { PixelHero } from "@/app/aventura/character-select";
-import type { Archetype, CampaignNode, CampaignZone } from "@/db";
+import type { Archetype, CampaignLore, CampaignNode, CampaignZone } from "@/db";
+import { CampaignTransmission } from "./campaign-transmission";
 
 type NodeState = "completed" | "available" | "in_progress" | "locked";
 type MapType = "enemy" | "bug" | "elite" | "boss";
@@ -28,11 +29,13 @@ const CAMPAIGN_ICONS: Record<string, string[]> = {
   "sql-fundamentals-sqlite": ["▦", "?", "↑", "↔", "%", "∈", "✦", "♛"],
 };
 
-export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath }: {
+export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, lore, loreSeen: initialLoreSeen }: {
   zones: CampaignZone[];
   archetype: Archetype;
   bosses: Record<number, { title: string; state: NodeState; href: string }>;
   campaignPath: string;
+  lore: CampaignLore;
+  loreSeen: boolean;
 }) {
   const availableZoneIndex = zones.findIndex((item) => item.nodes.some((node) => node.missionState === "available" || node.missionState === "in_progress"));
   const currentZoneIndex = availableZoneIndex >= 0 ? availableZoneIndex : zones.length - 1;
@@ -49,6 +52,9 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath }:
   const initial = allNodes.find((node) => node.state === "available" || node.state === "in_progress") ?? allNodes.at(-1)!;
   const [selectedSlug, setSelectedSlug] = useState(initial.missionSlug);
   const [arriving, setArriving] = useState(false);
+  const [loreSeen, setLoreSeen] = useState(initialLoreSeen);
+  const [transmissionOpen, setTransmissionOpen] = useState(!initialLoreSeen);
+  const [firstView, setFirstView] = useState(!initialLoreSeen);
   const selected = allNodes.find((node) => node.missionSlug === selectedSlug) ?? initial;
   const completed = nodes.filter((node) => node.state === "completed").length;
   const target = completed === 0 ? START : completed < nodes.length ? MAP_LAYOUT[completed] : bossNode ? BOSS_LAYOUT : MAP_LAYOUT[nodes.length - 1];
@@ -74,7 +80,18 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath }:
     document.querySelector<HTMLButtonElement>(`[data-testid="map-node-${allNodes[next].missionSlug}"]`)?.focus();
   }
 
+  function closeTransmission() {
+    setTransmissionOpen(false);
+    if (!loreSeen) {
+      setLoreSeen(true);
+      void fetch(`/api/campaigns/${campaignPath}/lore`, { method: "POST" }).catch(() => setLoreSeen(false));
+    }
+  }
+
+  function reopenTransmission() { setFirstView(false); setTransmissionOpen(true); }
+
   return <section className="adventure-map-section" id="mapa" data-testid="campaign-map">
+    {transmissionOpen ? <CampaignTransmission firstView={firstView} lore={lore} onClose={closeTransmission} open /> : null}
     <nav className="course-zone-nav" aria-label="Zonas do curso">{zones.map((item, index) => {
       const locked = item.nodes.every((node) => node.missionState === "locked");
       return <button className={`${index === selectedZoneIndex ? "active" : ""}${locked ? " locked" : ""}`} aria-current={index === selectedZoneIndex ? "step" : undefined} data-testid={`course-zone-${item.sortOrder}`} key={item.id} onClick={() => { setSelectedZoneIndex(index); setSelectedSlug(""); }}><span>{String(item.sortOrder).padStart(2, "0")}</span><strong>{item.title}</strong><small>{item.progress}%</small></button>;
@@ -85,7 +102,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath }:
       <div className="map-atmosphere" aria-hidden="true" />
       <MapPath nodes={allNodes} />
       <FogLayer />
-      <div className="adventure-start" style={{ left: `${START.x}%`, top: `${START.y}%`, "--mobile-x": `${START.mobileX}%`, "--mobile-y": `${START.mobileY}px` } as CSSProperties}><span>⚑</span><strong>INÍCIO</strong><small>Ponto de partida</small></div>
+      <button aria-label="Abrir transmissão da campanha" className="adventure-start" data-testid="campaign-prologue" onClick={reopenTransmission} style={{ left: `${START.x}%`, top: `${START.y}%`, "--mobile-x": `${START.mobileX}%`, "--mobile-y": `${START.mobileY}px` } as CSSProperties} type="button"><span>▣</span><strong>PRÓLOGO</strong><small>Transmissão</small></button>
       <PlayerMarker archetype={archetype} position={playerPosition} previous={previousPosition} arriving={arriving} />
       {allNodes.map((node, index) => <MapNode node={node} selected={selected.missionSlug === node.missionSlug} current={node.missionSlug === initial.missionSlug} onSelect={() => setSelectedSlug(node.missionSlug)} onKeyDown={(event) => selectByKeyboard(event, index)} key={node.missionSlug} />)}
       {arriving ? <div className="map-unlock-toast" role="status" data-testid="map-unlock-toast"><span>✦</span> NOVA BATALHA DESBLOQUEADA</div> : null}

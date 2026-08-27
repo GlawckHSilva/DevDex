@@ -14,6 +14,7 @@ const campaignsUrl = new URL("../drizzle/0008_high_chat.sql", import.meta.url);
 const studyUrl = new URL("../drizzle/0009_calm_dreaming_celestial.sql", import.meta.url);
 const completeCurriculumUrl = new URL("../drizzle/0010_complete_curriculum.sql", import.meta.url);
 const expandedCurriculumUrl = new URL("../drizzle/0011_eight_missions_per_zone.sql", import.meta.url);
+const campaignLoreUrl = new URL("../drizzle/0012_campaign_lore.sql", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
   const sql = await readFile(engineUrl, "utf8");
@@ -100,4 +101,12 @@ test("each zone has eight sequential missions and the eighth is its boss", async
   ) GROUP BY campaign_id ORDER BY campaign_id`)[0];
   db.close();
   assert.deepEqual(result.values, [[1,6,48],[2,6,48],[3,6,48],[4,6,48]]);
+});
+
+test("campaign lore is campaign-specific and its view state is persistent", async () => {
+  const sql = await readFile(campaignLoreUrl, "utf8");
+  assert.match(sql, /lore_title.*lore_subtitle.*lore_sender.*lore_intro_text.*lore_short_description.*lore_signature.*lore_transmission_id/s);
+  assert.match(sql, /Crônicas da Estrutura.*Reino dos Estilos.*Cidade da Lógica.*Minas dos Dados/s);
+  assert.match(sql, /user_learning_paths.*lore_seen_at/s);
+  assert.doesNotMatch(sql, /total_xp|awarded_xp|user_missions/);
 });
