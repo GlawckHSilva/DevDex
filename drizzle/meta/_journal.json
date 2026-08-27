@@ -78,6 +78,13 @@
       "when": 1787832000000,
       "tag": "0010_complete_curriculum",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1787837000000,
+      "tag": "0011_eight_missions_per_zone",
+      "breakpoints": true
     }
   ]
 }

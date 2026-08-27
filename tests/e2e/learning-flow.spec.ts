@@ -13,6 +13,9 @@ const javascriptSolutions = [
   ["somar-lista", "function somarLista(valores) { return valores.reduce((total, valor) => total + valor, 0); }"],
   ["calcular-dobro", "function dobro(numero) { return numero * 2; }"],
   ["filtrar-pares", "function pares(valores) { return valores.filter((valor) => valor % 2 === 0); }"],
+  ["operacoes-basicas", "function calcularOperacoes(a, b) { return { soma: a + b, produto: a * b }; }"],
+  ["classificar-numero", "function classificarNumero(numero) { return numero > 0 ? 'positivo' : numero < 0 ? 'negativo' : 'zero'; }"],
+  ["resumo-numerico", "function resumirNumeros(valores) { return valores.reduce((r, valor) => ({ soma: r.soma + valor, positivos: r.positivos + (valor > 0 ? 1 : 0) }), { soma: 0, positivos: 0 }); }"],
 ] as const;
 
 async function submit(request: APIRequestContext, userId: string, slug: string, code: string) {
@@ -189,14 +192,14 @@ test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ p
   const variables = page.getByTestId("map-node-guardar-nome");
   const locked = page.getByTestId("map-node-verificar-maioridade");
   await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*7%/);
-  await expect(page.locator(".path-desktop path")).toHaveCount(6);
+  await expect(page.locator(".path-desktop path")).toHaveCount(9);
   await expect(page.locator(".map-fog")).toBeVisible();
   await expect(page.getByTestId("map-node-boss-project")).toHaveClass(/type-boss.*state-locked/);
   await expect(async () => { await locked.click(); await expect(locked).toHaveAttribute("aria-pressed", "true"); }).toPass();
   await expect(page.getByTestId("mission-panel").getByRole("button")).toBeDisabled();
   await variables.click();
   await expect(page.getByTestId("mission-panel").getByRole("link", { name: /COMEÇAR AULA/ })).toHaveAttribute("href", "/missoes/guardar-nome");
-  await expect(page.getByText("30 aulas explicativas · 30 práticas · básico ao profissional")).toBeVisible();
+  await expect(page.getByText("48 aulas explicativas · 48 práticas · 6 zonas · básico ao profissional")).toBeVisible();
   await expect(page.getByTestId("course-zone-6")).toBeVisible();
   await variables.focus();
   await page.keyboard.press("ArrowRight");
@@ -205,7 +208,7 @@ test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ p
   await page.reload();
   await expect(variables).toHaveAttribute("aria-label", /Concluída/);
   await expect(locked).toHaveAttribute("aria-label", /Disponível/);
-  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*24%;top:\s*49%/);
+  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*18%;top:\s*49%/);
   await variables.click();
   await expect(page.getByTestId("mission-panel").getByRole("link", { name: /REVISAR/ })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
@@ -221,7 +224,7 @@ test("abre o Project Mode seguro como boss da zona JavaScript", async ({ page, r
   for (const [slug, code] of javascriptSolutions.slice(0, -1)) expect((await submit(request, userId, slug, code)).status()).toBe(200);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/trilhas/javascript-fundamentals");
-  await expect(page.getByTestId("map-node-filtrar-pares")).toHaveClass(/type-boss.*state-available/);
+  await expect(page.getByTestId("map-node-resumo-numerico")).toHaveClass(/type-boss.*state-available/);
   await expect(page.getByTestId("map-node-boss-project")).toHaveClass(/type-boss.*state-locked/);
   expect((await submit(request, userId, javascriptSolutions.at(-1)![0], javascriptSolutions.at(-1)![1])).status()).toBe(200);
   await page.reload();

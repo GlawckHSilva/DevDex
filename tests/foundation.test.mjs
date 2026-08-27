@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import initSqlJs from "sql.js";
 import test from "node:test";
 
 const foundationUrl = new URL("../drizzle/0000_awesome_scalphunter.sql", import.meta.url);
@@ -12,6 +13,7 @@ const rpgUrl = new URL("../drizzle/0007_cloudy_mandroid.sql", import.meta.url);
 const campaignsUrl = new URL("../drizzle/0008_high_chat.sql", import.meta.url);
 const studyUrl = new URL("../drizzle/0009_calm_dreaming_celestial.sql", import.meta.url);
 const completeCurriculumUrl = new URL("../drizzle/0010_complete_curriculum.sql", import.meta.url);
+const expandedCurriculumUrl = new URL("../drizzle/0011_eight_missions_per_zone.sql", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
   const sql = await readFile(engineUrl, "utf8");
@@ -71,12 +73,31 @@ test("D1 stores mission-specific battle study material", async () => {
   assert.doesNotMatch(sql, /href="#servicos"/);
 });
 
-test("publishes 30 lesson-and-practice missions for every language", async () => {
-  const sql = await readFile(completeCurriculumUrl, "utf8");
-  assert.equal([...sql.matchAll(/'Aula e prática:/g)].length, 101);
-  assert.equal([...sql.matchAll(/'Antes da batalha, entenda/g)].length, 101);
-  assert.match(sql, /30 aulas explicativas e 30 práticas/);
-  assert.match(sql, /'Cidadela Acessível'.*'Torre do Design System'.*'Torre dos Algoritmos'.*'Observatório Analítico'/s);
-  assert.match(sql, /'sql-inner-join'.*'sql-cte'.*'sql-window-row-number'.*'sql-analise-final'/s);
-  assert.doesNotMatch(sql, /student_code|source_code/);
+test("publishes 48 lesson-and-practice missions in six zones for every language", async () => {
+  const [base, expanded] = await Promise.all([readFile(completeCurriculumUrl, "utf8"), readFile(expandedCurriculumUrl, "utf8")]);
+  assert.equal([...base.matchAll(/'Aula e prática:/g)].length, 101);
+  assert.equal([...expanded.matchAll(/'Aula e prática:/g)].length, 72);
+  assert.equal([...expanded.matchAll(/'Antes da batalha, entenda/g)].length, 72);
+  assert.match(expanded, /48 aulas explicativas e 48 práticas/);
+  assert.match(expanded, /'Central de Inteligência'.*'sql-dashboard-final'/s);
+  assert.equal([...expanded.matchAll(/UPDATE campaign_zones SET boss_mission_id=/g)].length, 24);
+  assert.doesNotMatch(expanded, /student_code|source_code/);
+});
+
+test("each zone has eight sequential missions and the eighth is its boss", async () => {
+  const SQL = await initSqlJs();
+  const db = new SQL.Database();
+  const directory = new URL("../drizzle/", import.meta.url);
+  for (const file of (await readdir(directory)).filter((name) => /^\d{4}.*\.sql$/.test(name)).sort()) {
+    const migration = await readFile(new URL(file, directory), "utf8");
+    for (const statement of migration.split("--> statement-breakpoint").map((value) => value.trim()).filter(Boolean)) db.run(statement);
+  }
+  const result = db.exec(`SELECT campaign_id,COUNT(*) AS zones,SUM(missions) AS missions FROM (
+    SELECT cz.campaign_id,cz.id,COUNT(mbc.mission_id) AS missions,
+      SUM(CASE WHEN mbc.enemy_type='boss' AND mbc.sort_order=8 THEN 1 ELSE 0 END) AS bosses
+    FROM campaign_zones cz JOIN mission_battle_configs mbc ON mbc.zone_id=cz.id
+    GROUP BY cz.id HAVING missions=8 AND bosses=1
+  ) GROUP BY campaign_id ORDER BY campaign_id`)[0];
+  db.close();
+  assert.deepEqual(result.values, [[1,6,48],[2,6,48],[3,6,48],[4,6,48]]);
 });

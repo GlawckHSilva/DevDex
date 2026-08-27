@@ -11,19 +11,21 @@ type SelectedNode = CampaignNode & LayoutNode & { type: MapType; title: string; 
 
 const START = { x: 7, y: 74, mobileX: 50, mobileY: 72 };
 const MAP_LAYOUT: LayoutNode[] = [
-  { x: 17, y: 60, mobileX: 38, mobileY: 190, path: "M70 480 C112 474 112 405 170 390", mobilePath: "M180 72 C145 104 126 138 137 190" },
-  { x: 30, y: 37, mobileX: 64, mobileY: 340, path: "M170 390 C205 330 244 252 300 240", mobilePath: "M137 190 C148 250 222 275 230 340" },
-  { x: 41, y: 70, mobileX: 37, mobileY: 490, path: "M300 240 C358 256 350 430 410 455", mobilePath: "M230 340 C225 405 145 420 133 490" },
-  { x: 52.5, y: 42, mobileX: 63, mobileY: 640, path: "M410 455 C468 439 467 300 525 275", mobilePath: "M133 490 C141 554 219 571 227 640" },
-  { x: 62, y: 71, mobileX: 38, mobileY: 790, path: "M525 275 C590 294 568 438 620 460", mobilePath: "M227 640 C218 704 146 720 137 790" },
-  { x: 70.5, y: 46, mobileX: 62, mobileY: 940, path: "M620 460 C666 438 655 330 705 300", mobilePath: "M137 790 C145 850 216 875 223 940" },
+  { x: 12, y: 63, mobileX: 38, mobileY: 190, path: "M70 480 C95 468 92 422 120 410", mobilePath: "M180 72 C145 104 126 138 137 190" },
+  { x: 24, y: 35, mobileX: 64, mobileY: 340, path: "M120 410 C165 365 185 250 240 228", mobilePath: "M137 190 C148 250 222 275 230 340" },
+  { x: 35, y: 68, mobileX: 37, mobileY: 490, path: "M240 228 C305 250 295 405 350 442", mobilePath: "M230 340 C225 405 145 420 133 490" },
+  { x: 46, y: 40, mobileX: 63, mobileY: 640, path: "M350 442 C405 420 402 285 460 260", mobilePath: "M133 490 C141 554 219 571 227 640" },
+  { x: 57, y: 70, mobileX: 38, mobileY: 790, path: "M460 260 C520 285 515 420 570 455", mobilePath: "M227 640 C218 704 146 720 137 790" },
+  { x: 67, y: 43, mobileX: 62, mobileY: 940, path: "M570 455 C625 430 620 310 670 280", mobilePath: "M137 790 C145 850 216 875 223 940" },
+  { x: 76, y: 24, mobileX: 38, mobileY: 1090, path: "M670 280 C705 240 725 180 760 156", mobilePath: "M223 940 C214 1000 148 1020 137 1090" },
+  { x: 82, y: 58, mobileX: 62, mobileY: 1240, path: "M760 156 C820 185 790 330 820 377", mobilePath: "M137 1090 C145 1150 216 1175 223 1240" },
 ];
-const BOSS_LAYOUT = MAP_LAYOUT[5];
+const BOSS_LAYOUT: LayoutNode = { x: 88, y: 30, mobileX: 50, mobileY: 1390, path: "M820 377 C875 350 850 235 880 195", mobilePath: "M223 1240 C215 1310 180 1335 180 1390" };
 const CAMPAIGN_ICONS: Record<string, string[]> = {
-  "html-fundamentals": ["<>", "↗", "≡", "▣"],
-  "css-fundamentals": ["#", "↔", "▢", "☷"],
-  "javascript-fundamentals": ["◇", "[]", "+", "!", "✦"],
-  "sql-fundamentals-sqlite": ["▦", "?", "↑", "↔", "%", "∈"],
+  "html-fundamentals": ["<>", "↗", "≡", "▣", "</>", "◫", "✦", "♛"],
+  "css-fundamentals": ["#", "↔", "▢", "☷", "◈", "◎", "✦", "♛"],
+  "javascript-fundamentals": ["◇", "[]", "+", "!", "{}", "ƒ", "✦", "♛"],
+  "sql-fundamentals-sqlite": ["▦", "?", "↑", "↔", "%", "∈", "✦", "♛"],
 };
 
 export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath }: {
@@ -132,7 +134,7 @@ function MissionPanel({ node, campaignPath }: { node: SelectedNode; campaignPath
   return <aside className="mission-detail-panel" aria-live="polite" data-testid="mission-panel">
     <span>ENCONTRO SELECIONADO</span><div className={`detail-node-icon type-${node.type}`}>{node.icon}</div><small>{node.type === "boss" ? "CHEFE DA ZONA" : node.type === "bug" ? "DESAFIO DE DEBUG" : node.type === "elite" ? "INIMIGO ELITE" : "INIMIGO COMUM"}</small><h3>{node.enemyName}</h3><strong>{node.title}</strong><p>{node.description}</p>{projectBoss ? null : <div className="mission-learning-flow"><span>1 · AULA</span><i>→</i><span>2 · PRÁTICA</span></div>}
     <dl><div><dt>STATUS</dt><dd className={`status-${node.state}`}>{statusLabel(node.state)}</dd></div><div><dt>RECOMPENSA</dt><dd>{node.xpReward} XP</dd></div></dl>
-    {node.href ? <a className="button" href={node.href}>{node.state === "completed" ? "REVISAR" : projectBoss ? "⚔ ENTRAR NO PROJETO" : node.state === "in_progress" ? "⚔ CONTINUAR BATALHA" : "⚔ COMEÇAR AULA"}</a> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}<a className="course-back-link" href={`#${campaignPath}`}>Curso completo · 30 aulas + 30 práticas</a>
+    {node.href ? <a className="button" href={node.href}>{node.state === "completed" ? "REVISAR" : projectBoss ? "⚔ ENTRAR NO PROJETO" : node.state === "in_progress" ? "⚔ CONTINUAR BATALHA" : "⚔ COMEÇAR AULA"}</a> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}<a className="course-back-link" href={`#${campaignPath}`}>Curso completo · 48 aulas + 48 práticas</a>
   </aside>;
 }
 
