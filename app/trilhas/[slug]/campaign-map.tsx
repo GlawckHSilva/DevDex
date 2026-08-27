@@ -51,8 +51,8 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath }:
   const completed = nodes.filter((node) => node.state === "completed").length;
   const target = completed === 0 ? START : completed < nodes.length ? MAP_LAYOUT[completed] : bossNode ? BOSS_LAYOUT : MAP_LAYOUT[nodes.length - 1];
   const previous = completed <= 1 ? (completed === 0 ? START : MAP_LAYOUT[0]) : MAP_LAYOUT[completed - 1];
-  const playerPosition = target === START ? { ...START, y: START.y - 9, mobileY: START.mobileY - 26 } : { ...target, x: target.x - 6, y: target.y + 8, mobileX: target.mobileX > 50 ? target.mobileX - 24 : target.mobileX + 24, mobileY: target.mobileY };
-  const previousPosition = previous === START ? START : { ...previous, x: previous.x - 6, y: previous.y + 8, mobileX: previous.mobileX > 50 ? previous.mobileX - 24 : previous.mobileX + 24, mobileY: previous.mobileY };
+  const playerPosition = target === START ? { ...START, y: START.y - 9, mobileY: START.mobileY - 26 } : betweenWaypoints(previous, target);
+  const previousPosition = previous === START ? { ...START, y: START.y - 9, mobileY: START.mobileY - 26 } : previous;
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -106,7 +106,11 @@ function FogLayer() {
 }
 
 function PlayerMarker({ archetype, position, previous, arriving }: { archetype: Archetype; position: typeof START; previous: typeof START; arriving: boolean }) {
-  return <div className={`map-player-position${arriving ? " arriving" : ""}`} data-testid="map-player" style={{ left: `${position.x}%`, top: `${position.y}%`, "--mobile-x": `${position.mobileX}%`, "--mobile-y": `${position.mobileY}px`, "--from-x": `${previous.x}%`, "--from-y": `${previous.y}%`, "--to-x": `${position.x}%`, "--to-y": `${position.y}%`, "--mobile-from-x": `${previous.mobileX}%`, "--mobile-from-y": `${previous.mobileY}px`, "--mobile-to-x": `${position.mobileX}%`, "--mobile-to-y": `${position.mobileY}px` } as CSSProperties}><div className="player-pedestal"><PixelHero archetype={archetype} /></div><span>VOCÊ</span></div>;
+  return <div className={`map-player-position${arriving ? " arriving" : ""}`} data-testid="map-player" style={{ left: `${position.x}%`, top: `${position.y}%`, "--mobile-x": `${position.mobileX}%`, "--mobile-y": `${position.mobileY}px`, "--from-x": `${previous.x}%`, "--from-y": `${previous.y}%`, "--to-x": `${position.x}%`, "--to-y": `${position.y}%`, "--mobile-from-x": `${previous.mobileX}%`, "--mobile-from-y": `${previous.mobileY}px`, "--mobile-to-x": `${position.mobileX}%`, "--mobile-to-y": `${position.mobileY}px` } as CSSProperties}><div className="player-traveler"><PixelHero archetype={archetype} /></div><span>VOCÊ</span></div>;
+}
+
+function betweenWaypoints(from: typeof START, to: typeof START) {
+  return { x: Math.round((from.x + to.x) / 2), y: Math.round((from.y + to.y) / 2), mobileX: Math.round((from.mobileX + to.mobileX) / 2), mobileY: Math.round((from.mobileY + to.mobileY) / 2) };
 }
 
 function MapNode({ node, selected, current, onSelect, onKeyDown }: { node: SelectedNode; selected: boolean; current: boolean; onSelect: () => void; onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void }) {

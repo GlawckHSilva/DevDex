@@ -205,7 +205,7 @@ test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ p
   await page.reload();
   await expect(variables).toHaveAttribute("aria-label", /Concluída/);
   await expect(locked).toHaveAttribute("aria-label", /Disponível/);
-  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*24%/);
+  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*24%;top:\s*49%/);
   await variables.click();
   await expect(page.getByTestId("mission-panel").getByRole("link", { name: /REVISAR/ })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
@@ -218,9 +218,13 @@ test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ p
 test("abre o Project Mode seguro como boss da zona JavaScript", async ({ page, request }) => {
   const userId = "campaign-boss-user";
   await chooseCharacter(request, userId);
-  for (const [slug, code] of javascriptSolutions) expect((await submit(request, userId, slug, code)).status()).toBe(200);
+  for (const [slug, code] of javascriptSolutions.slice(0, -1)) expect((await submit(request, userId, slug, code)).status()).toBe(200);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/trilhas/javascript-fundamentals");
+  await expect(page.getByTestId("map-node-filtrar-pares")).toHaveClass(/type-boss.*state-available/);
+  await expect(page.getByTestId("map-node-boss-project")).toHaveClass(/type-boss.*state-locked/);
+  expect((await submit(request, userId, javascriptSolutions.at(-1)![0], javascriptSolutions.at(-1)![1])).status()).toBe(200);
+  await page.reload();
   await expect(async () => {
     await page.getByTestId("course-zone-1").click();
     await expect(page.getByRole("heading", { name: /Zona 01/ })).toBeVisible();
@@ -349,7 +353,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveAttribute("aria-label", /Concluída/);
   await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveClass(/state-completed/);
   await expect(page.getByTestId("map-node-navegacao-da-oficina")).toHaveAttribute("aria-label", /Disponível/);
-  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*24%;top:\s*45%/);
+  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*24%;top:\s*49%/);
   await page.goto("/missoes/navegacao-da-oficina");
   await expect(page.getByTestId("study-material")).toContainText("Navegação interna");
   await expect(page.getByTestId("study-material")).not.toContainText("Portal da Guilda");
