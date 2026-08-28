@@ -96,7 +96,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
     {transmissionOpen ? <CampaignTransmission firstView={firstView} lore={lore} onClose={closeTransmission} open /> : null}
     <nav className="course-zone-nav" aria-label="Zonas do curso">{zones.map((item, index) => {
       const locked = item.nodes.every((node) => node.missionState === "locked");
-      return <button className={`${index === selectedZoneIndex ? "active" : ""}${locked ? " locked" : ""}`} aria-current={index === selectedZoneIndex ? "step" : undefined} data-testid={`course-zone-${item.sortOrder}`} key={item.id} onClick={() => { setSelectedZoneIndex(index); setSelectedSlug(""); }}><span>{String(item.sortOrder).padStart(2, "0")}</span><strong>{item.title}</strong><small>{item.progress}%</small></button>;
+      return <button className={`${index === selectedZoneIndex ? "active" : ""}${locked ? " locked" : ""}`} aria-current={index === selectedZoneIndex ? "step" : undefined} data-testid={`course-zone-${item.sortOrder}`} key={item.id} onClick={() => { setSelectedZoneIndex(index); setSelectedSlug(""); }}><span><em>{String(item.sortOrder).padStart(2, "0")}</em></span><strong>{item.title}</strong><small>{item.progress}%</small><i aria-hidden="true"><b style={{ width: `${item.progress}%` }} /></i></button>;
     })}</nav>
     <div className="adventure-map-layout">
       <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona {String(zone.sortOrder).padStart(2, "0")} — {zone.title}</h2><p>{zone.storyIntro}</p></div><strong>{zone.nodes.filter((node) => node.missionState === "completed").length}/{zone.nodes.length} missões</strong></header>
