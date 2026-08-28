@@ -15,6 +15,7 @@ const studyUrl = new URL("../drizzle/0009_calm_dreaming_celestial.sql", import.m
 const completeCurriculumUrl = new URL("../drizzle/0010_complete_curriculum.sql", import.meta.url);
 const expandedCurriculumUrl = new URL("../drizzle/0011_eight_missions_per_zone.sql", import.meta.url);
 const campaignLoreUrl = new URL("../drizzle/0012_campaign_lore.sql", import.meta.url);
+const pythonCurriculumUrl = new URL("../drizzle/0013_python_curriculum.sql", import.meta.url);
 const enemyAssetsUrl = new URL("../lib/enemy-assets.ts", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
@@ -76,14 +77,18 @@ test("D1 stores mission-specific battle study material", async () => {
 });
 
 test("publishes 48 lesson-and-practice missions in six zones for every language", async () => {
-  const [base, expanded] = await Promise.all([readFile(completeCurriculumUrl, "utf8"), readFile(expandedCurriculumUrl, "utf8")]);
+  const [base, expanded, python] = await Promise.all([readFile(completeCurriculumUrl, "utf8"), readFile(expandedCurriculumUrl, "utf8"), readFile(pythonCurriculumUrl, "utf8")]);
   assert.equal([...base.matchAll(/'Aula e prática:/g)].length, 101);
   assert.equal([...expanded.matchAll(/'Aula e prática:/g)].length, 72);
   assert.equal([...expanded.matchAll(/'Antes da batalha, entenda/g)].length, 72);
   assert.match(expanded, /48 aulas explicativas e 48 práticas/);
   assert.match(expanded, /'Central de Inteligência'.*'sql-dashboard-final'/s);
   assert.equal([...expanded.matchAll(/UPDATE campaign_zones SET boss_mission_id=/g)].length, 24);
+  assert.equal([...python.matchAll(/'python','python-pyodide-1'/g)].length, 48);
+  assert.equal([...python.matchAll(/'Antes da batalha, entenda/g)].length, 48);
+  assert.match(python, /'Terminal dos Fundamentos'.*'Núcleo Profissional'/s);
   assert.doesNotMatch(expanded, /student_code|source_code/);
+  assert.doesNotMatch(python, /student_code|source_code/);
 });
 
 test("each zone has eight sequential missions and the eighth is its boss", async () => {
@@ -101,7 +106,7 @@ test("each zone has eight sequential missions and the eighth is its boss", async
     GROUP BY cz.id HAVING missions=8 AND bosses=1
   ) GROUP BY campaign_id ORDER BY campaign_id`)[0];
   db.close();
-  assert.deepEqual(result.values, [[1,6,48],[2,6,48],[3,6,48],[4,6,48]]);
+  assert.deepEqual(result.values, [[1,6,48],[2,6,48],[3,6,48],[4,6,48],[5,6,48]]);
 });
 
 test("campaign lore is campaign-specific and its view state is persistent", async () => {

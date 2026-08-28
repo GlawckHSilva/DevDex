@@ -30,6 +30,7 @@ const CAMPAIGN_ICONS: Record<string, string[]> = {
   "css-fundamentals": ["#", "↔", "▢", "☷", "◈", "◎", "✦", "♛"],
   "javascript-fundamentals": ["◇", "[]", "+", "!", "{}", "ƒ", "✦", "♛"],
   "sql-fundamentals-sqlite": ["▦", "?", "↑", "↔", "%", "∈", "✦", "♛"],
+  "python-fundamentals": [">_", "[]", "ƒ", "!", "{}", "⚙", "✦", "♛"],
 };
 
 export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, lore, loreSeen: initialLoreSeen }: {

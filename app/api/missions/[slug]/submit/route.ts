@@ -2,6 +2,7 @@ import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { BetaAccessError, ensureUser, getBattle, getMission, getMissionTests, getRecentBattleEventCount, getSqlMissionConfig, getWebMissionConfig, recordAttempt, recordBattleAction, researchBattle, reviveBattle } from "@/db";
 import { getRecentSubmissionCount, recordSubmission, type SubmissionStatus } from "@/db/runner";
 import { JavaScriptRunnerAdapter } from "@/lib/runners/javascript-adapter";
+import { PythonRunnerAdapter } from "@/lib/runners/python-adapter";
 import { SqlRunnerAdapter, type SqlExpectedResult } from "@/lib/runners/sql-adapter";
 import { WebRunnerAdapter, type WebValidationRule } from "@/lib/runners/web-adapter";
 import { z } from "zod";
@@ -119,11 +120,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     }
 
     const tests = await getMissionTests(mission.id);
-    const results = await JavaScriptRunnerAdapter.execute({ code: payload.code, functionName: mission.functionName, tests: tests.map((test) => ({
+    const runnerInput = { code: payload.code, functionName: mission.functionName, tests: tests.map((test) => ({
       name: test.name,
       input: JSON.parse(test.inputJson) as unknown[],
       expected: JSON.parse(test.expectedJson) as unknown,
-    })) });
+    })) };
+    const results = mission.runtime === "python"
+      ? await PythonRunnerAdapter.execute(runnerInput)
+      : await JavaScriptRunnerAdapter.execute(runnerInput);
     const passed = results.every((result) => result.passed);
     passedTests = results.filter((result) => result.passed).length;
     failedTests = results.length - passedTests;
