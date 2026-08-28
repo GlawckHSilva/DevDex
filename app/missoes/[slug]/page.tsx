@@ -22,7 +22,7 @@ async function MissionContent({ slug }: { slug: string }) {
   const webConfig = mission.runtime === "html" || mission.runtime === "css" ? await getWebMissionConfig(mission.id) : null;
   const [character, { profile }, study] = await Promise.all([getCharacter(user.userId), getDashboard(user), getMissionStudyMaterial(mission.id)]);
   if (!character) redirect(`/trilhas/${mission.pathSlug}`);
-  const battle = await getBattle(user.userId, mission.id, mission.state === "completed");
+  const battle = await getBattle(user.userId, mission.id, mission.state === "completed", mission.state === "completed");
   if (mission.runtime === "sqlite" && !sqlConfig) notFound();
   if ((mission.runtime === "html" || mission.runtime === "css") && !webConfig) notFound();
   const pathLabel = `${mission.technologyName} · ${mission.campaignTitle}`;

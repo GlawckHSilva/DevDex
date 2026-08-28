@@ -35,7 +35,7 @@ export async function getAdventure(userId: string) {
   return { character, nodes: nodes.results };
 }
 
-export async function getBattle(userId: string, missionId: number, missionCompleted: boolean) {
+export async function getBattle(userId: string, missionId: number, missionCompleted: boolean, replay = false) {
   const db = getDb();
   const config = await db.prepare(`SELECT mission_id AS missionId,zone_slug AS zoneSlug,enemy_name AS enemyName,
     enemy_type AS enemyType,enemy_level AS enemyLevel,hint,sort_order AS sortOrder
@@ -43,6 +43,9 @@ export async function getBattle(userId: string, missionId: number, missionComple
   if (!config) return null;
   await db.prepare(`INSERT OR IGNORE INTO user_battles (user_id,mission_id,state,lives,completed_at)
     VALUES (?,?,?,3,CASE WHEN ? THEN CURRENT_TIMESTAMP ELSE NULL END)`).bind(userId, missionId, missionCompleted ? "completed" : "active", missionCompleted ? 1 : 0).run();
+  if (missionCompleted && replay) await db.prepare(`UPDATE user_battles SET lives=3,state='active',started_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP
+    WHERE user_id=? AND mission_id=? AND EXISTS (SELECT 1 FROM user_missions WHERE user_id=? AND mission_id=? AND state='completed')`)
+    .bind(userId, missionId, userId, missionId).run();
   const battle = await db.prepare("SELECT lives,state FROM user_battles WHERE user_id=? AND mission_id=?").bind(userId, missionId).first<BattleState>();
   return battle ? { ...config, ...battle } : null;
 }

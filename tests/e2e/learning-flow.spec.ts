@@ -419,7 +419,15 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByTestId("study-material")).toContainText("Títulos e parágrafos");
   await page.getByTestId("start-battle").click();
   await expect(page.getByTestId("study-material")).toBeHidden();
+  await expect(page.getByText("REPETIÇÃO · 0 XP")).toBeVisible();
+  await expect(page.getByTestId("enemy-hp")).toContainText("100 / 100 HP");
+  await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeEnabled();
+  await page.getByTestId("web-editor").locator(".monaco-editor").click();
+  await page.keyboard.press("Control+A");
+  await page.keyboard.insertText("<main><h1>Oficina DevDex</h1><p>Aprenda código na prática.</p></main>");
+  await page.getByRole("button", { name: /Atacar com a solução/ }).click();
   await expect(page.locator(".battle-victory-banner")).toContainText("REVISÃO");
+  await expect(page.locator(".reward-banner")).toHaveCount(0);
   await expect(page.getByTestId("victory-sequence")).toHaveCount(0);
   await page.waitForTimeout(2800);
   await expect(page).toHaveURL(/\/missoes\/pagina-da-oficina$/);

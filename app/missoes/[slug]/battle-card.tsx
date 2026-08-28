@@ -75,7 +75,7 @@ export function BattlePanel({ battle, technology, objective, results, hint, feed
   const arenaAsset = ARENA_ASSETS[technology.toUpperCase()];
 
   return <aside className={`battle-panel battle-${battle.state} type-${battle.enemyType}${feedback ? ` hit-${feedback}` : ""}${hint ? " has-hint" : ""}${victoryXp !== null ? " victory-sequence" : ""}`} data-testid="battle-panel">
-    <header className="battle-enemy-heading"><div><strong>{battle.enemyName}</strong><small>Nível {battle.enemyLevel}</small></div><span>BATALHA · {technology.toUpperCase()}</span></header>
+    <header className="battle-enemy-heading"><div><strong>{battle.enemyName}</strong><small>Nível {battle.enemyLevel}</small></div><span>{review ? "REPETIÇÃO · 0 XP" : `BATALHA · ${technology.toUpperCase()}`}</span></header>
     <div className="battle-arena" style={arenaAsset ? { "--battle-arena-image": `url('${arenaAsset}')` } as CSSProperties : undefined} aria-label={`Você contra ${battle.enemyName}`}>
       <div className="battle-combatant battle-player" aria-hidden="true"><PixelHero archetype={battle.archetype} /><span>VOCÊ</span></div>
       <b className="battle-vs">VS</b>
