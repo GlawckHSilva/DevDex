@@ -4,10 +4,12 @@ import { getRecentSubmissionCount, recordSubmission, type SubmissionStatus } fro
 import { JavaScriptRunnerAdapter } from "@/lib/runners/javascript-adapter";
 import { SqlRunnerAdapter, type SqlExpectedResult } from "@/lib/runners/sql-adapter";
 import { WebRunnerAdapter, type WebValidationRule } from "@/lib/runners/web-adapter";
+import { z } from "zod";
 
-type Payload = { code?: string; mode?: "run" | "test" | "research" | "revive" };
 const MAX_CODE_LENGTH = 12_000;
 const RATE_LIMIT = 20;
+const PayloadSchema = z.object({ code: z.string().optional(), mode: z.enum(["run", "test", "research", "revive"]).optional() });
+type Payload = z.infer<typeof PayloadSchema>;
 
 async function hashCode(code: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(code));
@@ -29,7 +31,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
 
   const battle = await getBattle(user.userId, mission.id, mission.state === "completed");
   let payload: Payload;
-  try { payload = await request.json() as Payload; } catch { return Response.json({ ok: false, message: "Envio inválido." }, { status: 400 }); }
+  try {
+    const parsed = PayloadSchema.safeParse(await request.json());
+    if (!parsed.success) return Response.json({ ok: false, message: "Envio inválido." }, { status: 400 });
+    payload = parsed.data;
+  } catch { return Response.json({ ok: false, message: "Envio inválido." }, { status: 400 }); }
   if ((payload.mode === "research" || payload.mode === "revive") && await getRecentBattleEventCount(user.userId) >= 40) return Response.json({ ok: false, message: "Muitas ações. Tente novamente em alguns minutos." }, { status: 429 });
   if (payload.mode === "research") {
     if (!battle) return Response.json({ ok: false, message: "Esta missão não possui batalha." }, { status: 400 });

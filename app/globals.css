@@ -334,3 +334,8 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 .course-zone-nav button>strong { grid-column:2; grid-row:2; font-size:8px; }
 .course-zone-nav button>b { grid-column:3; grid-row:2; font-size:8px; }
 @media (max-width:760px) { .course-zone-nav button { min-width:150px; } }
+.battle-tooltip { z-index:120; max-width:240px; padding:8px 10px; border:1px solid #3b526b; border-radius:6px; background:#0b1624f5; color:#dbe8f4; box-shadow:0 8px 24px #0009; font:600 11px var(--font-geist-sans); animation:tooltipIn .14s ease-out; }
+.battle-tooltip-arrow { fill:#3b526b; }
+.battle-action svg,.battle-back svg,.study-footer-actions .button svg { flex:0 0 auto; }
+@keyframes tooltipIn { from { opacity:0; transform:translateY(3px); } }
+@media (prefers-reduced-motion:reduce) { .battle-tooltip { animation:none; } }

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { PixelHero } from "@/app/aventura/character-select";
 import type { Archetype, CampaignLore, CampaignNode, CampaignZone } from "@/db";
 import { ENEMY_ASSETS } from "@/lib/enemy-assets";
+import { motion, MotionConfig } from "motion/react";
 import { CampaignTransmission } from "./campaign-transmission";
 
 type NodeState = "completed" | "available" | "in_progress" | "locked";
@@ -94,10 +95,10 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
 
   return <section className="adventure-map-section" id="mapa" data-testid="campaign-map">
     {transmissionOpen ? <CampaignTransmission firstView={firstView} lore={lore} onClose={closeTransmission} open /> : null}
-    <nav className="course-zone-nav" aria-label="Zonas do curso">{zones.map((item, index) => {
+    <MotionConfig reducedMotion="user"><nav className="course-zone-nav" aria-label="Zonas do curso">{zones.map((item, index) => {
       const locked = item.nodes.every((node) => node.missionState === "locked");
-      return <button className={`${index === selectedZoneIndex ? "active" : ""}${locked ? " locked" : ""}`} aria-current={index === selectedZoneIndex ? "step" : undefined} data-testid={`course-zone-${item.sortOrder}`} key={item.id} onClick={() => { setSelectedZoneIndex(index); setSelectedSlug(""); }}><i aria-hidden="true" /><span aria-hidden="true"><em>{locked ? "⌑" : "✦"}</em></span><small>{String(item.sortOrder).padStart(2, "0")}</small><strong>{item.title}</strong><b>{item.progress}%</b></button>;
-    })}</nav>
+      return <motion.button className={`${index === selectedZoneIndex ? "active" : ""}${locked ? " locked" : ""}`} aria-current={index === selectedZoneIndex ? "step" : undefined} data-testid={`course-zone-${item.sortOrder}`} key={item.id} onClick={() => { setSelectedZoneIndex(index); setSelectedSlug(""); }} whileHover={locked ? undefined : { y: -2 }} whileTap={locked ? undefined : { scale: .97 }} transition={{ duration: .16 }}><i aria-hidden="true" /><span aria-hidden="true"><em>{locked ? "⌑" : "✦"}</em></span><small>{String(item.sortOrder).padStart(2, "0")}</small><strong>{item.title}</strong><b>{item.progress}%</b></motion.button>;
+    })}</nav></MotionConfig>
     <div className="adventure-map-layout">
       <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona {String(zone.sortOrder).padStart(2, "0")} — {zone.title}</h2><p>{zone.storyIntro}</p></div><strong>{zone.nodes.filter((node) => node.missionState === "completed").length}/{zone.nodes.length} missões</strong></header>
       <div className="adventure-map-canvas" style={{ "--mobile-height": `${180 + allNodes.length * 150}px`, "--fog-reveal": `${Math.min(90, 19 + completed * 11)}%` } as CSSProperties}>

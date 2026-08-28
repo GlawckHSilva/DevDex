@@ -244,7 +244,7 @@ test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ p
   await expect(page.getByTestId("mission-panel").getByRole("button")).toBeDisabled();
   await variables.click();
   await expect(page.getByTestId("mission-panel").getByRole("link", { name: /COMEÇAR AULA/ })).toHaveAttribute("href", "/missoes/guardar-nome");
-  await expect(page.getByText("48 aulas explicativas · 48 práticas · 6 zonas · básico ao profissional")).toBeVisible();
+  await expect(page.getByLabel("48 aulas, 48 batalhas, do básico ao profissional")).toBeVisible();
   await expect(page.getByTestId("course-zone-6")).toBeVisible();
   await variables.focus();
   await page.keyboard.press("ArrowRight");
