@@ -322,3 +322,15 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 @media (prefers-reduced-motion:reduce) { .transmission-cursor { animation:none; } }
 .adventure-start { z-index:9; }
 .adventure-start>span img { width:48px; height:48px; object-fit:contain; image-rendering:pixelated; }
+
+/* Compact campaign zone timeline */
+.course-zone-nav { grid-template-columns:repeat(6,minmax(150px,1fr)); padding:7px 10px 8px; border:0; border-bottom:1px solid #1c3042; border-radius:0; background:linear-gradient(180deg,#08131f99,#07111c55); }
+.course-zone-nav button { min-width:150px; min-height:46px; grid-template-columns:auto minmax(0,1fr) auto; grid-template-rows:25px 17px; justify-items:initial; gap:0 5px; padding:0 9px; text-align:left; }
+.course-zone-nav button>i { top:12px; height:2px; }
+.course-zone-nav button>span { grid-column:1/4; grid-row:1; place-self:center; width:19px; height:19px; border-width:1px; }
+.course-zone-nav button>span em { font-size:7px; }
+.course-zone-nav button.active>span { width:24px; height:24px; box-shadow:0 0 0 1px #20dce8,0 0 12px #4e6ff099; }
+.course-zone-nav button>small { grid-column:1; grid-row:2; font-size:8px; }
+.course-zone-nav button>strong { grid-column:2; grid-row:2; font-size:8px; }
+.course-zone-nav button>b { grid-column:3; grid-row:2; font-size:8px; }
+@media (max-width:760px) { .course-zone-nav button { min-width:150px; } }
