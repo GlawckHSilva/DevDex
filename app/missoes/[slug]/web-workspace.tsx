@@ -3,7 +3,8 @@
 import Editor from "@monaco-editor/react";
 import type { MissionStudyMaterial } from "@/db";
 import { useMemo, useState } from "react";
-import { BattleActions, BattleBriefPanel, BattleHeader, BattlePanel, BattleStudyOverlay, useBattleVictory, type BattleAction, type BattleFeedback, type BattleResultItem, type BattleView } from "./battle-card";
+import { BattleActions, BattleBriefPanel, BattleHeader, BattlePanel, BattleStudyOverlay, useBattleFeedbackAudio, useBattleVictory, type BattleAction, type BattleFeedback, type BattleResultItem, type BattleView } from "./battle-card";
+import { useBattleShortcuts, useMissionDraft } from "./use-mission-draft";
 
 type WebMission = { slug: string; title: string; briefing: string; objective: string; starterCode: string; completed: boolean; nextMissionSlug: string | null; pathSlug: string; pathLabel: string; technologyName: string; xpReward: number; documentType: "html" | "css"; previewHtml: string; previewCss: string; study: MissionStudyMaterial | null };
 type Submission = { ok: boolean; message: string; results?: BattleResultItem[]; gainedXp?: number; newlyCompleted?: boolean; unlockedSlug?: string | null; battle?: { lives: number; state: BattleView["state"]; hint?: string } | null };
@@ -16,7 +17,7 @@ function previewDocument(mission: WebMission, code: string) {
 }
 
 export function WebWorkspace({ mission, initialBattle }: { mission: WebMission; initialBattle?: BattleView }) {
-  const [code, setCode] = useState(mission.starterCode);
+  const { value: code, setValue: setCode, reset: resetCode } = useMissionDraft(mission.slug, mission.starterCode);
   const [previewCode, setPreviewCode] = useState(mission.starterCode);
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [battle, setBattle] = useState(initialBattle);
@@ -26,6 +27,8 @@ export function WebWorkspace({ mission, initialBattle }: { mission: WebMission; 
   const [studyOpen, setStudyOpen] = useState(Boolean(mission.study));
   const [studyStarted, setStudyStarted] = useState(false);
   const { victoryXp, registerVictory } = useBattleVictory(mission.pathSlug, mission.completed);
+  useBattleFeedbackAudio(feedback);
+  useBattleShortcuts(submit, loading !== null || victoryXp !== null);
   const srcDoc = useMemo(() => previewDocument(mission, previewCode), [mission, previewCode]);
 
   async function submit(mode: BattleAction) {
@@ -53,7 +56,7 @@ export function WebWorkspace({ mission, initialBattle }: { mission: WebMission; 
     <div className="battle-ide-layout">
       <BattleBriefPanel briefing={mission.briefing} objective={mission.objective} hint={hint} />
       {battle ? <BattlePanel battle={battle} technology={mission.technologyName} objective={mission.objective} results={results} hint={hint} feedback={feedback} loading={loading} onRevive={() => submit("revive")} victoryXp={victoryXp} review={mission.completed} /> : null}
-      <section className="editor-panel battle-code-editor"><div className="editor-tabs"><span><b>{mission.documentType === "html" ? "▱" : "#"}</b> index.{mission.documentType}</span><button onClick={() => { setCode(mission.starterCode); setPreviewCode(mission.starterCode); setSubmission(null); }}>↺ Resetar</button></div><div className="editor-surface" data-testid="web-editor"><Editor height="100%" language={mission.documentType} theme="vs-dark" value={code} onChange={(value) => setCode(value ?? "")} options={{ automaticLayout: true, fontSize: 14, minimap: { enabled: false }, padding: { top: 18 }, scrollBeyondLastLine: false, tabSize: 2 }} /></div></section>
+      <section className="editor-panel battle-code-editor"><div className="editor-tabs"><span><b>{mission.documentType === "html" ? "▱" : "#"}</b> index.{mission.documentType}</span><small className="editor-autosave">SALVO AUTOMATICAMENTE</small><button onClick={() => { resetCode(); setPreviewCode(mission.starterCode); setSubmission(null); }}>↺ Resetar</button></div><div className="editor-surface" data-testid="web-editor"><Editor height="100%" language={mission.documentType} theme="vs-dark" value={code} onChange={(value) => setCode(value ?? "")} options={{ automaticLayout: true, fontSize: 14, minimap: { enabled: false }, padding: { top: 18 }, scrollBeyondLastLine: false, tabSize: 2 }} /></div></section>
       <section className="battle-preview"><div className="battle-preview-title"><span>▣ PRÉ-VISUALIZAÇÃO</span><small>AMBIENTE ISOLADO</small></div><div className="browser-frame"><div className="browser-bar"><i /><i /><i /><span>▣ preview.devdex.local</span><b>↻</b></div><iframe title="Preview da missão" sandbox="" referrerPolicy="no-referrer" srcDoc={srcDoc} /></div></section>
       <section className="battle-console-panel"><header><span>☷ EXPLICAÇÃO</span>{results?.length ? <b>✓ {passed}/{results.length}</b> : null}</header><div className="battle-console-output" aria-live="polite">{!submission ? <p className="console-empty">Escreva a solução, teste sem risco e ataque quando estiver pronto.</p> : <><p className={submission.ok ? "console-success" : "console-error"}>{submission.message}</p>{results?.map((result) => <p key={result.name}><b>{result.passed ? "✓" : "×"}</b> {result.name}</p>)}{submission.gainedXp ? <div className="reward-banner"><span>INIMIGO DERROTADO</span><strong>+{submission.gainedXp} XP</strong></div> : null}{submission.ok && submission.unlockedSlug ? <a className="next-mission" href={`/missoes/${submission.unlockedSlug}`}>Próxima batalha →</a> : submission.ok && battle?.state === "completed" ? <a className="next-mission" href={`/trilhas/${mission.pathSlug}`}>Voltar ao mapa →</a> : null}</>}</div></section>
       <BattleActions battle={battle} loading={loading} onAction={submit} victory={victoryXp !== null} />

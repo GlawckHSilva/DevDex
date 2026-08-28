@@ -357,6 +357,10 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByRole("button", { name: /Pesquisar uma dica/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Testar código/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeVisible();
+  const audio = page.getByRole("button", { name: "Desativar sons" });
+  await expect(audio).toHaveAttribute("aria-pressed", "true");
+  await audio.click();
+  await expect(page.getByRole("button", { name: "Ativar sons" })).toHaveAttribute("aria-pressed", "false");
 
   const preview = page.getByTitle("Preview da missão");
   await expect(preview).toHaveAttribute("sandbox", "");
@@ -366,12 +370,14 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await page.getByTestId("web-editor").locator(".monaco-editor").click();
   await page.keyboard.press("Control+A");
   await page.keyboard.insertText("<main><h1>Oficina DevDex</h1></main>");
-  await page.getByRole("button", { name: /Testar código/ }).click();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("devdex:mission:pagina-da-oficina:draft:v1"))).toContain("Oficina DevDex");
+  await page.keyboard.press("Control+Enter");
   await expect(page.getByTestId("enemy-hp")).toContainText("50 / 100 HP");
   await expect(page.getByTestId("battle-panel")).toHaveClass(/hit-enemy/);
   await expect(page.locator(".battle-enemy img")).toHaveCSS("animation-name", "enemyDamageFlash");
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
   await expect(page.getByTestId("battle-objectives").locator(".passed")).toHaveCount(1);
+  await expect(page.locator(".battle-coach")).toContainText("PRÓXIMO PASSO");
   await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
   await expect(study).toBeVisible();
   await expect(study).toContainText("1 · EXPLICAÇÃO");

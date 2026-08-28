@@ -339,3 +339,14 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 .battle-action svg,.battle-back svg,.study-footer-actions .button svg { flex:0 0 auto; }
 @keyframes tooltipIn { from { opacity:0; transform:translateY(3px); } }
 @media (prefers-reduced-motion:reduce) { .battle-tooltip { animation:none; } }
+.battle-audio-toggle { display:grid; place-items:center; width:34px; height:34px; border:1px solid #33485e; border-radius:7px; background:#0b1624; color:#75dfe5; cursor:pointer; transition:.15s ease; }
+.battle-audio-toggle:hover { border-color:#6a5ce6; color:white; }
+.battle-audio-toggle:focus-visible { outline:2px solid var(--map-cyan); outline-offset:2px; }
+.editor-autosave { margin-left:auto; margin-right:12px; color:#52c8b0; font:700 8px var(--font-geist-mono); letter-spacing:.06em; }
+.battle-coach { margin-top:14px; padding:10px 11px; border-left:3px solid #ad7cff; border-radius:4px; background:#6e3ebc1c; }
+.battle-coach strong { color:#c49aff; font:800 8px var(--font-geist-mono); letter-spacing:.08em; }
+.battle-coach p { display:block; margin:5px 0 0; color:#dbe4ef; font-size:11px; }
+.battle-coach small { display:block; margin-top:6px; color:#8fa3b8; font-size:10px; line-height:1.45; }
+.battle-coach.complete { border-color:#3de2c2; background:#1a96721a; }
+.battle-coach.complete strong { color:#57e9cb; }
+@media (max-width:760px) { .editor-autosave { display:none; }.battle-audio-toggle { width:30px; height:30px; } }

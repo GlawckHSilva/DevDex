@@ -3,8 +3,9 @@
 import { PixelHero } from "@/app/aventura/character-select";
 import type { Archetype, MissionStudyMaterial } from "@/db";
 import { ENEMY_ASSETS } from "@/lib/enemy-assets";
+import { audioEnabled, playBattleSound, setAudioEnabled } from "@/lib/game-audio";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { ArrowLeft, FlaskConical, Lightbulb, Swords } from "lucide-react";
+import { ArrowLeft, FlaskConical, Lightbulb, Swords, Volume2, VolumeX } from "lucide-react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Image from "next/image";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
@@ -39,7 +40,7 @@ export function BattleHeader({ battle, pathSlug, pathLabel, title, xpReward }: {
   return <header className="battle-page-header">
     <div className="battle-header-start"><a className="battle-brand" href="/dashboard">Dev<span>Dex</span></a><a className="battle-back" href={`/trilhas/${pathSlug}`}><ArrowLeft aria-hidden="true" size={17} /> <span>Voltar para o mapa</span></a></div>
     <div className="battle-header-mission"><small>{pathLabel}</small><strong>{title}</strong></div>
-    <div className="battle-header-status"><div className="battle-xp"><span>◈ Nível {battle?.playerLevel ?? 1}</span><div><i style={{ width: `${Math.min(88, 34 + xpReward / 3)}%` }} /></div><small>+{xpReward} XP na missão</small></div><BattleLives lives={battle?.lives ?? 3} /></div>
+    <div className="battle-header-status"><BattleAudioToggle /><div className="battle-xp"><span>◈ Nível {battle?.playerLevel ?? 1}</span><div><i style={{ width: `${Math.min(88, 34 + xpReward / 3)}%` }} /></div><small>+{xpReward} XP na missão</small></div><BattleLives lives={battle?.lives ?? 3} /></div>
   </header>;
 }
 
@@ -53,9 +54,13 @@ export function useBattleVictory(pathSlug: string, review: boolean) {
   return {
     victoryXp,
     registerVictory(result: VictoryResult) {
-      if (!review && result.newlyCompleted && result.battle?.state === "completed") setVictoryXp(result.gainedXp ?? 0);
+      if (!review && result.newlyCompleted && result.battle?.state === "completed") { setVictoryXp(result.gainedXp ?? 0); playBattleSound("victory"); }
     },
   };
+}
+
+export function useBattleFeedbackAudio(feedback: BattleFeedback) {
+  useEffect(() => { if (feedback) playBattleSound(feedback); }, [feedback]);
 }
 
 export function BattlePanel({ battle, technology, objective, results, hint, feedback, loading, onRevive, victoryXp, review }: {
@@ -85,7 +90,7 @@ export function BattlePanel({ battle, technology, objective, results, hint, feed
       <div className="battle-combatant battle-enemy">{enemyAsset ? <Image src={enemyAsset} alt={`Sprite de ${battle.enemyName}`} width={190} height={210} /> : <div className={`pixel-enemy pixel-enemy-${battle.enemyType}`} aria-hidden="true"><i className="enemy-eye" /><i className="enemy-eye" /><i className="enemy-body" /><i className="enemy-crown" /></div>}<div className="enemy-hp" data-testid="enemy-hp"><div><span>HP</span><b>{hp} / 100 HP</b></div><div className="enemy-hp-track" role="meter" aria-label={`${battle.enemyName} com ${hp} de 100 HP`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={hp}><i style={{ width: `${hp}%` }} /></div></div></div>
       <AnimatePresence>{victoryXp !== null ? <motion.div className="battle-victory-overlay" data-testid="victory-sequence" aria-live="assertive" initial={{ opacity: 0, scale: .86 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: .35, ease: "easeOut" }}><span>INIMIGO DERROTADO</span><strong>CONCLUÍDO</strong>{victoryXp > 0 ? <b>+{victoryXp} XP</b> : null}</motion.div> : null}</AnimatePresence>
     </div>
-    <section className="battle-objectives" data-testid="battle-objectives"><h2>⚗ TESTES <b>{passed}/{visibleResults.length}</b></h2>{visibleResults.map((result) => <p className={result.passed ? "passed" : "pending"} key={result.name}><span>{result.passed ? "✓" : "○"}</span>{result.name}</p>)}</section>
+    <section className="battle-objectives" data-testid="battle-objectives"><h2>⚗ TESTES <b>{passed}/{visibleResults.length}</b></h2>{visibleResults.map((result) => <p className={result.passed ? "passed" : "pending"} key={result.name}><span>{result.passed ? "✓" : "○"}</span>{result.name}</p>)}{results?.length ? <BattleCoach results={visibleResults} hint={hint} /> : null}</section>
     {battle.state === "defeated" ? <div className="battle-state-overlay"><strong>DERROTADO</strong><p>Você ficou sem vidas nesta batalha.</p><button className="button" disabled={loading !== null} onClick={onRevive}>{loading === "revive" ? "RECUPERANDO…" : "TENTAR NOVAMENTE"}</button></div> : null}
     {battle.state === "completed" && victoryXp === null ? <div className="battle-victory-banner"><strong>{review ? "REVISÃO" : "CONCLUÍDO"}</strong><span>{battle.enemyName} derrotado</span></div> : null}
   </aside></MotionConfig>;
@@ -103,7 +108,7 @@ export function BattleBriefPanel({ briefing, objective, hint }: { briefing: stri
 export function BattleActions({ battle, loading, onAction, victory = false }: { battle?: BattleView; loading: BattleAction | null; onAction: (action: BattleAction) => void; victory?: boolean }) {
   if (battle?.state === "defeated") return <section className="battle-actions"><button className="battle-action attack" aria-label="Tentar batalha novamente" disabled={loading !== null} onClick={() => onAction("revive")}>{loading === "revive" ? "RECUPERANDO…" : "♥ TENTAR NOVAMENTE"}</button></section>;
   return <Tooltip.Provider delayDuration={350}><section className="battle-actions" aria-label="Ações da batalha">
-    <span className="battle-safe-note">♢ Testar não consome vida</span>
+    <span className="battle-safe-note">Ctrl+Enter · Testar<br />Ctrl+Shift+Enter · Atacar</span>
     <ActionTooltip label="Abra o material da missão sem perder vida"><button className="battle-action research" aria-label="Pesquisar uma dica sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("research")}><Lightbulb aria-hidden="true" size={18} /><span>Ver dica</span></button></ActionTooltip>
     <ActionTooltip label="Execute os testes sem consumir uma vida"><button className="battle-action run" aria-label="Testar código sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("run")}><FlaskConical aria-hidden="true" size={18} /><span>{loading === "run" ? "Testando…" : "Testar código"}</span></button></ActionTooltip>
     <ActionTooltip label="Ataque com a solução; um erro pode consumir uma vida"><button className="battle-action attack" aria-label="Atacar com a solução; uma solução incorreta perde uma vida" disabled={loading !== null || battle?.state === "completed" || victory} onClick={() => onAction("test")}><Swords aria-hidden="true" size={21} /><span>{loading === "test" ? "Atacando…" : "Atacar solução"}</span></button></ActionTooltip>
@@ -112,6 +117,17 @@ export function BattleActions({ battle, loading, onAction, victory = false }: { 
 
 function ActionTooltip({ children, label }: { children: ReactNode; label: string }) {
   return <Tooltip.Root><Tooltip.Trigger asChild>{children}</Tooltip.Trigger><Tooltip.Portal><Tooltip.Content className="battle-tooltip" sideOffset={7}>{label}<Tooltip.Arrow className="battle-tooltip-arrow" /></Tooltip.Content></Tooltip.Portal></Tooltip.Root>;
+}
+
+function BattleCoach({ results, hint }: { results: BattleResultItem[]; hint?: string | null }) {
+  const next = results.find((result) => !result.passed);
+  return <div className={`battle-coach${next ? "" : " complete"}`} role="status"><strong>{next ? "PRÓXIMO PASSO" : "PRONTO PARA ATACAR"}</strong><p>{next ? next.name : "Todos os requisitos foram aprovados."}</p>{next && hint ? <small>{hint}</small> : null}</div>;
+}
+
+function BattleAudioToggle() {
+  const [enabled, setEnabled] = useState(true);
+  useEffect(() => { const frame = requestAnimationFrame(() => setEnabled(audioEnabled())); return () => cancelAnimationFrame(frame); }, []);
+  return <button className="battle-audio-toggle" type="button" aria-label={enabled ? "Desativar sons" : "Ativar sons"} aria-pressed={enabled} onClick={() => { const next = !enabled; setEnabled(next); setAudioEnabled(next); if (next) playBattleSound("ui"); }}>{enabled ? <Volume2 aria-hidden="true" size={17} /> : <VolumeX aria-hidden="true" size={17} />}</button>;
 }
 
 export function BattleLives({ lives }: { lives: number }) {
