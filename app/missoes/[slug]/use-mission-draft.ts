@@ -3,18 +3,19 @@
 import { useEffect, useState } from "react";
 import type { BattleAction } from "./battle-card";
 
-export function useMissionDraft(slug: string, initialValue: string) {
+export function useMissionDraft(slug: string, initialValue: string, legacyInitialValue?: string) {
   const key = `devdex:mission:${slug}:draft:v1`;
   const [value, setValue] = useState(initialValue);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
-      setValue(localStorage.getItem(key) ?? initialValue);
+      const saved = localStorage.getItem(key);
+      setValue(saved === legacyInitialValue ? initialValue : saved ?? initialValue);
       setReady(true);
     });
     return () => cancelAnimationFrame(frame);
-  }, [initialValue, key]);
+  }, [initialValue, key, legacyInitialValue]);
 
   useEffect(() => {
     if (!ready) return;

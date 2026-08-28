@@ -334,6 +334,9 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(study).not.toContainText("Oficina DevDex");
   await expect(study.getByRole("link", { name: /VOLTAR AO MAPA/ })).toHaveAttribute("href", "/trilhas/html-fundamentals");
   await expect(page.getByTestId("web-editor").locator(".monaco-editor")).toBeVisible();
+  await expect(page.getByTestId("web-editor").locator(".view-lines")).toContainText("<html>");
+  await expect(page.getByTestId("web-editor").locator(".view-lines")).toContainText("<body>");
+  await expect(page.getByTestId("web-editor").locator(".view-lines")).not.toContainText("<main>");
   await page.getByTestId("start-battle").click();
   await expect(study).toBeHidden();
   await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
@@ -366,6 +369,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(preview).toHaveAttribute("sandbox", "");
   await expect(preview).toHaveAttribute("referrerpolicy", "no-referrer");
   expect(await preview.getAttribute("srcdoc")).toContain("default-src 'none'");
+  expect(await preview.getAttribute("srcdoc")).not.toContain("<body><!doctype html>");
 
   await page.getByTestId("web-editor").locator(".monaco-editor").click();
   await page.keyboard.press("Control+A");
