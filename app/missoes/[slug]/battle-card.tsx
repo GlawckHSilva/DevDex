@@ -4,8 +4,12 @@ import { PixelHero } from "@/app/aventura/character-select";
 import type { Archetype, MissionStudyMaterial } from "@/db";
 import { ENEMY_ASSETS } from "@/lib/enemy-assets";
 import { audioEnabled, playBattleSound, setAudioEnabled } from "@/lib/game-audio";
+import * as Tabs from "@radix-ui/react-tabs";
+import * as Toast from "@radix-ui/react-toast";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import { ArrowLeft, FlaskConical, Lightbulb, Swords, Volume2, VolumeX } from "lucide-react";
+import { cva } from "class-variance-authority";
+import { clsx } from "clsx";
+import { ArrowLeft, Code2, FlaskConical, Lightbulb, ListChecks, ScrollText, Swords, Volume2, VolumeX, X } from "lucide-react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Image from "next/image";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
@@ -15,6 +19,10 @@ export type BattleResultItem = { name: string; passed: boolean };
 export type BattleAction = "run" | "test" | "research" | "revive";
 export type BattleFeedback = "enemy" | "player" | null;
 type VictoryResult = { newlyCompleted?: boolean; gainedXp?: number; battle?: { state: BattleView["state"] } | null };
+
+const battleActionClass = cva("battle-action", {
+  variants: { intent: { research: "research", run: "run", attack: "attack" } },
+});
 
 const ARENA_ASSETS: Record<string, string> = {
   HTML: "/campaigns/html/ruinas-da-estrutura-v1.png",
@@ -105,13 +113,34 @@ export function BattleBriefPanel({ briefing, objective, hint }: { briefing: stri
   </aside>;
 }
 
+export function BattleTabs({ children, className }: { children: ReactNode; className?: string }) {
+  return <Tabs.Root className={clsx("battle-ide-layout", className)} defaultValue="mission">{children}</Tabs.Root>;
+}
+
+export function BattleTabList() {
+  return <Tabs.List className="battle-mobile-tabs" aria-label="Áreas da batalha">
+    <Tabs.Trigger value="mission"><ScrollText aria-hidden="true" size={16} />Missão</Tabs.Trigger>
+    <Tabs.Trigger value="arena"><Swords aria-hidden="true" size={16} />Arena</Tabs.Trigger>
+    <Tabs.Trigger value="code"><Code2 aria-hidden="true" size={16} />Código</Tabs.Trigger>
+    <Tabs.Trigger value="results"><ListChecks aria-hidden="true" size={16} />Resultados</Tabs.Trigger>
+  </Tabs.List>;
+}
+
+export function BattleTabPanel({ children, value }: { children: ReactNode; value: "mission" | "arena" | "code" | "results" }) {
+  return <Tabs.Content className="battle-tab-panel" data-value={value} forceMount hidden={false} value={value}>{children}</Tabs.Content>;
+}
+
+export function BattleToast({ message, success }: { message: string; success: boolean }) {
+  return <Toast.Provider duration={3500} swipeDirection="right"><Toast.Root className={clsx("battle-toast", success ? "success" : "error")} defaultOpen data-testid="battle-toast"><Toast.Title>{success ? "Teste concluído" : "Revise a solução"}</Toast.Title><Toast.Description>{message}</Toast.Description><Toast.Close aria-label="Fechar notificação"><X aria-hidden="true" size={15} /></Toast.Close></Toast.Root><Toast.Viewport className="battle-toast-viewport" /></Toast.Provider>;
+}
+
 export function BattleActions({ battle, loading, onAction, victory = false }: { battle?: BattleView; loading: BattleAction | null; onAction: (action: BattleAction) => void; victory?: boolean }) {
-  if (battle?.state === "defeated") return <section className="battle-actions"><button className="battle-action attack" aria-label="Tentar batalha novamente" disabled={loading !== null} onClick={() => onAction("revive")}>{loading === "revive" ? "RECUPERANDO…" : "♥ TENTAR NOVAMENTE"}</button></section>;
+  if (battle?.state === "defeated") return <section className="battle-actions"><button className={battleActionClass({ intent: "attack" })} aria-label="Tentar batalha novamente" disabled={loading !== null} onClick={() => onAction("revive")}>{loading === "revive" ? "RECUPERANDO…" : "♥ TENTAR NOVAMENTE"}</button></section>;
   return <Tooltip.Provider delayDuration={350}><section className="battle-actions" aria-label="Ações da batalha">
     <span className="battle-safe-note">Ctrl+Enter · Testar<br />Ctrl+Shift+Enter · Atacar</span>
-    <ActionTooltip label="Abra o material da missão sem perder vida"><button className="battle-action research" aria-label="Pesquisar uma dica sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("research")}><Lightbulb aria-hidden="true" size={18} /><span>Ver dica</span></button></ActionTooltip>
-    <ActionTooltip label="Execute os testes sem consumir uma vida"><button className="battle-action run" aria-label="Testar código sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("run")}><FlaskConical aria-hidden="true" size={18} /><span>{loading === "run" ? "Testando…" : "Testar código"}</span></button></ActionTooltip>
-    <ActionTooltip label="Ataque com a solução; um erro pode consumir uma vida"><button className="battle-action attack" aria-label="Atacar com a solução; uma solução incorreta perde uma vida" disabled={loading !== null || battle?.state === "completed" || victory} onClick={() => onAction("test")}><Swords aria-hidden="true" size={21} /><span>{loading === "test" ? "Atacando…" : "Atacar solução"}</span></button></ActionTooltip>
+    <ActionTooltip label="Abra o material da missão sem perder vida"><button className={battleActionClass({ intent: "research" })} aria-label="Pesquisar uma dica sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("research")}><Lightbulb aria-hidden="true" size={18} /><span>Ver dica</span></button></ActionTooltip>
+    <ActionTooltip label="Execute os testes sem consumir uma vida"><button className={battleActionClass({ intent: "run" })} aria-label="Testar código sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("run")}><FlaskConical aria-hidden="true" size={18} /><span>{loading === "run" ? "Testando…" : "Testar código"}</span></button></ActionTooltip>
+    <ActionTooltip label="Ataque com a solução; um erro pode consumir uma vida"><button className={battleActionClass({ intent: "attack" })} aria-label="Atacar com a solução; uma solução incorreta perde uma vida" disabled={loading !== null || battle?.state === "completed" || victory} onClick={() => onAction("test")}><Swords aria-hidden="true" size={21} /><span>{loading === "test" ? "Atacando…" : "Atacar solução"}</span></button></ActionTooltip>
   </section></Tooltip.Provider>;
 }
 

@@ -373,6 +373,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect.poll(() => page.evaluate(() => localStorage.getItem("devdex:mission:pagina-da-oficina:draft:v1"))).toContain("Oficina DevDex");
   await page.keyboard.press("Control+Enter");
   await expect(page.getByTestId("enemy-hp")).toContainText("50 / 100 HP");
+  await expect(page.getByTestId("battle-toast")).toBeVisible();
   await expect(page.getByTestId("battle-panel")).toHaveClass(/hit-enemy/);
   await expect(page.locator(".battle-enemy img")).toHaveCSS("animation-name", "enemyDamageFlash");
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
@@ -389,7 +390,13 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
   await expect(page.getByTestId("battle-panel")).toHaveClass(/hit-enemy/);
   await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator(".battle-mobile-tabs")).toBeVisible();
+  await page.getByRole("tab", { name: "Arena" }).click();
   await expect(page.getByTestId("battle-panel")).toBeVisible();
+  await page.getByRole("tab", { name: "Resultados" }).click();
+  await expect(page.locator(".battle-console-panel")).toBeVisible();
+  await page.getByRole("tab", { name: "Código" }).click();
+  await expect(page.getByTestId("web-editor")).toBeVisible();
   await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeVisible();
   await page.setViewportSize({ width: 1280, height: 900 });
 
