@@ -9,7 +9,7 @@ import { motion, MotionConfig } from "motion/react";
 import { CampaignTransmission } from "./campaign-transmission";
 
 type NodeState = "completed" | "available" | "in_progress" | "locked";
-type MapType = "enemy" | "bug" | "elite" | "boss";
+type MapType = "study" | "enemy" | "bug" | "elite" | "boss";
 type LayoutNode = { x: number; y: number; mobileX: number; mobileY: number; path: string; mobilePath: string };
 type SelectedNode = CampaignNode & LayoutNode & { type: MapType; title: string; icon: string; state: NodeState; order: number; description: string; href: string | null };
 
@@ -46,12 +46,13 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
   const [selectedZoneIndex, setSelectedZoneIndex] = useState(currentZoneIndex);
   const zone = zones[selectedZoneIndex] ?? zones[currentZoneIndex];
   const boss = bosses[zone.id] ?? null;
+  const zoneLayouts = useMemo(() => layoutsFor(zone.nodes.length), [zone.nodes.length]);
   const nodes = useMemo<SelectedNode[]>(() => zone.nodes.map((node, index) => {
-    const layout = MAP_LAYOUT[index] ?? MAP_LAYOUT.at(-1)!;
-    const type = campaignPath === "javascript-fundamentals" && index === 3 ? "bug" : node.enemyType;
-    return { ...node, ...layout, type, title: node.skillName, icon: CAMPAIGN_ICONS[campaignPath]?.[index] ?? (type === "elite" ? "✦" : "◇"), order: index + 1, state: node.missionState, description: node.enemyIntro || node.battleDialogue, href: node.missionState === "locked" ? null : `/missoes/${node.missionSlug}` };
-  }), [campaignPath, zone.nodes]);
-  const bossNode: SelectedNode | null = boss ? { ...BOSS_LAYOUT, type: "boss", title: "Project Mode", icon: "♛", order: nodes.length + 1, state: boss.state, description: "Construa uma aplicação real para restaurar o sistema central da zona.", href: boss.state === "locked" ? null : boss.href, missionSlug: "boss-project", missionTitle: boss.title, skillName: "Project Mode", xpReward: 720, enemyName: boss.title, enemyType: "boss", enemyLevel: nodes.length + 1, enemyIntro: "", battleDialogue: "", sortOrder: nodes.length + 1, zoneId: zone.id, missionState: boss.state } : null;
+    const layout = zoneLayouts[index];
+    const type = node.nodeKind === "study" ? "study" : campaignPath === "javascript-fundamentals" && index === 3 ? "bug" : node.enemyType;
+    return { ...node, ...layout, type, title: node.skillName, icon: type === "study" ? "▤" : CAMPAIGN_ICONS[campaignPath]?.[index % 8] ?? (type === "elite" ? "✦" : "◇"), order: index + 1, state: node.missionState, description: node.enemyIntro || node.battleDialogue, href: node.missionState === "locked" ? null : node.nodeKind === "study" ? `/aulas/${node.missionSlug}` : `/missoes/${node.missionSlug}` };
+  }), [campaignPath, zone.nodes, zoneLayouts]);
+  const bossNode: SelectedNode | null = boss ? { ...BOSS_LAYOUT, nodeKind: "battle", type: "boss", title: "Project Mode", icon: "♛", order: nodes.length + 1, state: boss.state, description: "Construa uma aplicação real para restaurar o sistema central da zona.", href: boss.state === "locked" ? null : boss.href, missionSlug: "boss-project", missionTitle: boss.title, skillName: "Project Mode", xpReward: 720, enemyName: boss.title, enemyType: "boss", enemyLevel: nodes.length + 1, enemyIntro: "", battleDialogue: "", sortOrder: nodes.length + 1, zoneId: zone.id, missionState: boss.state } : null;
   const allNodes = bossNode ? [...nodes, bossNode] : nodes;
   const initial = allNodes.find((node) => node.state === "available" || node.state === "in_progress") ?? allNodes.at(-1)!;
   const [selectedSlug, setSelectedSlug] = useState(initial.missionSlug);
@@ -61,8 +62,8 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
   const [firstView, setFirstView] = useState(!initialLoreSeen);
   const selected = allNodes.find((node) => node.missionSlug === selectedSlug) ?? initial;
   const completed = nodes.filter((node) => node.state === "completed").length;
-  const target = completed === 0 ? START : completed < nodes.length ? MAP_LAYOUT[completed] : bossNode ? BOSS_LAYOUT : MAP_LAYOUT[nodes.length - 1];
-  const previous = completed <= 1 ? (completed === 0 ? START : MAP_LAYOUT[0]) : MAP_LAYOUT[completed - 1];
+  const target = completed === 0 ? START : completed < nodes.length ? zoneLayouts[completed] : bossNode ? BOSS_LAYOUT : zoneLayouts[nodes.length - 1];
+  const previous = completed <= 1 ? (completed === 0 ? START : zoneLayouts[0]) : zoneLayouts[completed - 1];
   const playerPosition = target === START ? { ...START, y: START.y - 9, mobileY: START.mobileY - 26 } : betweenWaypoints(previous, target);
   const previousPosition = previous === START ? { ...START, y: START.y - 9, mobileY: START.mobileY - 26 } : previous;
 
@@ -102,14 +103,14 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
     })}</nav></MotionConfig>
     <div className="adventure-map-layout">
       <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona {String(zone.sortOrder).padStart(2, "0")} — {zone.title}</h2><p>{zone.storyIntro}</p></div><strong>{zone.nodes.filter((node) => node.missionState === "completed").length}/{zone.nodes.length} missões</strong></header>
-      <div className="adventure-map-canvas" style={{ "--mobile-height": `${180 + allNodes.length * 150}px`, "--fog-reveal": `${Math.min(90, 19 + completed * 11)}%` } as CSSProperties}>
+      <div className={`adventure-map-canvas${allNodes.length > 9 ? " map-dense" : ""}`} style={{ "--mobile-height": `${180 + allNodes.length * 145}px`, "--fog-reveal": `${Math.min(90, 19 + (completed / Math.max(1, nodes.length)) * 71)}%` } as CSSProperties}>
       <div className="map-atmosphere" aria-hidden="true" />
       <MapPath nodes={allNodes} />
       <FogLayer />
       <button aria-label="Abrir transmissão da campanha" className="adventure-start" data-testid="campaign-prologue" onClick={reopenTransmission} style={{ left: `${START.x}%`, top: `${START.y}%`, "--mobile-x": `${START.mobileX}%`, "--mobile-y": `${START.mobileY}px` } as CSSProperties} type="button"><span><Image alt="" aria-hidden="true" height={48} src="/ui/prologue-terminal-v1.png" width={48} /></span><strong>PRÓLOGO</strong><small>Transmissão</small></button>
       <PlayerMarker archetype={archetype} position={playerPosition} previous={previousPosition} arriving={arriving} />
       {allNodes.map((node, index) => <MapNode node={node} selected={selected.missionSlug === node.missionSlug} current={node.missionSlug === initial.missionSlug} onSelect={() => setSelectedSlug(node.missionSlug)} onKeyDown={(event) => selectByKeyboard(event, index)} key={node.missionSlug} />)}
-      {arriving ? <div className="map-unlock-toast" role="status" data-testid="map-unlock-toast"><span>✦</span> NOVA BATALHA DESBLOQUEADA</div> : null}
+      {arriving ? <div className="map-unlock-toast" role="status" data-testid="map-unlock-toast"><span>✦</span> NOVA ETAPA DESBLOQUEADA</div> : null}
       <div className="adventure-legend"><strong>CAMINHO</strong><span><i className="completed" />Concluído</span><span><i className="available" />Disponível</span><span><i className="locked" />Bloqueado</span></div>
       </div>
       <MissionPanel node={selected} campaignPath={campaignPath} />
@@ -132,6 +133,19 @@ function PlayerMarker({ archetype, position, previous, arriving }: { archetype: 
   return <div className={`map-player-position${arriving ? " arriving" : ""}`} data-testid="map-player" style={{ left: `${position.x}%`, top: `${position.y}%`, "--mobile-x": `${position.mobileX}%`, "--mobile-y": `${position.mobileY}px`, "--from-x": `${previous.x}%`, "--from-y": `${previous.y}%`, "--to-x": `${position.x}%`, "--to-y": `${position.y}%`, "--mobile-from-x": `${previous.mobileX}%`, "--mobile-from-y": `${previous.mobileY}px`, "--mobile-to-x": `${position.mobileX}%`, "--mobile-to-y": `${position.mobileY}px` } as CSSProperties}><div className="player-traveler"><PixelHero archetype={archetype} /></div><span>VOCÊ</span></div>;
 }
 
+function layoutsFor(total: number): LayoutNode[] {
+  if (total <= MAP_LAYOUT.length) return MAP_LAYOUT.slice(0, total);
+  const points = Array.from({ length: total }, (_, index) => {
+    const row = Math.floor(index / 5);
+    const column = row % 2 ? 4 - index % 5 : index % 5;
+    return { x: 12 + column * 18.5, y: 86 - row * 18, mobileX: index % 2 ? 64 : 36, mobileY: 190 + index * 145 };
+  });
+  return points.map((point, index) => {
+    const previous = index ? points[index - 1] : START;
+    return { ...point, path: `M${previous.x * 10} ${previous.y * 6.5} C${previous.x * 10} ${point.y * 6.5} ${point.x * 10} ${previous.y * 6.5} ${point.x * 10} ${point.y * 6.5}`, mobilePath: "" };
+  });
+}
+
 function betweenWaypoints(from: typeof START, to: typeof START) {
   return { x: Math.round((from.x + to.x) / 2), y: Math.round((from.y + to.y) / 2), mobileX: Math.round((from.mobileX + to.mobileX) / 2), mobileY: Math.round((from.mobileY + to.mobileY) / 2) };
 }
@@ -152,11 +166,12 @@ function MapNode({ node, selected, current, onSelect, onKeyDown }: { node: Selec
 
 function MissionPanel({ node, campaignPath }: { node: SelectedNode; campaignPath: string }) {
   const projectBoss = node.missionSlug === "boss-project";
+  const study = node.nodeKind === "study";
   const enemyAsset = ENEMY_ASSETS[node.enemyName];
   return <aside className="mission-detail-panel" aria-live="polite" data-testid="mission-panel">
-    <span>ENCONTRO SELECIONADO</span>{enemyAsset ? <div className={`detail-enemy-sprite type-${node.type}`}><Image alt={`Sprite de ${node.enemyName}`} fill sizes="150px" src={enemyAsset} /></div> : <div className={`detail-node-icon type-${node.type}`}>{node.icon}</div>}<small>{node.type === "boss" ? "CHEFE DA ZONA" : node.type === "bug" ? "DESAFIO DE DEBUG" : node.type === "elite" ? "INIMIGO ELITE" : "INIMIGO COMUM"}</small><h3>{node.enemyName}</h3><strong>{node.title}</strong><p>{node.description}</p>{projectBoss ? null : <div className="mission-learning-flow"><span>1 · AULA</span><i>→</i><span>2 · PRÁTICA</span></div>}
-    <dl><div><dt>STATUS</dt><dd className={`status-${node.state}`}>{statusLabel(node.state)}</dd></div><div><dt>RECOMPENSA</dt><dd>{node.xpReward} XP</dd></div></dl>
-    {node.href ? <a className="button" href={node.href}>{node.state === "completed" ? "REVISAR" : projectBoss ? "⚔ ENTRAR NO PROJETO" : node.state === "in_progress" ? "⚔ CONTINUAR BATALHA" : "⚔ COMEÇAR AULA"}</a> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}<a className="course-back-link" href={`#${campaignPath}`}>Curso completo · 48 aulas + 48 práticas</a>
+    <span>{study ? "ESTUDO SELECIONADO" : "ENCONTRO SELECIONADO"}</span>{enemyAsset ? <div className={`detail-enemy-sprite type-${node.type}`}><Image alt={`Sprite de ${node.enemyName}`} fill sizes="150px" src={enemyAsset} /></div> : <div className={`detail-node-icon type-${node.type}`}>{node.icon}</div>}<small>{study ? "MATERIAL DE ESTUDO" : node.type === "boss" ? "CHEFE DA ZONA" : node.type === "bug" ? "DESAFIO DE DEBUG" : node.type === "elite" ? "INIMIGO ELITE" : "INIMIGO COMUM"}</small><h3>{node.enemyName}</h3><strong>{node.title}</strong><p>{node.description}</p>{study ? <div className="mission-learning-flow"><span>PDF + VÍDEO</span><i>→</i><span>5 BATALHAS</span></div> : null}
+    <dl><div><dt>STATUS</dt><dd className={`status-${node.state}`}>{statusLabel(node.state)}</dd></div><div><dt>{study ? "CONTEÚDO" : "RECOMPENSA"}</dt><dd>{study ? "GUIA DA ETAPA" : `${node.xpReward} XP`}</dd></div></dl>
+    {node.href ? <a className="button" href={node.href}>{study ? node.state === "completed" ? "REVISAR MATERIAL" : "ABRIR MATERIAL" : node.state === "completed" ? "REPETIR BATALHA" : projectBoss ? "⚔ ENTRAR NO PROJETO" : node.state === "in_progress" ? "⚔ CONTINUAR BATALHA" : "⚔ COMEÇAR BATALHA"}</a> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}<a className="course-back-link" href={`#${campaignPath}`}>Curso completo · {campaignPath === "python-fundamentals" ? "150 etapas" : "48 aulas + 48 práticas"}</a>
   </aside>;
 }
 

@@ -61,6 +61,9 @@ export const lessons = sqliteTable("lessons", {
   slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
   bodyJson: text("body_json").notNull(),
+  zoneId: integer("zone_id"),
+  prerequisiteMissionId: integer("prerequisite_mission_id"),
+  firstMissionId: integer("first_mission_id"),
   sortOrder: integer("sort_order").notNull(),
   status: text("status", { enum: ["draft", "published", "deprecated"] }).notNull().default("published"),
 });
@@ -89,6 +92,11 @@ export const missionPrerequisites = sqliteTable("mission_prerequisites", {
   missionId: integer("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
   prerequisiteMissionId: integer("prerequisite_mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
 }, (table) => [primaryKey({ columns: [table.missionId, table.prerequisiteMissionId] })]);
+
+export const missionLessonPrerequisites = sqliteTable("mission_lesson_prerequisites", {
+  missionId: integer("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
+  lessonId: integer("lesson_id").notNull().references(() => lessons.id, { onDelete: "cascade" }),
+}, (table) => [primaryKey({ columns: [table.missionId, table.lessonId] })]);
 
 export const missionTests = sqliteTable("mission_tests", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -249,6 +257,13 @@ export const userLearningPaths = sqliteTable("user_learning_paths", {
   startedAt: text("started_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   loreSeenAt: text("lore_seen_at"),
 }, (table) => [primaryKey({ columns: [table.userId, table.learningPathId] })]);
+
+export const userLessons = sqliteTable("user_lessons", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  lessonId: integer("lesson_id").notNull().references(() => lessons.id, { onDelete: "cascade" }),
+  state: text("state", { enum: ["completed"] }).notNull().default("completed"),
+  completedAt: text("completed_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.lessonId] })]);
 
 export const userMissions = sqliteTable("user_missions", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),

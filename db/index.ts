@@ -11,6 +11,8 @@ export type LearningPathView = { slug: string; name: string; description: string
 export type SqlMissionConfig = { dialect: string; runtimeVersion: string; schemaSql: string; seedSql: string; starterSql: string; expectedResultJson: string; tableSchemaJson: string; tablePreviewJson: string; maxRows: number; timeoutMs: number; maxStatements: number };
 export type WebMissionConfig = { documentType: "html" | "css"; runtimeVersion: string; starterCode: string; previewHtml: string; previewCss: string; validatorJson: string; maxLength: number };
 export type MissionStudyMaterial = { title: string; introduction: string; explanation: string; exampleCode: string; exampleExplanation: string; keyPoints: string[]; commonMistakes: string[]; references: { label: string; url: string }[] };
+export type StudyLessonBody = { introduction: string; sections: { title: string; text: string }[]; exampleCode: string; keyPoints: string[]; practiceObjectives: string[]; pdfUrl: string; videoUrl: string; videoLabel: string; references: { label: string; url: string }[] };
+export type StudyLesson = { id: number; slug: string; title: string; pathSlug: string; zoneId: number; firstMissionSlug: string; state: MissionSummary["state"]; body: StudyLessonBody };
 
 export class BetaAccessError extends Error {
   constructor(public reason: "closed" | "full") { super(reason === "closed" ? "Beta fechada." : "Beta lotada."); }
@@ -33,7 +35,8 @@ export async function ensureUser(user: ChatGPTUser) {
       ON CONFLICT(user_id) DO UPDATE SET email=excluded.email,display_name=excluded.display_name,updated_at=CURRENT_TIMESTAMP`).bind(user.userId, user.email, user.displayName),
     db.prepare(`INSERT OR IGNORE INTO user_missions (user_id,mission_id,state)
       SELECT ?,m.id,'available' FROM missions m WHERE m.status='published'
-      AND NOT EXISTS (SELECT 1 FROM mission_prerequisites mp WHERE mp.mission_id=m.id)`).bind(user.userId),
+      AND NOT EXISTS (SELECT 1 FROM mission_prerequisites mp WHERE mp.mission_id=m.id)
+      AND NOT EXISTS (SELECT 1 FROM mission_lesson_prerequisites mlp WHERE mlp.mission_id=m.id)`).bind(user.userId),
     db.prepare(`INSERT OR IGNORE INTO user_learning_paths (user_id,learning_path_id)
       SELECT ?,id FROM learning_paths WHERE status='published'`).bind(user.userId),
     db.prepare(`INSERT OR IGNORE INTO user_project_progress (user_id,project_id,current_step_id,state)
@@ -48,7 +51,7 @@ export async function getDashboard(user: ChatGPTUser) {
     db.prepare(`SELECT m.slug,m.title,m.xp_reward AS xpReward,s.name AS skillName,lp.slug AS pathSlug,lp.name AS pathName,${missionState} AS state
       FROM missions m JOIN skills s ON s.id=m.skill_id JOIN learning_paths lp ON lp.id=s.learning_path_id
       LEFT JOIN user_missions um ON um.mission_id=m.id AND um.user_id=?
-      WHERE m.status='published' ORDER BY lp.id,m.sort_order`).bind(user.userId, user.userId).all<MissionSummary>(),
+      WHERE m.status='published' ORDER BY lp.id,m.sort_order`).bind(user.userId, user.userId, user.userId).all<MissionSummary>(),
   ]);
   return { profile: profile ?? { totalXp: 0, level: 1 }, missions: missions.results };
 }
@@ -61,7 +64,7 @@ export async function getLearningPath(user: ChatGPTUser, slug: string): Promise<
   const missions = await db.prepare(`SELECT m.slug,m.title,m.xp_reward AS xpReward,s.name AS skillName,${missionState} AS state
     FROM missions m JOIN skills s ON s.id=m.skill_id JOIN learning_paths lp ON lp.id=s.learning_path_id
     LEFT JOIN user_missions um ON um.mission_id=m.id AND um.user_id=?
-    WHERE lp.slug=? AND m.status='published' ORDER BY m.sort_order`).bind(user.userId, user.userId, slug).all<MissionSummary>();
+    WHERE lp.slug=? AND m.status='published' ORDER BY m.sort_order`).bind(user.userId, user.userId, user.userId, slug).all<MissionSummary>();
   return { ...path, missions: missions.results };
 }
 
@@ -75,7 +78,7 @@ export async function getMission(userId: string, slug: string): Promise<Mission 
     FROM missions m JOIN skills s ON s.id=m.skill_id JOIN learning_paths lp ON lp.id=s.learning_path_id
     JOIN technologies t ON t.id=lp.technology_id LEFT JOIN campaigns c ON c.learning_path_id=lp.id
     LEFT JOIN user_missions um ON um.mission_id=m.id AND um.user_id=?
-    WHERE m.slug=? AND m.status='published'`).bind(userId, userId, slug).first<Mission>();
+    WHERE m.slug=? AND m.status='published'`).bind(userId, userId, userId, slug).first<Mission>();
   return mission ? { ...mission, starterCode: mission.starterCode.replaceAll("\\n", "\n") } : null;
 }
 
@@ -90,6 +93,29 @@ export async function getMissionStudyMaterial(missionId: number): Promise<Missio
     common_mistakes_json AS commonMistakesJson,references_json AS referencesJson
     FROM mission_study_materials WHERE mission_id=?`).bind(missionId).first<Omit<MissionStudyMaterial, "keyPoints" | "commonMistakes" | "references"> & { keyPointsJson: string; commonMistakesJson: string; referencesJson: string }>();
   return material ? { ...material, keyPoints: JSON.parse(material.keyPointsJson), commonMistakes: JSON.parse(material.commonMistakesJson), references: JSON.parse(material.referencesJson) } : null;
+}
+
+export async function getStudyLesson(userId: string, slug: string): Promise<StudyLesson | null> {
+  const lesson = await getDb().prepare(`SELECT l.id,l.slug,l.title,l.zone_id AS zoneId,l.body_json AS bodyJson,
+    lp.slug AS pathSlug,m.slug AS firstMissionSlug,CASE
+      WHEN ul.lesson_id IS NOT NULL THEN 'completed'
+      WHEN l.prerequisite_mission_id IS NOT NULL AND COALESCE(required.state,'locked')<>'completed' THEN 'locked'
+      ELSE 'available' END AS state
+    FROM lessons l JOIN skills s ON s.id=l.skill_id JOIN learning_paths lp ON lp.id=s.learning_path_id
+    JOIN missions m ON m.id=l.first_mission_id
+    LEFT JOIN user_lessons ul ON ul.lesson_id=l.id AND ul.user_id=?
+    LEFT JOIN user_missions required ON required.mission_id=l.prerequisite_mission_id AND required.user_id=?
+    WHERE l.slug=? AND l.status='published'`).bind(userId, userId, slug).first<Omit<StudyLesson, "body"> & { bodyJson: string }>();
+  return lesson ? { ...lesson, body: JSON.parse(lesson.bodyJson) as StudyLessonBody } : null;
+}
+
+export async function completeStudyLesson(userId: string, lesson: StudyLesson) {
+  if (lesson.state === "locked") return false;
+  await getDb().batch([
+    getDb().prepare("INSERT OR IGNORE INTO user_lessons (user_id,lesson_id,state) VALUES (?,?,'completed')").bind(userId, lesson.id),
+    getDb().prepare("INSERT OR IGNORE INTO user_missions (user_id,mission_id,state) SELECT ?,first_mission_id,'available' FROM lessons WHERE id=?").bind(userId, lesson.id),
+  ]);
+  return true;
 }
 
 export async function getSqlMissionConfig(missionId: number): Promise<SqlMissionConfig | null> {

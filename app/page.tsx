@@ -1,8 +1,9 @@
 const tracks = [
-  ["HTML", "Semântica, formulários e acessibilidade", "01"],
-  ["CSS", "Design systems, layouts e responsividade", "02"],
-  ["JavaScript", "Lógica, coleções e aplicações", "03"],
-  ["SQL", "Consultas, relações e análise de dados", "04"],
+  ["HTML", "Semântica, formulários e acessibilidade", "01", "48 BATALHAS"],
+  ["CSS", "Design systems, layouts e responsividade", "02", "48 BATALHAS"],
+  ["JavaScript", "Lógica, coleções e aplicações", "03", "48 BATALHAS"],
+  ["SQL", "Consultas, relações e análise de dados", "04", "48 BATALHAS"],
+  ["Python", "Fundamentos, dados, objetos e engenharia", "05", "150 ETAPAS"],
 ] as const;
 
 export default function Home() {
@@ -39,9 +40,9 @@ export default function Home() {
       </section>
 
       <section className="section container" id="trilhas">
-        <div className="section-heading"><div><span className="kicker">CURRÍCULO COMPLETO</span><h2>Quatro cursos. Do básico ao profissional.</h2></div><p>30 aulas e 30 práticas em cada linguagem, organizadas por zonas e liberadas por pré-requisitos.</p></div>
+        <div className="section-heading"><div><span className="kicker">CURRÍCULO COMPLETO</span><h2>Cinco cursos. Do básico ao profissional.</h2></div><p>Aprenda por zonas, estude materiais dedicados e avance por batalhas liberadas por pré-requisitos.</p></div>
         <div className="track-grid">
-          {tracks.map(([title, description, number]) => <article className="track-card" key={title}><span className="track-number">{number}</span><div className="track-icon">{title.slice(0, 2)}</div><h3>{title}{title === "SQL" ? " · SQLite" : ""}</h3><p>{description}</p><span className="track-state">30 MISSÕES</span></article>)}
+          {tracks.map(([title, description, number, total]) => <article className="track-card" key={title}><span className="track-number">{number}</span><div className="track-icon">{title.slice(0, 2)}</div><h3>{title}{title === "SQL" ? " · SQLite" : ""}</h3><p>{description}</p><span className="track-state">{total}</span></article>)}
         </div>
       </section>
 
@@ -53,7 +54,7 @@ export default function Home() {
       <section className="section container" id="arquitetura">
         <div className="architecture">
           <div><span className="kicker">ARQUITETURA EVOLUTIVA</span><h2>Preparado para crescer sem recomeçar.</h2><p>Currículo, progresso e execução são domínios separados. O código do aluno nunca roda junto da aplicação principal.</p></div>
-          <div className="architecture-flow" aria-label="Fluxo da arquitetura"><span>WEB APP<small>React + TypeScript</small></span><i>→</i><span>PLATAFORMA<small>SIWC + D1</small></span><i>→</i><span>RUNNERS<small>QuickJS + SQLite + Web</small></span></div>
+          <div className="architecture-flow" aria-label="Fluxo da arquitetura"><span>WEB APP<small>React + TypeScript</small></span><i>→</i><span>PLATAFORMA<small>SIWC + D1</small></span><i>→</i><span>RUNNERS<small>QuickJS + Python + SQLite + Web</small></span></div>
         </div>
       </section>
 

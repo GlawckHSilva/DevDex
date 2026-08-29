@@ -1,9 +1,9 @@
 import { getDb } from "./client";
 
 type Summary = { totalUsers: number; activeUsers7d: number; missionStarts: number; missionCompletions: number; submissions: number; runnerErrors: number; averageDurationMs: number };
-type MissionMetric = { title: string; runtime: string; attempts: number; defeats: number; errors: number; completions: number; averageDurationMs: number };
+type MissionMetric = { id: number; title: string; runtime: string; attempts: number; defeats: number; errors: number; completions: number; averageDurationMs: number };
 type RuntimeMetric = { runtime: string; attempts: number; errors: number; averageDurationMs: number };
-type BattleMetric = { enemyName: string; enemyType: string; battles: number; victories: number; defeats: number; researches: number; averageLivesLost: number; averageDurationSeconds: number };
+type BattleMetric = { missionId: number; enemyName: string; enemyType: string; battles: number; victories: number; defeats: number; researches: number; averageLivesLost: number; averageDurationSeconds: number };
 
 export async function getPublicStatus() {
   const db = getDb();
@@ -28,7 +28,7 @@ export async function getAdminMetrics() {
       (SELECT COUNT(*) FROM submissions) AS submissions,
       (SELECT COUNT(*) FROM submissions WHERE status='error') AS runnerErrors,
       (SELECT COALESCE(ROUND(AVG(duration_ms)),0) FROM submissions) AS averageDurationMs`).first<Summary>(),
-    db.prepare(`SELECT m.title,m.runtime,COUNT(su.id) AS attempts,
+    db.prepare(`SELECT m.id,m.title,m.runtime,COUNT(su.id) AS attempts,
       COALESCE(SUM(CASE WHEN su.status IN ('failed','error') THEN 1 ELSE 0 END),0) AS defeats,
       COALESCE(SUM(CASE WHEN su.status='error' THEN 1 ELSE 0 END),0) AS errors,
       (SELECT COUNT(*) FROM user_missions um WHERE um.mission_id=m.id AND um.state='completed') AS completions,
@@ -43,7 +43,7 @@ export async function getAdminMetrics() {
       COALESCE(SUM(CASE WHEN status='error' THEN 1 ELSE 0 END),0) AS errors,
       COALESCE(SUM(CASE WHEN status='passed' THEN 1 ELSE 0 END),0) AS passed,
       COALESCE(ROUND(AVG(duration_ms)),0) AS averageDurationMs FROM project_submissions`).first<{ attempts: number; errors: number; passed: number; averageDurationMs: number }>(),
-    db.prepare(`SELECT mbc.enemy_name AS enemyName,mbc.enemy_type AS enemyType,COUNT(ub.user_id) AS battles,
+    db.prepare(`SELECT mbc.mission_id AS missionId,mbc.enemy_name AS enemyName,mbc.enemy_type AS enemyType,COUNT(ub.user_id) AS battles,
       COALESCE(SUM(CASE WHEN ub.state='completed' THEN 1 ELSE 0 END),0) AS victories,
       COALESCE(SUM(ub.defeats),0) AS defeats,COALESCE(SUM(ub.researches),0) AS researches,
       COALESCE(ROUND(AVG(CASE WHEN ub.state='completed' THEN 3-ub.lives END),1),0) AS averageLivesLost,
