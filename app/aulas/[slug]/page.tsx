@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { BookOpen, Download, ExternalLink, PlayCircle, Swords } from "lucide-react";
+import { BookOpen, Download, ExternalLink, Swords } from "lucide-react";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { getStudyLesson } from "@/db";
 
@@ -14,7 +14,7 @@ export default async function StudyPage({ params }: { params: Promise<{ slug: st
 
   return <main className="study-page">
     <nav className="study-topbar"><a className="brand" href="/"><span className="brand-mark">D_</span>DevDex</a><a href={`/trilhas/${lesson.pathSlug}`}>← Voltar ao mapa</a></nav>
-    <header className="study-hero"><div><span><BookOpen size={16} /> MATERIAL DE ESTUDO</span><h1>{lesson.title}</h1><p>{lesson.body.introduction}</p></div><strong>PDF + VÍDEO + EXEMPLOS</strong></header>
+    <header className="study-hero"><div><span><BookOpen size={16} /> MATERIAL DE ESTUDO</span><h1>{lesson.title}</h1><p>{lesson.body.introduction}</p></div><strong>GUIA + FONTES + EXEMPLOS</strong></header>
     <div className="study-layout">
       <article className="study-article">
         {lesson.body.sections.map((section) => <section key={section.title}><h2>{section.title}</h2><p>{section.text}</p></section>)}
@@ -25,7 +25,7 @@ export default async function StudyPage({ params }: { params: Promise<{ slug: st
       <aside className="study-resources">
         <span>RECURSOS DA ETAPA</span>
         <a href={lesson.body.pdfUrl} target="_blank" rel="noreferrer"><Download size={19} /><div><strong>Abrir guia em PDF</strong><small>Material original do DevDex</small></div></a>
-        <a href={lesson.body.videoUrl} target="_blank" rel="noreferrer"><PlayCircle size={19} /><div><strong>{lesson.body.videoLabel}</strong><small>Microsoft Learn · recurso externo</small></div></a>
+        <a href={lesson.body.videoUrl} target="_blank" rel="noreferrer"><BookOpen size={19} /><div><strong>{lesson.body.videoLabel}</strong><small>Conteúdo externo selecionado</small></div></a>
         {lesson.body.references.map((reference) => <a href={reference.url} target="_blank" rel="noreferrer" key={reference.url}><ExternalLink size={18} /><div><strong>{reference.label}</strong><small>Referência complementar</small></div></a>)}
         <div className="study-next"><strong>Depois deste material</strong><p>Você enfrentará cinco batalhas progressivas que aplicam exatamente estes conceitos.</p></div>
       </aside>

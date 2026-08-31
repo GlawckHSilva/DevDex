@@ -18,6 +18,7 @@ const campaignLoreUrl = new URL("../drizzle/0012_campaign_lore.sql", import.meta
 const pythonCurriculumUrl = new URL("../drizzle/0013_python_curriculum.sql", import.meta.url);
 const studyNodesUrl = new URL("../drizzle/0014_study_nodes.sql", import.meta.url);
 const pythonCourseV2Url = new URL("../drizzle/0015_python_course_v2.sql", import.meta.url);
+const coreCoursesV2Url = new URL("../drizzle/0016_core_courses_v2.sql", import.meta.url);
 const enemyAssetsUrl = new URL("../lib/enemy-assets.ts", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
@@ -93,7 +94,7 @@ test("publishes the original six-zone curricula and the Python foundation", asyn
   assert.doesNotMatch(python, /student_code|source_code/);
 });
 
-test("each established zone keeps eight missions and Python expands to 150 aligned stages", async () => {
+test("every programming course exposes six zones and 150 aligned stages", async () => {
   const SQL = await initSqlJs();
   const db = new SQL.Database();
   const directory = new URL("../drizzle/", import.meta.url);
@@ -101,25 +102,19 @@ test("each established zone keeps eight missions and Python expands to 150 align
     const migration = await readFile(new URL(file, directory), "utf8");
     for (const statement of migration.split("--> statement-breakpoint").map((value) => value.trim()).filter(Boolean)) db.run(statement);
   }
-  const established = db.exec(`SELECT campaign_id,COUNT(*) AS zones,SUM(missions) AS missions FROM (
-    SELECT cz.campaign_id,cz.id,COUNT(mbc.mission_id) AS missions,
-      SUM(CASE WHEN mbc.enemy_type='boss' AND mbc.sort_order=8 THEN 1 ELSE 0 END) AS bosses
-    FROM campaign_zones cz JOIN mission_battle_configs mbc ON mbc.zone_id=cz.id JOIN missions m ON m.id=mbc.mission_id
-    WHERE m.status='published'
-    GROUP BY cz.id HAVING missions=8 AND bosses=1
-  ) GROUP BY campaign_id ORDER BY campaign_id`)[0];
-  const pythonZones = db.exec(`SELECT cz.sort_order,COUNT(DISTINCT mbc.mission_id) AS battles,
+  const courseZones = db.exec(`SELECT cz.campaign_id,cz.sort_order,COUNT(DISTINCT mbc.mission_id) AS battles,
     COUNT(DISTINCT l.id) AS materials,MAX(CASE WHEN mbc.enemy_type='boss' THEN mbc.sort_order END) AS boss_order
     FROM campaign_zones cz
     LEFT JOIN mission_battle_configs mbc ON mbc.zone_id=cz.id
       AND mbc.mission_id IN (SELECT id FROM missions WHERE status='published')
     LEFT JOIN lessons l ON l.zone_id=cz.id AND l.status='published'
-    WHERE cz.campaign_id=5 GROUP BY cz.id ORDER BY cz.sort_order`)[0];
-  const pythonTotals = db.exec(`SELECT
-    (SELECT COUNT(*) FROM lessons l JOIN skills s ON s.id=l.skill_id WHERE s.learning_path_id=5 AND l.status='published') AS materials,
-    (SELECT COUNT(*) FROM missions m JOIN skills s ON s.id=m.skill_id WHERE s.learning_path_id=5 AND m.status='published') AS battles,
-    (SELECT COUNT(*) FROM mission_lesson_prerequisites) AS lesson_gates,
-    (SELECT COUNT(*) FROM mission_study_materials msm JOIN missions m ON m.id=msm.mission_id JOIN skills s ON s.id=m.skill_id WHERE s.learning_path_id=5 AND m.status='published') AS inline_materials`)[0];
+    GROUP BY cz.id ORDER BY cz.campaign_id,cz.sort_order`)[0];
+  const courseTotals = db.exec(`SELECT lp.id,
+    (SELECT COUNT(*) FROM lessons l JOIN skills s ON s.id=l.skill_id WHERE s.learning_path_id=lp.id AND l.status='published') AS materials,
+    (SELECT COUNT(*) FROM missions m JOIN skills s ON s.id=m.skill_id WHERE s.learning_path_id=lp.id AND m.status='published') AS battles,
+    (SELECT COUNT(*) FROM mission_lesson_prerequisites mlp JOIN missions m ON m.id=mlp.mission_id JOIN skills s ON s.id=m.skill_id WHERE s.learning_path_id=lp.id) AS lesson_gates,
+    (SELECT COUNT(*) FROM mission_study_materials msm JOIN missions m ON m.id=msm.mission_id JOIN skills s ON s.id=m.skill_id WHERE s.learning_path_id=lp.id AND m.status='published') AS inline_materials
+    FROM learning_paths lp WHERE lp.id BETWEEN 1 AND 5 ORDER BY lp.id`)[0];
   const complexBattles = db.exec(`SELECT COUNT(*) FROM (
     SELECT m.id FROM missions m JOIN skills s ON s.id=m.skill_id JOIN mission_tests mt ON mt.mission_id=m.id
     WHERE s.learning_path_id=5 AND m.status='published' GROUP BY m.id HAVING COUNT(mt.id)>=3)`)[0];
@@ -130,9 +125,8 @@ test("each established zone keeps eight missions and Python expands to 150 align
     JOIN missions m ON m.id=mt.mission_id JOIN skills s ON s.id=m.skill_id
     WHERE s.learning_path_id=5 AND m.status='published'`)[0];
   db.close();
-  assert.deepEqual(established.values, [[1,6,48],[2,6,48],[3,6,48],[4,6,48]]);
-  assert.deepEqual(pythonZones.values, Array.from({ length: 6 }, (_, index) => [index + 1,21,4,25]));
-  assert.deepEqual(pythonTotals.values, [[24,126,24,0]]);
+  assert.deepEqual(courseZones.values, Array.from({ length: 5 }, (_, campaign) => Array.from({ length: 6 }, (_, zone) => [campaign + 1,zone + 1,21,4,25])).flat());
+  assert.deepEqual(courseTotals.values, Array.from({ length: 5 }, (_, path) => [path + 1,24,126,24,0]));
   assert.deepEqual(testedBattles.values, [[126]]);
   assert.ok(Number(complexBattles.values[0][0]) >= 50);
   for (const [input, expected] of pythonTests.values) { JSON.parse(input); JSON.parse(expected); }
@@ -152,6 +146,19 @@ test("Python study nodes are backend-gated and ship verified support resources",
   assert.match(course, /numeric-data-types.*asynchronous-operations/s);
   assert.doesNotMatch(course, /INSERT INTO mission_study_materials/);
   assert.doesNotMatch(course, /student_code|source_code/);
+});
+
+test("HTML, CSS, JavaScript and SQL ship study-first professional curricula", async () => {
+  const [course, ...guides] = await Promise.all([
+    readFile(coreCoursesV2Url, "utf8"),
+    ...["html/html", "css/css", "javascript/javascript", "sql/sql"].map((name) => readFile(new URL(`../public/materials/${name}-guia-completo.pdf`, import.meta.url))),
+  ]);
+  assert.equal([...course.matchAll(/INSERT INTO lessons /g)].length, 96);
+  assert.equal([...course.matchAll(/INSERT INTO mission_lesson_prerequisites /g)].length, 96);
+  assert.equal([...course.matchAll(/INSERT INTO missions /g)].length, 312);
+  assert.match(course, /developer\.mozilla\.org.*sqlite\.org/s);
+  assert.match(course, /html-guia-completo\.pdf.*css-guia-completo\.pdf.*javascript-guia-completo\.pdf.*sql-guia-completo\.pdf/s);
+  for (const guide of guides) assert.equal(guide.subarray(0, 4).toString(), "%PDF");
 });
 
 test("campaign lore is campaign-specific and its view state is persistent", async () => {

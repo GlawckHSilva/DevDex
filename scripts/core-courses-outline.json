@@ -1,0 +1,188 @@
+{
+  "courses": [
+    {
+      "key": "html",
+      "name": "HTML",
+      "pathId": 3,
+      "pdf": "/materials/html/html-guia-completo.pdf",
+      "referenceRoot": "https://developer.mozilla.org/en-US/curriculum/core/semantic-html/",
+      "referenceLabel": "Currículo oficial MDN - HTML semântico",
+      "zones": [
+        { "id": 1, "existing": [12, 13, 14, 15, 121, 122, 123, 124], "modules": [
+          ["estrutura-documento", "Estrutura do documento", "doctype, html, head, body, idioma e metadados essenciais", "<!doctype html>\n<html lang=\"pt-BR\">\n  <head><title>DevDex</title></head>\n  <body><main>Conteúdo</main></body>\n</html>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Basic_HTML_syntax"],
+          ["texto-hierarquia", "Texto e hierarquia", "títulos, parágrafos, ênfase e conteúdo legível", "<article>\n  <h1>Guia</h1>\n  <p><strong>Importante:</strong> pratique.</p>\n</article>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Headings_and_paragraphs"],
+          ["links-navegacao", "Links e navegação", "âncoras, caminhos, texto descritivo e navegação semântica", "<nav aria-label=\"Principal\">\n  <a href=\"#conteudo\">Ir ao conteúdo</a>\n</nav>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Creating_links"],
+          ["listas-conteudo", "Listas e conteúdo organizado", "listas ordenadas, não ordenadas e de descrição", "<dl>\n  <dt>HTML</dt><dd>Estrutura da web</dd>\n</dl>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Lists"]
+        ]},
+        { "id": 5, "existing": [20, 21, 22, 23, 24, 125, 126, 127], "modules": [
+          ["sintaxe-aninhamento", "Sintaxe e aninhamento", "elementos, atributos, elementos vazios e aninhamento válido", "<section id=\"recursos\">\n  <h2>Recursos</h2>\n  <p>Conteúdo bem aninhado.</p>\n</section>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Basic_HTML_syntax"],
+          ["semantica-textual", "Semântica textual", "strong, em, citações, código, abreviações e datas", "<p><abbr title=\"HyperText Markup Language\">HTML</abbr> usa <code>tags</code>.</p>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Advanced_text_features"],
+          ["documentacao-tecnica", "Documentação técnica", "pre, code, blockquote, cite e organização de exemplos", "<figure>\n  <pre><code>npm test</code></pre>\n  <figcaption>Executando testes</figcaption>\n</figure>", "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/code"],
+          ["arquitetura-editorial", "Arquitetura editorial", "header, main, article, section, aside e footer", "<main>\n  <article><header><h1>Artigo</h1></header><section>Texto</section></article>\n</main>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Structuring_documents"]
+        ]},
+        { "id": 6, "existing": [25, 26, 27, 28, 29, 128, 129, 130], "modules": [
+          ["imagens-acessiveis", "Imagens acessíveis", "alt, dimensões, figure, figcaption e contexto", "<figure>\n  <img alt=\"Fluxo da aplicação\" width=\"640\" height=\"360\">\n  <figcaption>Arquitetura</figcaption>\n</figure>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/HTML_images"],
+          ["midia-responsiva", "Mídia responsiva", "picture, source, srcset e formatos adequados", "<picture>\n  <source media=\"(min-width: 800px)\">\n  <img alt=\"Equipe trabalhando\">\n</picture>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/HTML_images#responsive_images"],
+          ["conteudo-relacionado", "Conteúdo relacionado", "figure, citações com fonte e galerias semânticas", "<section aria-labelledby=\"galeria\">\n  <h2 id=\"galeria\">Galeria</h2>\n  <figure><img alt=\"Projeto A\"><figcaption>Projeto A</figcaption></figure>\n</section>", "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/figure"],
+          ["composicao-semantica", "Composição semântica", "artigos, seções, mídia e legendas em páginas reais", "<article>\n  <h2>Estudo de caso</h2>\n  <figure><img alt=\"Resultado\"><figcaption>Resultado final</figcaption></figure>\n</article>", "https://developer.mozilla.org/en-US/curriculum/core/semantic-html/#26-media"]
+        ]},
+        { "id": 7, "existing": [30, 31, 32, 33, 34, 131, 132, 133], "modules": [
+          ["landmarks", "Landmarks e regiões", "header, nav, main, aside, footer e nomes acessíveis", "<header></header>\n<nav aria-label=\"Principal\"></nav>\n<main id=\"conteudo\"></main>\n<footer></footer>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Structuring_documents"],
+          ["tabelas-dados", "Tabelas de dados", "table, caption, thead, tbody, linhas e células", "<table>\n  <caption>Vendas</caption>\n  <thead><tr><th scope=\"col\">Mês</th></tr></thead>\n  <tbody><tr><td>Janeiro</td></tr></tbody>\n</table>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/HTML_table_basics"],
+          ["tabelas-acessiveis", "Tabelas acessíveis", "scope, caption, agrupamento e relações entre cabeçalhos", "<table>\n  <caption>Equipe</caption>\n  <tr><th scope=\"row\">Ada</th><td>Engenharia</td></tr>\n</table>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Table_accessibility"],
+          ["dados-estruturados", "Interfaces de dados", "tabelas, listas de sugestões e cadastros estruturados", "<form><label for=\"cidade\">Cidade</label><input id=\"cidade\" list=\"cidades\"><datalist id=\"cidades\"><option value=\"Curitiba\"></datalist></form>", "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/datalist"]
+        ]},
+        { "id": 8, "existing": [35, 36, 37, 38, 39, 134, 135, 136], "modules": [
+          ["controles-formulario", "Controles de formulário", "label, input, textarea, select, option e button", "<form>\n  <label for=\"nome\">Nome</label><input id=\"nome\" name=\"nome\">\n  <button type=\"submit\">Enviar</button>\n</form>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Your_first_form"],
+          ["validacao-nativa", "Validação nativa", "required, tipos, limites, padrões e mensagens úteis", "<label for=\"email\">E-mail</label>\n<input id=\"email\" type=\"email\" required minlength=\"6\">", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Form_validation"],
+          ["grupos-escolhas", "Grupos e escolhas", "fieldset, legend, checkbox, radio e opções relacionadas", "<fieldset>\n  <legend>Plano</legend>\n  <label><input type=\"radio\" name=\"plano\"> Pro</label>\n</fieldset>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/How_to_structure_a_web_form"],
+          ["widgets-nativos", "Widgets nativos", "details, dialog, progress, meter e estados", "<details><summary>Progresso</summary><progress value=\"70\" max=\"100\">70%</progress></details>", "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/progress"]
+        ]},
+        { "id": 9, "existing": [40, 41, 42, 43, 44, 45, 137, 138], "modules": [
+          ["dados-estados", "Dados e estados", "data attributes, output, aria-live e atualizações", "<button type=\"button\" data-action=\"salvar\">Salvar</button>\n<output aria-live=\"polite\">Pronto</output>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Solve_HTML_problems/Use_data_attributes"],
+          ["navegacao-teclado", "Navegação por teclado", "skip links, ordem lógica, controles nativos e foco", "<a href=\"#conteudo\">Pular para o conteúdo</a>\n<main id=\"conteudo\"><button type=\"button\">Abrir</button></main>", "https://developer.mozilla.org/en-US/docs/Web/Accessibility/Guides/Understanding_WCAG/Keyboard"],
+          ["formularios-profissionais", "Formulários profissionais", "método, nomes, validação, descrições e retorno de status", "<form method=\"post\">\n  <label for=\"senha\">Senha</label><input id=\"senha\" name=\"senha\" type=\"password\" required aria-describedby=\"ajuda\">\n  <small id=\"ajuda\">Mínimo de 8 caracteres</small>\n</form>", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/How_to_structure_a_web_form"],
+          ["auditoria-producao", "Auditoria de produção", "semântica, acessibilidade, conteúdo e estrutura completa", "<header><nav aria-label=\"Principal\"></nav></header>\n<main id=\"conteudo\"><article><h1>DevDex</h1></article></main>\n<footer></footer>", "https://developer.mozilla.org/en-US/curriculum/core/accessibility/"]
+        ]}
+      ]
+    },
+    {
+      "key": "css",
+      "name": "CSS",
+      "pathId": 4,
+      "pdf": "/materials/css/css-guia-completo.pdf",
+      "referenceRoot": "https://developer.mozilla.org/en-US/curriculum/core/css-fundamentals/",
+      "referenceLabel": "Currículo oficial MDN - CSS",
+      "zones": [
+        { "id": 2, "existing": [16, 17, 18, 19, 139, 140, 141, 142], "modules": [
+          ["sintaxe-cascade", "Sintaxe, cascata e herança", "regras, declarações, origem, ordem e propriedades herdadas", "body { color: #e2e8f0; font-family: system-ui; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Handling_conflicts"],
+          ["seletores-basicos", "Seletores fundamentais", "tipo, classe, id, listas de seletores e composição", ".card, .panel { padding: 1rem; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Basic_selectors"],
+          ["box-model", "Box model", "conteúdo, padding, border, margin e box-sizing", ".card { box-sizing: border-box; padding: 1rem; border: 1px solid #334155; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Box_model"],
+          ["valores-unidades", "Valores e unidades", "cores, comprimentos absolutos, relativos, porcentagens e funções", ".hero { min-height: 60vh; padding: 2rem; color: rgb(226 232 240); }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Values_and_units"]
+        ]},
+        { "id": 10, "existing": [46, 47, 48, 49, 50, 143, 144, 145], "modules": [
+          ["tipografia", "Tipografia legível", "fontes, escala, peso, altura de linha e comprimento de leitura", "body { font-family: system-ui; line-height: 1.6; }\nh1 { font-size: 2rem; }", "https://developer.mozilla.org/en-US/curriculum/core/css-text-styling/"],
+          ["dimensionamento", "Dimensionamento fluido", "width, max-width, min-height, porcentagens e viewport", ".container { width: 90%; max-width: 72rem; margin-inline: auto; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Sizing"],
+          ["overflow-midia", "Overflow e mídia", "overflow, object-fit, aspect-ratio e conteúdo imprevisível", ".preview { aspect-ratio: 16 / 9; overflow: hidden; }\n.preview img { object-fit: cover; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Overflow"],
+          ["caixas-componentes", "Caixas de componentes", "espaçamento consistente, bordas, raio e elevação", ".card { padding: 1.5rem; border-radius: 1rem; box-shadow: 0 8px 24px #0003; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Backgrounds_and_borders"]
+        ]},
+        { "id": 11, "existing": [51, 52, 53, 54, 55, 146, 147, 148], "modules": [
+          ["cores-fundos", "Cores e fundos", "paletas, contraste, gradientes e camadas de fundo", ".hero { color: #f8fafc; background: linear-gradient(135deg, #0f172a, #312e81); }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Backgrounds_and_borders"],
+          ["estados-interacao", "Estados de interação", "hover, active, focus-visible, disabled e feedback", ".button:hover { transform: translateY(-2px); }\n.button:focus-visible { outline: 3px solid #22d3ee; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Pseudo_classes_and_elements"],
+          ["pseudo-elementos", "Pseudo-elementos", "before, after, conteúdo decorativo e seletores de estado", ".tag::before { content: \"#\"; color: #22d3ee; }", "https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements"],
+          ["componentes-interativos", "Componentes interativos", "estados, transições curtas, foco e consistência visual", ".button { transition: transform .2s ease; }\n.button:hover { transform: translateY(-2px); }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Styling_a_bio_page"]
+        ]},
+        { "id": 12, "existing": [56, 57, 58, 59, 60, 149, 150, 151], "modules": [
+          ["flexbox", "Flexbox", "eixos, alinhamento, distribuição, crescimento e quebra", ".toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Flexbox"],
+          ["grid", "CSS Grid", "colunas, linhas, fr, minmax, áreas e gaps", ".grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Grids"],
+          ["posicionamento", "Posicionamento", "relative, absolute, fixed, sticky, inset e contexto", ".menu { position: sticky; top: 0; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Positioning"],
+          ["layout-aplicacao", "Layout de aplicação", "combinação de grid, flex, fluxo normal e regiões", ".dashboard { display: grid; grid-template-columns: minmax(14rem, 18rem) 1fr; min-height: 100vh; }", "https://developer.mozilla.org/en-US/curriculum/core/css-layout/"]
+        ]},
+        { "id": 13, "existing": [61, 62, 63, 64, 65, 152, 153, 154], "modules": [
+          ["responsividade", "Responsividade", "mobile first, medidas fluidas, minmax e adaptação", ".grid { grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Responsive_Design"],
+          ["proporcao-recorte", "Proporção e recorte", "aspect-ratio, object-fit, dimensões e mídia flexível", ".media { aspect-ratio: 16 / 9; }\n.media img { width: 100%; object-fit: cover; }", "https://developer.mozilla.org/en-US/docs/Web/CSS/aspect-ratio"],
+          ["transicoes-transformacoes", "Transições e transformações", "transition, translate, scale, rotate e desempenho", ".card { transition: transform .2s ease; }\n.card:hover { transform: translateY(-4px) scale(1.02); }", "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_transitions/Using_CSS_transitions"],
+          ["funcoes-css", "Funções CSS", "calc, min, max, clamp e valores responsivos", "h1 { font-size: clamp(2rem, 5vw, 4rem); }\nmain { width: min(90%, 72rem); }", "https://developer.mozilla.org/en-US/docs/Web/CSS/clamp"]
+        ]},
+        { "id": 14, "existing": [66, 67, 68, 69, 70, 71, 155, 156], "modules": [
+          ["seletores-avancados", "Seletores avançados", "atributos, combinadores, negação e especificidade controlada", "input[required] { border-color: #f59e0b; }\n.menu > a { display: block; }", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Attribute_selectors"],
+          ["tokens-temas", "Tokens e temas", "custom properties, escopo, fallback e paletas", ":root { --accent: #22d3ee; --surface: #0f172a; }\n.card { color: var(--accent); }", "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_cascading_variables/Using_CSS_custom_properties"],
+          ["camadas-contextos", "Camadas visuais", "stacking context, isolation, z-index e sobreposições", ".modal { position: fixed; inset: 0; z-index: 100; isolation: isolate; }", "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Stacking_context"],
+          ["sistema-design", "Sistema visual profissional", "componentes, tokens, layouts, estados e acessibilidade", ".app { color: #e2e8f0; background-color: #020617; }\n.card { display: grid; gap: 1rem; padding: 1.5rem; }", "https://developer.mozilla.org/en-US/curriculum/core/design-for-developers/"]
+        ]}
+      ]
+    },
+    {
+      "key": "javascript",
+      "name": "JavaScript",
+      "pathId": 1,
+      "pdf": "/materials/javascript/javascript-guia-completo.pdf",
+      "referenceRoot": "https://developer.mozilla.org/en-US/curriculum/core/javascript-fundamentals/",
+      "referenceLabel": "Currículo oficial MDN - JavaScript",
+      "zones": [
+        { "id": 3, "existing": [1, 2, 3, 4, 5, 157, 158, 159], "modules": [
+          ["valores-variaveis", "Valores e variáveis", "const, let, tipos primitivos, conversão e operadores", "const preco = 80;\nconst quantidade = 2;\nconst total = preco * quantidade;", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Variables"],
+          ["decisoes", "Decisões", "comparações, operadores lógicos, if, else e guard clauses", "function faixa(idade) {\n  if (idade < 0) return \"inválida\";\n  return idade >= 18 ? \"adulta\" : \"menor\";\n}", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Conditionals"],
+          ["repeticoes", "Repetições", "for, while, iteração, acumuladores e interrupção", "let total = 0;\nfor (const valor of valores) total += valor;", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Loops"],
+          ["funcoes", "Funções", "parâmetros, retorno, escopo, funções pequenas e contratos", "function calcularTotal(preco, quantidade) {\n  return preco * quantidade;\n}", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Functions"]
+        ]},
+        { "id": 15, "existing": [72, 73, 74, 75, 76, 160, 161, 162], "modules": [
+          ["strings", "Strings e normalização", "trim, caixa, busca, substituição, templates e Unicode", "const nome = texto.trim().toLowerCase();\nconst mensagem = `Olá, ${nome}`;", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Strings"],
+          ["arrays", "Arrays", "índices, cópias, map, filter, find e every", "const ativos = usuarios.filter(usuario => usuario.ativo);", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Arrays"],
+          ["transformacoes", "Transformações de coleções", "map, filter, flatMap, encadeamento e imutabilidade", "const nomes = pessoas.filter(p => p.ativo).map(p => p.nome);", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array"],
+          ["validacao-colecoes", "Validação de coleções", "some, every, find, includes e regras compostas", "const valido = itens.length > 0 && itens.every(item => item.preco >= 0);", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every"]
+        ]},
+        { "id": 16, "existing": [77, 78, 79, 80, 81, 163, 164, 165], "modules": [
+          ["reduce-agregacao", "Reduce e agregação", "acumuladores, totais, médias e índices", "const total = itens.reduce((soma, item) => soma + item.valor, 0);", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce"],
+          ["objetos", "Objetos", "propriedades, acesso seguro, entries, fromEntries e spread", "const publico = Object.fromEntries(Object.entries(usuario).filter(([chave]) => chave !== \"senha\"));", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Object_basics"],
+          ["sets-maps", "Set e Map", "unicidade, índices, consulta eficiente e reconciliação", "const porId = new Map(itens.map(item => [item.id, item]));", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Keyed_collections"],
+          ["modelagem-dados", "Modelagem de dados", "normalização, agrupamento, projeção e contratos", "const grupos = Object.groupBy ? Object.groupBy(itens, i => i.tipo) : {};", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects"]
+        ]},
+        { "id": 17, "existing": [82, 83, 84, 85, 86, 166, 167, 168], "modules": [
+          ["algoritmos-arrays", "Algoritmos com arrays", "slice, janelas, partições e processamento linear", "for (let i = 0; i < valores.length; i += tamanho) partes.push(valores.slice(i, i + tamanho));", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice"],
+          ["ordenacao", "Ordenação", "comparadores, cópias, estabilidade e múltiplos critérios", "const ranking = [...itens].sort((a, b) => b.pontos - a.pontos || a.nome.localeCompare(b.nome));", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort"],
+          ["agrupamento", "Agrupamento e índices", "dicionários, mapas, chaves compostas e relatórios", "for (const item of itens) (grupos[item.tipo] ??= []).push(item);", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map"],
+          ["pipelines", "Pipelines de dados", "composição, etapas nomeadas, transformação e resumo", "const resultado = dados.filter(validar).map(normalizar).reduce(resumir, inicial);", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions"]
+        ]},
+        { "id": 18, "existing": [87, 88, 89, 90, 91, 169, 170, 171], "modules": [
+          ["limpeza-dados", "Limpeza de dados", "nulos, padrões, coerção segura e normalização", "const limpo = Object.fromEntries(Object.entries(dado).filter(([, valor]) => valor != null));", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing"],
+          ["json", "JSON", "parse, stringify, validação, erros e projeção", "function lerJson(texto) {\n  try { return JSON.parse(texto); } catch { return null; }\n}", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/JSON"],
+          ["regras-negocio", "Regras de negócio", "guard clauses, validação composta e cálculos auditáveis", "if (!pedido.itens.length) return { total: 0, erro: \"vazio\" };", "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Conditionals"],
+          ["processamento-robusto", "Processamento robusto", "parse, validação, transformação e resultado previsível", "const dado = lerJson(texto);\nif (!dado || !dado.id) return null;\nreturn normalizar(dado);", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch"]
+        ]},
+        { "id": 19, "existing": [92, 93, 94, 95, 96, 172, 173, 174], "modules": [
+          ["paginacao-estado", "Paginação e estado", "recortes, atualização imutável e reducers", "const inicio = (pagina - 1) * tamanho;\nreturn itens.slice(inicio, inicio + tamanho);", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice"],
+          ["reconciliacao", "Reconciliação eficiente", "Map por id, diferenças, mesclagem e preservação", "const recebidosPorId = new Map(recebidos.map(item => [item.id, item]));", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map"],
+          ["desempenho", "Algoritmos e desempenho", "complexidade, Set, janelas deslizantes e uma passagem", "const vistos = new Set();\nfor (const valor of valores) { if (vistos.has(valor)) return valor; vistos.add(valor); }", "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Indexed_collections"],
+          ["arquitetura-testavel", "Arquitetura testável", "funções puras, separação de responsabilidades, métricas e casos extremos", "function executar(dados, validar, transformar) {\n  return dados.filter(validar).map(transformar);\n}", "https://developer.mozilla.org/en-US/curriculum/extensions/testing/"]
+        ]}
+      ]
+    },
+    {
+      "key": "sql",
+      "name": "SQL",
+      "pathId": 2,
+      "pdf": "/materials/sql/sql-guia-completo.pdf",
+      "referenceRoot": "https://sqlite.org/lang.html",
+      "referenceLabel": "Documentação oficial SQLite - linguagem SQL",
+      "zones": [
+        { "id": 4, "existing": [6, 7, 8, 9, 10, 11, 175, 176], "modules": [
+          ["select-projecao", "SELECT e projeção", "colunas, aliases, expressões e resultados legíveis", "SELECT ID, NOME, PRECO AS VALOR\nFROM PRODUTOS;", "https://sqlite.org/lang_select.html"],
+          ["where-filtros", "Filtros com WHERE", "comparações, AND, OR, precedência e condições", "SELECT ID, NOME\nFROM PRODUTOS\nWHERE ATIVO = 1 AND PRECO >= 80;", "https://sqlite.org/lang_expr.html"],
+          ["texto-faixas", "Texto, faixas e conjuntos", "LIKE, BETWEEN, IN e padrões", "SELECT NOME\nFROM PRODUTOS\nWHERE PRECO BETWEEN 80 AND 150;", "https://sqlite.org/lang_expr.html#the_like_glob_regexp_match_and_extract_operators"],
+          ["ordenacao-catalogo", "Ordenação e catálogo", "ORDER BY, aliases, expressões calculadas e múltiplos critérios", "SELECT NOME, ROUND(PRECO * 0.9, 2) AS PROMOCIONAL\nFROM PRODUTOS\nORDER BY PROMOCIONAL, NOME;", "https://sqlite.org/lang_select.html#the_order_by_clause"]
+        ]},
+        { "id": 20, "existing": [97, 98, 99, 100, 101, 102, 177, 178], "modules": [
+          ["distinct-logica", "DISTINCT e lógica", "remoção de duplicatas, condições compostas e precedência", "SELECT DISTINCT CATEGORIA_ID\nFROM PRODUTOS\nWHERE ATIVO = 1;", "https://sqlite.org/lang_select.html#removal_of_duplicate_rows_distinct_processing"],
+          ["nulos", "Valores nulos", "IS NULL, IS NOT NULL, COALESCE e lógica ternária", "SELECT NOME, COALESCE(ESTOQUE, 0) AS ESTOQUE\nFROM PRODUTOS;", "https://sqlite.org/lang_corefunc.html#coalesce"],
+          ["paginacao", "Paginação", "LIMIT, OFFSET, ordenação estável e páginas previsíveis", "SELECT ID, NOME\nFROM PRODUTOS\nORDER BY ID\nLIMIT 2 OFFSET 2;", "https://sqlite.org/lang_select.html#the_limit_clause"],
+          ["consultas-legiveis", "Consultas legíveis", "aliases, indentação, expressões e filtros profissionais", "SELECT P.ID, P.NOME, P.PRECO AS VALOR\nFROM PRODUTOS AS P\nWHERE P.ATIVO = 1\nORDER BY P.ID;", "https://sqlite.org/lang_select.html"]
+        ]},
+        { "id": 21, "existing": [103, 104, 105, 106, 107, 108, 179, 180], "modules": [
+          ["agregacoes", "Funções de agregação", "COUNT, SUM, AVG, MIN, MAX e tratamento de vazios", "SELECT COUNT(*) AS TOTAL, ROUND(AVG(PRECO), 2) AS MEDIA\nFROM PRODUTOS\nWHERE ATIVO = 1;", "https://sqlite.org/lang_aggfunc.html"],
+          ["group-by", "Agrupamento", "GROUP BY, chaves, indicadores e granularidade", "SELECT CATEGORIA_ID, COUNT(*) AS PRODUTOS\nFROM PRODUTOS\nGROUP BY CATEGORIA_ID;", "https://sqlite.org/lang_select.html#resultset"],
+          ["having", "Filtros de grupos", "HAVING, agregações e diferença para WHERE", "SELECT CATEGORIA_ID, AVG(PRECO) AS MEDIA\nFROM PRODUTOS\nGROUP BY CATEGORIA_ID\nHAVING AVG(PRECO) >= 100;", "https://sqlite.org/lang_select.html#the_having_clause"],
+          ["resumos", "Relatórios resumidos", "múltiplas agregações, arredondamento e ordenação", "SELECT CATEGORIA_ID, COUNT(*) AS QTD, ROUND(AVG(PRECO), 2) AS MEDIA, MAX(PRECO) AS MAIOR\nFROM PRODUTOS\nGROUP BY CATEGORIA_ID;", "https://sqlite.org/lang_aggfunc.html"]
+        ]},
+        { "id": 22, "existing": [109, 110, 111, 112, 113, 114, 181, 182], "modules": [
+          ["joins", "JOINs", "INNER JOIN, LEFT JOIN, chaves e cardinalidade", "SELECT P.NOME, C.NOME AS CATEGORIA\nFROM PRODUTOS P\nLEFT JOIN CATEGORIAS C ON C.ID = P.CATEGORIA_ID;", "https://sqlite.org/lang_select.html#rjoin"],
+          ["case-coalesce", "CASE e COALESCE", "classificação, valores padrão e regras no resultado", "SELECT NOME, CASE WHEN PRECO >= 100 THEN 'PREMIUM' ELSE 'PADRAO' END AS FAIXA\nFROM PRODUTOS;", "https://sqlite.org/lang_expr.html#the_case_expression"],
+          ["subconsultas", "Subconsultas", "consultas escalares, IN, EXISTS e correlação", "SELECT NOME, PRECO\nFROM PRODUTOS\nWHERE PRECO > (SELECT AVG(PRECO) FROM PRODUTOS);", "https://sqlite.org/lang_expr.html#subquery_expressions"],
+          ["relacoes-seguras", "Relações seguras", "JOIN, ausências, subconsultas e divisão protegida", "SELECT P.NOME, COALESCE(C.NOME, 'SEM CATEGORIA') AS CATEGORIA\nFROM PRODUTOS P\nLEFT JOIN CATEGORIAS C ON C.ID = P.CATEGORIA_ID;", "https://sqlite.org/lang_select.html"]
+        ]},
+        { "id": 23, "existing": [115, 116, 117, 118, 119, 120, 183, 184], "modules": [
+          ["cte", "CTEs", "WITH, etapas nomeadas, legibilidade e reutilização", "WITH ATIVOS AS (\n  SELECT * FROM PRODUTOS WHERE ATIVO = 1\n)\nSELECT NOME, PRECO FROM ATIVOS;", "https://sqlite.org/lang_with.html"],
+          ["conjuntos", "Operações de conjunto", "UNION, UNION ALL, compatibilidade e duplicatas", "SELECT NOME FROM PRODUTOS WHERE ATIVO = 1\nUNION\nSELECT NOME FROM CATEGORIAS;", "https://sqlite.org/lang_select.html#compound_select_statements"],
+          ["janelas-ranking", "Funções de janela", "OVER, ROW_NUMBER, RANK, partições e ordenação", "SELECT NOME, PRECO, RANK() OVER (ORDER BY PRECO DESC) AS POSICAO\nFROM PRODUTOS;", "https://sqlite.org/windowfunctions.html"],
+          ["analise-categoria", "Análise por categoria", "CTE, JOIN, partição e ranking por grupo", "WITH BASE AS (SELECT P.NOME, C.NOME CATEGORIA, P.PRECO FROM PRODUTOS P JOIN CATEGORIAS C ON C.ID=P.CATEGORIA_ID)\nSELECT NOME, CATEGORIA, RANK() OVER (PARTITION BY CATEGORIA ORDER BY PRECO DESC) POSICAO FROM BASE;", "https://sqlite.org/windowfunctions.html"]
+        ]},
+        { "id": 24, "existing": [185, 186, 187, 188, 189, 190, 191, 192], "modules": [
+          ["agregacao-condicional", "Agregação condicional", "SUM com CASE, contagens segmentadas e indicadores", "SELECT COUNT(*) TOTAL, SUM(CASE WHEN ATIVO=1 THEN 1 ELSE 0 END) ATIVOS\nFROM PRODUTOS;", "https://sqlite.org/lang_aggfunc.html"],
+          ["anti-joins", "Anti-joins", "NOT EXISTS, registros órfãos e comparação de conjuntos", "SELECT P.ID, P.NOME\nFROM PRODUTOS P\nWHERE NOT EXISTS (SELECT 1 FROM VENDAS V WHERE V.PRODUTO_ID=P.ID);", "https://sqlite.org/lang_expr.html#the_exists_operator"],
+          ["analise-temporal", "Análise temporal", "SUM acumulado, LAG, ordenação e comparação", "SELECT DATA, TOTAL, SUM(TOTAL) OVER (ORDER BY DATA, ID) AS ACUMULADO\nFROM VENDAS;", "https://sqlite.org/windowfunctions.html"],
+          ["dashboard-sql", "Dashboard profissional", "CTEs, joins, agregações, janelas e consultas auditáveis", "WITH VENDAS_PRODUTO AS (SELECT PRODUTO_ID, SUM(TOTAL) RECEITA FROM VENDAS GROUP BY PRODUTO_ID)\nSELECT P.NOME, V.RECEITA, RANK() OVER (ORDER BY V.RECEITA DESC) POSICAO FROM VENDAS_PRODUTO V JOIN PRODUTOS P ON P.ID=V.PRODUTO_ID;", "https://sqlite.org/queryplanner.html"]
+        ]}
+      ]
+    }
+  ]
+}

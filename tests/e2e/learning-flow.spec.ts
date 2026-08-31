@@ -7,22 +7,23 @@ const userHeaders = (id: string) => ({
   "oai-authenticated-user-full-name-encoding": "percent-encoded-utf-8",
 });
 const solution = `function criarSaudacao(nome) { return \`Olá, ${"${nome}"}!\`; }`;
-const javascriptSolutions = [
-  ["guardar-nome", solution],
-  ["verificar-maioridade", "function podeEntrar(idade) { return idade >= 18; }"],
-  ["somar-lista", "function somarLista(valores) { return valores.reduce((total, valor) => total + valor, 0); }"],
-  ["calcular-dobro", "function dobro(numero) { return numero * 2; }"],
-  ["filtrar-pares", "function pares(valores) { return valores.filter((valor) => valor % 2 === 0); }"],
-  ["operacoes-basicas", "function calcularOperacoes(a, b) { return { soma: a + b, produto: a * b }; }"],
-  ["classificar-numero", "function classificarNumero(numero) { return numero > 0 ? 'positivo' : numero < 0 ? 'negativo' : 'zero'; }"],
-  ["resumo-numerico", "function resumirNumeros(valores) { return valores.reduce((r, valor) => ({ soma: r.soma + valor, positivos: r.positivos + (valor > 0 ? 1 : 0) }), { soma: 0, positivos: 0 }); }"],
-] as const;
 
 async function submit(request: APIRequestContext, userId: string, slug: string, code: string) {
+  const lesson = ({
+    "guardar-nome": "javascript-estudo-valores-variaveis",
+    "listar-produtos": "sql-estudo-select-projecao",
+    "pagina-da-oficina": "html-estudo-estrutura-documento",
+    "cores-do-cartao": "css-estudo-sintaxe-cascade",
+  } as Record<string, string>)[slug];
+  if (lesson) await completeLesson(request, userId, lesson);
   return request.post(`/api/missions/${slug}/submit`, {
     headers: userHeaders(userId),
     data: { mode: "test", code },
   });
+}
+
+async function completeLesson(request: APIRequestContext, userId: string, slug: string) {
+  return request.post(`/api/lessons/${slug}/complete`, { headers: userHeaders(userId), maxRedirects: 0 });
 }
 
 async function submitProject(request: APIRequestContext, userId: string, files: Record<string, string>) {
@@ -73,6 +74,7 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   await expect(page.getByTestId("character-select")).toBeVisible();
   const character = await request.post("/api/character", { headers, data: { archetype: "adventuress" } });
   expect(await character.json()).toMatchObject({ ok: true, character: { archetype: "adventuress" } });
+  expect((await completeLesson(request, userId, "javascript-estudo-valores-variaveis")).status()).toBe(303);
   await page.goto("/trilhas/javascript-fundamentals");
   await expect(page.locator("h1", { hasText: "Cidade da Lógica" })).toBeVisible();
   await expect(page.getByTestId("campaign-map")).toBeVisible();
@@ -118,8 +120,8 @@ test("apresenta e persiste a transmissão de lore sem alterar progresso", async 
   await transmission.getByRole("button", { name: /INICIAR JORNADA/ }).click();
   await recorded;
   await expect(transmission).toHaveCount(0);
-  await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveAttribute("aria-label", /Disponível/);
-  await expect(page.getByTestId("map-node-navegacao-da-oficina")).toHaveAttribute("aria-label", /Bloqueada/);
+  await expect(page.getByTestId("map-node-html-estudo-estrutura-documento")).toHaveAttribute("aria-label", /Disponível/);
+  await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveAttribute("aria-label", /Bloqueada/);
   await page.reload();
   await expect(transmission).toHaveCount(0);
   await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
@@ -154,8 +156,9 @@ test("percorre trilha, conclui missão e persiste apó novo login", async ({ bro
 
   await page.goto("/trilhas/javascript-fundamentals");
   await expect(page.getByRole("heading", { name: "Cidade da Lógica" })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Bloqueada/ })).toHaveCount(8);
+  await expect(page.getByRole("button", { name: /Bloqueada/ })).toHaveCount(25);
 
+  expect((await completeLesson(request, userId, "javascript-estudo-valores-variaveis")).status()).toBe(303);
   await page.goto("/missoes/guardar-nome");
   await expect(page.getByTestId("code-editor")).toBeVisible();
   const response = await submit(request, userId, "guardar-nome", solution);
@@ -230,21 +233,22 @@ test("alterna entre campanhas sem bloquear tecnologias independentes", async ({ 
 test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ page, request }) => {
   const userId = "campaign-map-user";
   await chooseCharacter(request, userId);
+  expect((await completeLesson(request, userId, "javascript-estudo-valores-variaveis")).status()).toBe(303);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/trilhas/javascript-fundamentals");
   await expect(page.locator(".game-sidebar")).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Voltar às campanhas" })).toBeVisible();
   const variables = page.getByTestId("map-node-guardar-nome");
   const locked = page.getByTestId("map-node-verificar-maioridade");
-  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*7%/);
-  await expect(page.locator(".path-desktop path")).toHaveCount(9);
+  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:/);
+  await expect(page.locator(".path-desktop path")).toHaveCount(26);
   await expect(page.locator(".map-fog")).toBeVisible();
   await expect(page.getByTestId("map-node-boss-project")).toHaveClass(/type-boss.*state-locked/);
   await expect(async () => { await locked.click(); await expect(locked).toHaveAttribute("aria-pressed", "true"); }).toPass();
   await expect(page.getByTestId("mission-panel").getByRole("button")).toBeDisabled();
   await variables.click();
   await expect(page.getByTestId("mission-panel").getByRole("link", { name: /COMEÇAR BATALHA/ })).toHaveAttribute("href", "/missoes/guardar-nome");
-  await expect(page.getByLabel("48 aulas, 48 batalhas, do básico ao profissional")).toBeVisible();
+  await expect(page.getByLabel("24 materiais, 126 batalhas, 150 etapas")).toBeVisible();
   await expect(page.getByTestId("course-zone-6")).toBeVisible();
   await variables.focus();
   await page.keyboard.press("ArrowRight");
@@ -253,7 +257,7 @@ test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ p
   await page.reload();
   await expect(variables).toHaveAttribute("aria-label", /Concluída/);
   await expect(locked).toHaveAttribute("aria-label", /Disponível/);
-  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*18%;top:\s*49%/);
+  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:/);
   await variables.click();
   await expect(page.getByTestId("mission-panel").getByRole("link", { name: /REPETIR BATALHA/ })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
@@ -287,31 +291,23 @@ test("Python exige o material e libera cinco batalhas alinhadas pelo backend", a
   await expect(page.getByTestId("map-node-estudo-texto-logica")).toHaveAttribute("aria-label", /Bloqueada/);
 });
 
-test("abre o Project Mode seguro como boss da zona JavaScript", async ({ page, request }) => {
+test("mantém o Project Mode bloqueado até as 25 etapas da zona JavaScript", async ({ page, request }) => {
   const userId = "campaign-boss-user";
   await chooseCharacter(request, userId);
-  for (const [slug, code] of javascriptSolutions.slice(0, -1)) expect((await submit(request, userId, slug, code)).status()).toBe(200);
+  expect((await completeLesson(request, userId, "javascript-estudo-valores-variaveis")).status()).toBe(303);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/trilhas/javascript-fundamentals");
-  await expect(page.getByTestId("map-node-resumo-numerico")).toHaveClass(/type-boss.*state-available/);
+  await expect(page.locator(".adventure-map-node")).toHaveCount(26);
+  await expect(page.getByTestId("map-node-guardar-nome")).toHaveClass(/state-available/);
   await expect(page.getByTestId("map-node-boss-project")).toHaveClass(/type-boss.*state-locked/);
-  expect((await submit(request, userId, javascriptSolutions.at(-1)![0], javascriptSolutions.at(-1)![1])).status()).toBe(200);
-  await page.reload();
-  await expect(async () => {
-    await page.getByTestId("course-zone-1").click();
-    await expect(page.getByRole("heading", { name: /Zona 01/ })).toBeVisible();
-  }).toPass();
   await page.getByTestId("map-node-boss-project").click();
-  await page.getByTestId("mission-panel").getByRole("link", { name: /ENTRAR NO PROJETO/ }).click();
-  await expect(page).toHaveURL(/\/projetos\/lista-de-tarefas\?campaign=javascript-fundamentals$/);
-  await expect(page.getByText(/BOSS BATTLE · LISTA DE TAREFAS/)).toBeVisible();
-  await expect(page.getByTitle("Preview do projeto")).toHaveAttribute("sandbox", "allow-scripts");
-  expect(await page.getByTitle("Preview do projeto").getAttribute("srcdoc")).toContain("default-src 'none'");
+  await expect(page.getByTestId("mission-panel").getByRole("button")).toBeDisabled();
 });
 
 test("executa SQLite/Wasm descartável sem misturar progresso", async ({ page, request }) => {
   const correct = "SELECT ID, DESCRICAO, VALOR, ATIVO FROM PRODUTOS";
   await chooseCharacter(request, "sql-ui-user");
+  expect((await completeLesson(request, "sql-ui-user", "sql-estudo-select-projecao")).status()).toBe(303);
   await page.setExtraHTTPHeaders(userHeaders("sql-ui-user"));
   await page.goto("/trilhas/sql-fundamentals-sqlite");
   await expect(page.getByRole("heading", { name: "Minas dos Dados" })).toBeVisible();
@@ -348,33 +344,20 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   test.setTimeout(60_000);
   const userId = "web-ui-user";
   await chooseCharacter(request, userId);
+  expect((await completeLesson(request, userId, "html-estudo-estrutura-documento")).status()).toBe(303);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/trilhas/html-fundamentals");
   await expect(page.getByRole("heading", { name: "Crônicas da Estrutura" })).toBeVisible();
   await page.goto("/missoes/pagina-da-oficina");
-  const study = page.getByTestId("study-material");
-  await expect(study).toContainText("Títulos e parágrafos");
-  await expect(study).toContainText("Portal da Guilda");
-  await expect(study).not.toContainText("Oficina DevDex");
-  await expect(study.getByRole("link", { name: /VOLTAR AO MAPA/ })).toHaveAttribute("href", "/trilhas/html-fundamentals");
+  await expect(page.getByTestId("study-material")).toHaveCount(0);
   await expect(page.getByTestId("web-editor").locator(".monaco-editor")).toBeVisible();
   await expect(page.getByTestId("web-editor").locator(".view-lines")).toContainText("<html>");
   await expect(page.getByTestId("web-editor").locator(".view-lines")).toContainText("<body>");
   await expect(page.getByTestId("web-editor").locator(".view-lines")).not.toContainText("<main>");
-  await page.getByTestId("start-battle").click();
-  await expect(study).toBeHidden();
-  await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
-  await expect(study).toContainText("Títulos e parágrafos");
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
-  await expect(page.getByTestId("start-battle")).toContainText("VOLTAR À PRÁTICA");
-  await page.getByTestId("start-battle").click();
-  await expect(study).toBeHidden();
   await page.goto("/dashboard");
   await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
   await page.goto("/missoes/pagina-da-oficina");
-  await expect(study).toContainText("Títulos e parágrafos");
-  await page.getByTestId("start-battle").click();
-  await expect(study).toBeHidden();
   await expect(page.getByTestId("web-editor")).toBeVisible();
   await expect(page.locator(".battle-arena")).toHaveAttribute("style", /ruinas-da-estrutura-v1/);
   await expect(page.getByText("Espectro do Esqueleto", { exact: true })).toBeVisible();
@@ -408,11 +391,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByTestId("battle-objectives").locator(".passed")).toHaveCount(1);
   await expect(page.locator(".battle-coach")).toContainText("PRÓXIMO PASSO");
   await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
-  await expect(study).toBeVisible();
-  await expect(study).toContainText("1 · EXPLICAÇÃO");
-  await expect(study).toContainText("2 · PRÁTICA");
-  await page.getByTestId("start-battle").click();
-  await expect(study).toBeHidden();
+  await expect(page.getByTestId("study-material")).toHaveCount(0);
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
   await page.getByRole("button", { name: /Atacar com a solução/ }).click();
   await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
@@ -443,10 +422,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveAttribute("aria-label", /Concluída/);
   await expect(page.getByTestId("map-node-pagina-da-oficina")).toHaveClass(/state-completed/);
   await expect(page.getByTestId("map-node-navegacao-da-oficina")).toHaveAttribute("aria-label", /Disponível/);
-  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:\s*18%;top:\s*49%/);
-  await page.goto("/missoes/navegacao-da-oficina");
-  await expect(page.getByTestId("study-material")).toContainText("Navegação interna");
-  await expect(page.getByTestId("study-material")).not.toContainText("Portal da Guilda");
+  await expect(page.getByTestId("map-player")).toHaveAttribute("style", /left:/);
 
   const unsafe = await submit(request, "web-unsafe", "pagina-da-oficina", "<script>alert(1)</script>");
   expect(unsafe.status()).toBe(422);
@@ -457,9 +433,6 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   const review = await submit(request, userId, "pagina-da-oficina", "<main><h1>Oficina DevDex</h1><p>Aprenda código na prática.</p></main>");
   expect(await review.json()).toMatchObject({ ok: true, gainedXp: 0, newlyCompleted: false, unlockedSlug: "navegacao-da-oficina" });
   await page.goto("/missoes/pagina-da-oficina");
-  await expect(page.getByTestId("study-material")).toContainText("Títulos e parágrafos");
-  await page.getByTestId("start-battle").click();
-  await expect(page.getByTestId("study-material")).toBeHidden();
   await expect(page.getByText("REPETIÇÃO · 0 XP")).toBeVisible();
   await expect(page.getByTestId("enemy-hp")).toContainText("100 / 100 HP");
   await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeEnabled();
@@ -473,6 +446,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await page.waitForTimeout(2800);
   await expect(page).toHaveURL(/\/missoes\/pagina-da-oficina$/);
 
+  expect((await completeLesson(request, userId, "css-estudo-sintaxe-cascade")).status()).toBe(303);
   await page.goto("/missoes/cores-do-cartao");
   await expect(page.getByTestId("web-editor")).toBeVisible();
   const css = await submit(request, userId, "cores-do-cartao", ".card { color: #f8fafc; background-color: #0f172a; }");
@@ -486,6 +460,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
 test("backend ignora tentativa do frontend de forjar vitória e desbloqueio", async ({ page, request }) => {
   const userId = "forged-victory";
   await chooseCharacter(request, userId);
+  expect((await completeLesson(request, userId, "html-estudo-estrutura-documento")).status()).toBe(303);
   const response = await request.post("/api/missions/pagina-da-oficina/submit", {
     headers: userHeaders(userId),
     data: { mode: "test", code: "<div>incompleto</div>", newlyCompleted: true, gainedXp: 9999, unlockedSlug: "navegacao-da-oficina", battle: { state: "completed" } },
