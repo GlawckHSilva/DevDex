@@ -25,7 +25,7 @@ export default async function StudyPage({ params }: { params: Promise<{ slug: st
       <aside className="study-resources">
         <span>RECURSOS DA ETAPA</span>
         <a href={lesson.body.pdfUrl} target="_blank" rel="noreferrer"><Download size={19} /><div><strong>Abrir guia em PDF</strong><small>Material original do DevDex</small></div></a>
-        <a href={lesson.body.videoUrl} target="_blank" rel="noreferrer"><PlayCircle size={19} /><div><strong>{lesson.body.videoLabel}</strong><small>Vídeo curto selecionado</small></div></a>
+        <a href={lesson.body.videoUrl} target="_blank" rel="noreferrer"><PlayCircle size={19} /><div><strong>{lesson.body.videoLabel}</strong><small>Microsoft Learn · recurso externo</small></div></a>
         {lesson.body.references.map((reference) => <a href={reference.url} target="_blank" rel="noreferrer" key={reference.url}><ExternalLink size={18} /><div><strong>{reference.label}</strong><small>Referência complementar</small></div></a>)}
         <div className="study-next"><strong>Depois deste material</strong><p>Você enfrentará cinco batalhas progressivas que aplicam exatamente estes conceitos.</p></div>
       </aside>

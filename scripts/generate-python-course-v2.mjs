@@ -3,9 +3,50 @@ import { join } from "node:path";
 
 const A = (slug, title, fn, args, objective, tests, options = {}) => ({ slug, title, fn, args, objective, tests, ...options });
 const Z = (slug, title, pdf, modules, boss) => ({ slug, title, pdf, modules, boss });
-const series = "https://learn.microsoft.com/en-us/shows/intro-to-python-development/";
-const advancedSeries = "https://learn.microsoft.com/en-us/shows/more-python-for-beginners/";
-const docs = "https://docs.python.org/3/tutorial/";
+const learn = "https://learn.microsoft.com/en-us/shows/";
+const docs = "https://docs.python.org/pt-br/3/";
+const videos = {
+  numbers: `${learn}intro-to-python-development/python-for-beginners-13-of-44-numeric-data-types`,
+  strings: `${learn}intro-to-python-development/python-for-beginners-9-of-44-string-concepts`,
+  errors: `${learn}intro-to-python-development/python-for-beginners-17-of-44-error-handling`,
+  collections: `${learn}intro-to-python-development/python-for-beginners-25-of-44-collections`,
+  loops: `${learn}intro-to-python-development/python-for-beginners-27-of-44-loops`,
+  functions: `${learn}intro-to-python-development/python-for-beginners-29-of-44-introducing-functions`,
+  parameters: `${learn}intro-to-python-development/python-for-beginners-31-of-44-parameterized-functions`,
+  quality: `${learn}more-python-for-beginners/formatting-and-linting--more-python-for-beginners-2-of-20`,
+  lambdas: `${learn}more-python-for-beginners/lambdas--more-python-for-beginners-4-of-20`,
+  classes: `${learn}more-python-for-beginners/classes--more-python-for-beginners-6-of-20`,
+  classDemo: `${learn}more-python-for-beginners/demo-classes--more-python-for-beginners-7-of-20`,
+  inheritance: `${learn}more-python-for-beginners/inheritance--more-python-for-beginners-8-of-20`,
+  context: `${learn}more-python-for-beginners/using-with-to-automatically-close-resources--more-python-for-beginners-16-of-20`,
+  async: `${learn}more-python-for-beginners/asynchronous-operations--more-python-for-beginners-18-of-20`,
+};
+const resources = {
+  "sintaxe-valores": [videos.numbers, "tutorial/introduction.html", "Números, texto e valores"],
+  "texto-logica": [videos.strings, "tutorial/introduction.html#text", "Texto e strings"],
+  "decisoes-repeticoes": [videos.loops, "tutorial/controlflow.html", "Controle de fluxo"],
+  "funcoes-integradas": [videos.functions, "tutorial/controlflow.html#defining-functions", "Definindo funções"],
+  "listas-sequencias": [videos.collections, "tutorial/datastructures.html#more-on-lists", "Listas e sequências"],
+  "sets-dicionarios": [videos.collections, "tutorial/datastructures.html#dictionaries", "Dicionários e conjuntos"],
+  "compreensoes-matrizes": [videos.collections, "tutorial/datastructures.html#list-comprehensions", "Compreensões de lista"],
+  "ordenacao-agrupamento": [videos.lambdas, "howto/sorting.html", "Ordenação em Python"],
+  "assinaturas-flexiveis": [videos.parameters, "tutorial/controlflow.html#more-on-defining-functions", "Parâmetros e assinaturas"],
+  "pureza-closures": [videos.lambdas, "howto/functional.html", "Programação funcional"],
+  "alta-ordem-pipelines": [videos.lambdas, "howto/functional.html", "Funções de alta ordem"],
+  "recursao-decomposicao": [videos.functions, "tutorial/controlflow.html#defining-functions", "Funções e decomposição"],
+  "erros-contratos": [videos.errors, "tutorial/errors.html", "Erros e exceções"],
+  "formatos-padroes": [videos.strings, "tutorial/inputoutput.html#saving-structured-data-with-json", "JSON e dados estruturados"],
+  "biblioteca-padrao": [videos.collections, "tutorial/stdlib.html", "Biblioteca padrão"],
+  "qualidade-debug": [videos.quality, "library/unittest.html", "Testes com unittest"],
+  "classes-encapsulamento": [videos.classes, "tutorial/classes.html", "Classes e encapsulamento"],
+  "heranca-polimorfismo": [videos.inheritance, "tutorial/classes.html#inheritance", "Herança"],
+  "composicao-dataclasses": [videos.classDemo, "library/dataclasses.html", "Dataclasses"],
+  "iteracao-preguicosa": [videos.collections, "tutorial/classes.html#iterators", "Iteradores e geradores"],
+  "decoradores-contextos": [videos.context, "reference/datamodel.html#context-managers", "Gerenciadores de contexto"],
+  "arquitetura-dependencias": [videos.quality, "tutorial/modules.html#packages", "Módulos e pacotes"],
+  "algoritmos-desempenho": [videos.lambdas, "library/timeit.html", "Medição de desempenho"],
+  "assincrono-producao": [videos.async, "library/asyncio.html", "Programação assíncrona com asyncio"],
+};
 
 const zones = [
   Z("terminal-dos-fundamentos", "Terminal dos Fundamentos", "/materials/python/zona-1-fundamentos.pdf", [
@@ -186,6 +227,7 @@ zones.forEach((zone, zoneIndex) => {
   const zoneId = 25 + zoneIndex;
   let previousBlockLast = previousZoneBoss;
   zone.modules.forEach((module, blockIndex) => {
+    const resource = resources[module.slug];
     const currentSkill = skillId++;
     const currentLesson = lessonId++;
     const lessonOrder = blockIndex * 6 + 1;
@@ -208,9 +250,12 @@ zones.forEach((zone, zoneIndex) => {
       keyPoints: [module.concepts, "Contratos de entrada e saída", "Casos extremos e legibilidade", "Decomposição e testes"],
       practiceObjectives: tasks.map(({ task }, index) => `${index + 1}. ${task.title}`),
       pdfUrl: zone.pdf,
-      videoUrl: zoneIndex < 3 ? series : advancedSeries,
-      videoLabel: `Vídeo curto: ${module.title}`,
-      references: [{ label: "Tutorial oficial do Python", url: docs }],
+      videoUrl: resource[0],
+      videoLabel: `Vídeo: ${module.title}`,
+      references: [
+        { label: resource[2], url: `${docs}${resource[1]}` },
+        { label: "Tutorial oficial do Python (PT-BR)", url: `${docs}tutorial/` },
+      ],
     };
     sql.push(`INSERT INTO lessons (id,skill_id,slug,title,body_json,zone_id,prerequisite_mission_id,first_mission_id,sort_order,status) VALUES (${currentLesson},${currentSkill},${esc(`estudo-${module.slug}`)},${esc(module.title)},${json(body)},${zoneId},${previousBlockLast?.id ?? "NULL"},${created[0].id},${lessonOrder},'published');`);
     sql.push(`INSERT INTO mission_lesson_prerequisites (mission_id,lesson_id) VALUES (${created[0].id},${currentLesson});`);

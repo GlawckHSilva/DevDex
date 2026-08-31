@@ -146,6 +146,10 @@ test("Python study nodes are backend-gated and ship verified support resources",
   assert.equal([...course.matchAll(/INSERT INTO mission_lesson_prerequisites /g)].length, 24);
   assert.equal([...course.matchAll(/'python','python-pyodide-1'/g)].length, 126);
   assert.match(course, /zona-1-fundamentos\.pdf.*zona-6-profissional\.pdf/s);
+  assert.equal(new Set([...course.matchAll(/https:\/\/learn\.microsoft\.com\/en-us\/shows\/[^"\\]+/g)].map(([url]) => url)).size >= 10, true);
+  assert.equal([...course.matchAll(/https:\/\/docs\.python\.org\/pt-br\/3\//g)].length, 48);
+  assert.equal([...course.matchAll(/Tutorial oficial do Python \(PT-BR\)/g)].length, 24);
+  assert.match(course, /numeric-data-types.*asynchronous-operations/s);
   assert.doesNotMatch(course, /INSERT INTO mission_study_materials/);
   assert.doesNotMatch(course, /student_code|source_code/);
 });
