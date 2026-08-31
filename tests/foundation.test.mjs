@@ -161,6 +161,15 @@ test("HTML, CSS, JavaScript and SQL ship study-first professional curricula", as
   for (const guide of guides) assert.equal(guide.subarray(0, 4).toString(), "%PDF");
 });
 
+test("projects unlock from verified learning progress and include professional briefs", async () => {
+  const sql = await readFile(new URL("../drizzle/0017_project_unlocks.sql", import.meta.url), "utf8");
+  assert.match(sql, /user_project_notifications/);
+  assert.match(sql, /cartao-de-perfil/);
+  assert.match(sql, /landing-page-produto/);
+  assert.match(sql, /deadline_days.*min_level.*required_materials.*required_battles/s);
+  assert.match(sql, /UPDATE `user_project_progress` SET `state`='locked'/);
+});
+
 test("campaign lore is campaign-specific and its view state is persistent", async () => {
   const sql = await readFile(campaignLoreUrl, "utf8");
   assert.match(sql, /lore_title.*lore_subtitle.*lore_sender.*lore_intro_text.*lore_short_description.*lore_signature.*lore_transmission_id/s);

@@ -34,3 +34,8 @@ test("rejects incomplete behavior and active HTML", async () => {
   assert.equal((await ProjectRunnerAdapter.execute({ files: { ...files, "script.js": "" }, validator: { kind: "javascript", test: "add" } })).passed, false);
   await assert.rejects(() => ProjectRunnerAdapter.execute({ files: { ...files, "index.html": "<script>alert(1)</script>" } }), /tag <script>/i);
 });
+
+test("validates responsive project criteria without executing CSS", async () => {
+  const responsive = { ...files, "style.css": "@media (max-width: 600px) { .todo-app { padding: 16px; } }" };
+  assert.equal((await ProjectRunnerAdapter.execute({ files: responsive, validator: { kind: "css", rules: [{ type: "raw", pattern: "@media\\s*\\([^)]*max-width\\s*:\\s*600px" }] } })).passed, true);
+});

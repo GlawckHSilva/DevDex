@@ -2,22 +2,27 @@ import { getDb } from "./client";
 
 export type ProjectFile = { path: "index.html" | "style.css" | "script.js"; language: "html" | "css" | "javascript"; starterCode: string };
 export type ProjectStep = { id: number; slug: string; title: string; briefing: string; objective: string; activeFile: ProjectFile["path"]; requirementsJson: string; validatorJson: string; xpReward: number; sortOrder: number; state: "locked" | "available" | "in_progress" | "completed" };
-export type ProjectView = { id: number; slug: string; title: string; description: string; xpReward: number; state: "available" | "in_progress" | "completed"; completedSteps: number; files: ProjectFile[]; steps: ProjectStep[] };
-export type ProjectSummary = { slug: string; title: string; description: string; xpReward: number; state: ProjectView["state"]; completedSteps: number; totalSteps: number };
+export type ProjectView = { id: number; slug: string; title: string; description: string; introduction: string; deadlineDays: number; minLevel: number; requiredMaterials: number; requiredBattles: number; xpReward: number; state: "locked" | "available" | "in_progress" | "completed"; completedSteps: number; files: ProjectFile[]; steps: ProjectStep[] };
+export type ProjectSummary = { slug: string; title: string; description: string; deadlineDays: number; minLevel: number; requiredMaterials: number; requiredBattles: number; xpReward: number; state: ProjectView["state"]; completedSteps: number; totalSteps: number; newlyUnlocked: number };
 
 export async function getProjectSummaries(userId: string): Promise<ProjectSummary[]> {
-  const result = await getDb().prepare(`SELECT p.slug,p.title,p.description,p.xp_reward AS xpReward,
-    COALESCE(upp.state,'available') AS state,COALESCE(upp.completed_steps,0) AS completedSteps,
-    (SELECT COUNT(*) FROM project_steps ps WHERE ps.project_id=p.id) AS totalSteps
+  const db = getDb();
+  const result = await db.prepare(`SELECT p.slug,p.title,p.description,p.deadline_days AS deadlineDays,p.min_level AS minLevel,
+    p.required_materials AS requiredMaterials,p.required_battles AS requiredBattles,p.xp_reward AS xpReward,
+    COALESCE(upp.state,'locked') AS state,COALESCE(upp.completed_steps,0) AS completedSteps,
+    (SELECT COUNT(*) FROM project_steps ps WHERE ps.project_id=p.id) AS totalSteps,
+    EXISTS(SELECT 1 FROM user_project_notifications upn WHERE upn.user_id=? AND upn.project_id=p.id AND upn.seen_at IS NULL) AS newlyUnlocked
     FROM projects p LEFT JOIN user_project_progress upp ON upp.project_id=p.id AND upp.user_id=?
     WHERE p.status='published' ORDER BY p.sort_order`).bind(userId).all<ProjectSummary>();
+  await db.prepare("UPDATE user_project_notifications SET seen_at=CURRENT_TIMESTAMP WHERE user_id=? AND seen_at IS NULL").bind(userId).run();
   return result.results;
 }
 
 export async function getProject(userId: string, slug: string): Promise<ProjectView | null> {
   const db = getDb();
-  const project = await db.prepare(`SELECT p.id,p.slug,p.title,p.description,p.xp_reward AS xpReward,
-    COALESCE(upp.state,'available') AS state,COALESCE(upp.completed_steps,0) AS completedSteps
+  const project = await db.prepare(`SELECT p.id,p.slug,p.title,p.description,p.introduction,p.deadline_days AS deadlineDays,
+    p.min_level AS minLevel,p.required_materials AS requiredMaterials,p.required_battles AS requiredBattles,p.xp_reward AS xpReward,
+    COALESCE(upp.state,'locked') AS state,COALESCE(upp.completed_steps,0) AS completedSteps
     FROM projects p LEFT JOIN user_project_progress upp ON upp.project_id=p.id AND upp.user_id=?
     WHERE p.slug=? AND p.status='published'`).bind(userId, slug).first<Omit<ProjectView, "files" | "steps">>();
   if (!project) return null;
@@ -36,6 +41,23 @@ export async function getProject(userId: string, slug: string): Promise<ProjectV
     files: files.results.map((file) => ({ ...file, starterCode: file.starterCode.replaceAll("\\n", "\n") })),
     steps: steps.results,
   };
+}
+
+export async function refreshProjectUnlocks(userId: string) {
+  const db = getDb();
+  const eligible = `
+    (SELECT level FROM profiles WHERE user_id=upp.user_id)>=p.min_level
+    AND (SELECT COUNT(*) FROM user_lessons WHERE user_id=upp.user_id AND state='completed')>=p.required_materials
+    AND (SELECT COUNT(*) FROM user_missions WHERE user_id=upp.user_id AND state='completed')>=p.required_battles`;
+  await db.batch([
+    db.prepare(`INSERT OR IGNORE INTO user_project_notifications (user_id,project_id)
+      SELECT upp.user_id,p.id FROM user_project_progress upp JOIN projects p ON p.id=upp.project_id
+      WHERE upp.user_id=? AND upp.state='locked' AND ${eligible}`).bind(userId),
+    db.prepare(`UPDATE user_project_progress AS upp SET state=CASE
+      WHEN state='completed' THEN 'completed'
+      WHEN EXISTS (SELECT 1 FROM projects p WHERE p.id=upp.project_id AND ${eligible}) THEN 'available'
+      ELSE 'locked' END WHERE upp.user_id=?`).bind(userId),
+  ]);
 }
 
 export async function recordProjectAttempt(userId: string, project: ProjectView, step: ProjectStep, passed: boolean) {

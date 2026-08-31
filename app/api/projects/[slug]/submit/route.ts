@@ -21,6 +21,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   }
   const project = await getProject(user.userId, (await params).slug);
   if (!project) return Response.json({ ok: false, message: "Projeto não encontrado." }, { status: 404 });
+  if (project.state === "locked") return Response.json({ ok: false, message: "Conclua os estudos e batalhas necessários para liberar este projeto." }, { status: 403 });
   const step = project.steps.find((item) => item.state === "available" || item.state === "in_progress");
   if (!step) return Response.json({ ok: true, message: "Projeto já concluído.", projectCompleted: true });
 

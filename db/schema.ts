@@ -154,6 +154,11 @@ export const projects = sqliteTable("projects", {
   xpReward: integer("xp_reward").notNull(),
   sortOrder: integer("sort_order").notNull(),
   status: text("status", { enum: ["draft", "published", "deprecated"] }).notNull().default("published"),
+  introduction: text("introduction").notNull().default(""),
+  deadlineDays: integer("deadline_days").notNull().default(7),
+  minLevel: integer("min_level").notNull().default(1),
+  requiredMaterials: integer("required_materials").notNull().default(0),
+  requiredBattles: integer("required_battles").notNull().default(0),
 });
 
 export const projectSteps = sqliteTable("project_steps", {

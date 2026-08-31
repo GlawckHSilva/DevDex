@@ -6,7 +6,8 @@ import type { RunnerAdapter } from "./types";
 
 type HtmlRule = { type: "element"; tag: string; min?: number; textIncludes?: string; attributes?: Record<string, string> };
 type CssRule = { type: "style"; selector: string; declarations: Record<string, string> };
-export type WebValidationRule = HtmlRule | CssRule;
+type CssRawRule = { type: "raw"; pattern: string };
+export type WebValidationRule = HtmlRule | CssRule | CssRawRule;
 export type WebRunnerInput = { code: string; documentType: "html" | "css"; rules?: WebValidationRule[]; maxLength?: number };
 export type WebRunnerOutput = { passed: boolean; results: { passed: boolean }[] };
 
@@ -52,7 +53,7 @@ function validateHtml(code: string, rules: HtmlRule[]) {
   });
 }
 
-function validateCss(code: string, rules: CssRule[]) {
+function validateCss(code: string, rules: (CssRule | CssRawRule)[]) {
   if (/<\/style|@(?:import|keyframes|font-face|namespace|page|property)\b|url\s*\(|expression\s*\(|-moz-binding|behavior\s*:|animation(?:-name)?\s*:/i.test(code)) {
     throw new Error("Este recurso CSS não é permitido no preview isolado.");
   }
@@ -70,6 +71,7 @@ function validateCss(code: string, rules: CssRule[]) {
     },
   });
   return rules.map((rule) => {
+    if (rule.type === "raw") return { passed: new RegExp(rule.pattern, "i").test(code) };
     const declarations = styles.get(normalize(rule.selector));
     return { passed: !!declarations && Object.entries(rule.declarations).every(([property, value]) => declarations.get(property.toLowerCase()) === normalize(value)) };
   });
@@ -83,7 +85,7 @@ export const WebRunnerAdapter: RunnerAdapter<WebRunnerInput, WebRunnerOutput> = 
     const rules = input.rules ?? [];
     const results = input.documentType === "html"
       ? validateHtml(input.code, rules.filter((rule): rule is HtmlRule => rule.type === "element"))
-      : validateCss(input.code, rules.filter((rule): rule is CssRule => rule.type === "style"));
+      : validateCss(input.code, rules.filter((rule): rule is CssRule | CssRawRule => rule.type === "style" || rule.type === "raw"));
     return { passed: results.every((result) => result.passed), results };
   },
 };
