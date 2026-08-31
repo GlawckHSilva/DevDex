@@ -170,6 +170,17 @@ test("projects unlock from verified learning progress and include professional b
   assert.match(sql, /UPDATE `user_project_progress` SET `state`='locked'/);
 });
 
+test("GitHub project reviews persist metadata without student source code", async () => {
+  const [sql, route] = await Promise.all([
+    readFile(new URL("../drizzle/0018_project_github.sql", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/projects/[slug]/repository/route.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(sql, /user_project_repositories.*latest_commit_sha.*review_status/s);
+  assert.doesNotMatch(sql, /source_code|student_code|file_content/);
+  assert.match(route, /project\.state === "locked"/);
+  assert.match(route, /recordProjectAttempt/);
+});
+
 test("campaign lore is campaign-specific and its view state is persistent", async () => {
   const sql = await readFile(campaignLoreUrl, "utf8");
   assert.match(sql, /lore_title.*lore_subtitle.*lore_sender.*lore_intro_text.*lore_short_description.*lore_signature.*lore_transmission_id/s);

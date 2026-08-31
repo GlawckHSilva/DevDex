@@ -4,6 +4,7 @@ export type ProjectFile = { path: "index.html" | "style.css" | "script.js"; lang
 export type ProjectStep = { id: number; slug: string; title: string; briefing: string; objective: string; activeFile: ProjectFile["path"]; requirementsJson: string; validatorJson: string; xpReward: number; sortOrder: number; state: "locked" | "available" | "in_progress" | "completed" };
 export type ProjectView = { id: number; slug: string; title: string; description: string; introduction: string; deadlineDays: number; minLevel: number; requiredMaterials: number; requiredBattles: number; xpReward: number; state: "locked" | "available" | "in_progress" | "completed"; completedSteps: number; files: ProjectFile[]; steps: ProjectStep[] };
 export type ProjectSummary = { slug: string; title: string; description: string; deadlineDays: number; minLevel: number; requiredMaterials: number; requiredBattles: number; xpReward: number; state: ProjectView["state"]; completedSteps: number; totalSteps: number; newlyUnlocked: number };
+export type ProjectRepository = { repositoryUrl: string; branch: string; latestCommitSha: string | null; reviewStatus: "linked" | "passed" | "needs_changes" | "error"; passedTests: number; failedTests: number; reviewedAt: string | null };
 
 export async function getProjectSummaries(userId: string): Promise<ProjectSummary[]> {
   const db = getDb();
@@ -13,7 +14,7 @@ export async function getProjectSummaries(userId: string): Promise<ProjectSummar
     (SELECT COUNT(*) FROM project_steps ps WHERE ps.project_id=p.id) AS totalSteps,
     EXISTS(SELECT 1 FROM user_project_notifications upn WHERE upn.user_id=? AND upn.project_id=p.id AND upn.seen_at IS NULL) AS newlyUnlocked
     FROM projects p LEFT JOIN user_project_progress upp ON upp.project_id=p.id AND upp.user_id=?
-    WHERE p.status='published' ORDER BY p.sort_order`).bind(userId).all<ProjectSummary>();
+    WHERE p.status='published' ORDER BY p.sort_order`).bind(userId, userId).all<ProjectSummary>();
   await db.prepare("UPDATE user_project_notifications SET seen_at=CURRENT_TIMESTAMP WHERE user_id=? AND seen_at IS NULL").bind(userId).run();
   return result.results;
 }
@@ -103,4 +104,20 @@ export async function getRecentProjectSubmissionCount(userId: string, minutes = 
 export async function recordProjectSubmission(input: { userId: string; projectId: number; stepId: number; status: "passed" | "failed" | "error"; sourceHash: string; durationMs: number; passedTests: number; failedTests: number; errorType: string | null }) {
   await getDb().prepare(`INSERT INTO project_submissions (user_id,project_id,step_id,status,source_hash,duration_ms,passed_tests,failed_tests,error_type) VALUES (?,?,?,?,?,?,?,?,?)`)
     .bind(input.userId, input.projectId, input.stepId, input.status, input.sourceHash, input.durationMs, input.passedTests, input.failedTests, input.errorType).run();
+}
+
+export async function getProjectRepository(userId: string, projectId: number) {
+  return getDb().prepare(`SELECT repository_url AS repositoryUrl,branch,latest_commit_sha AS latestCommitSha,
+    review_status AS reviewStatus,passed_tests AS passedTests,failed_tests AS failedTests,reviewed_at AS reviewedAt
+    FROM user_project_repositories WHERE user_id=? AND project_id=?`).bind(userId, projectId).first<ProjectRepository>();
+}
+
+export async function saveProjectRepository(input: { userId: string; projectId: number; repositoryUrl: string; owner: string; repo: string; branch: string; latestCommitSha: string | null; reviewStatus: ProjectRepository["reviewStatus"]; passedTests: number; failedTests: number }) {
+  await getDb().prepare(`INSERT INTO user_project_repositories
+    (user_id,project_id,repository_url,owner,repo,branch,latest_commit_sha,review_status,passed_tests,failed_tests,reviewed_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
+    ON CONFLICT(user_id,project_id) DO UPDATE SET repository_url=excluded.repository_url,owner=excluded.owner,repo=excluded.repo,
+    branch=excluded.branch,latest_commit_sha=excluded.latest_commit_sha,review_status=excluded.review_status,
+    passed_tests=excluded.passed_tests,failed_tests=excluded.failed_tests,reviewed_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP`)
+    .bind(input.userId, input.projectId, input.repositoryUrl, input.owner, input.repo, input.branch, input.latestCommitSha, input.reviewStatus, input.passedTests, input.failedTests).run();
 }

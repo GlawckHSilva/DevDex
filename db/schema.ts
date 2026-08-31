@@ -322,6 +322,21 @@ export const projectSubmissions = sqliteTable("project_submissions", {
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [index("idx_project_submissions_user_created").on(table.userId, table.createdAt)]);
 
+export const userProjectRepositories = sqliteTable("user_project_repositories", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  projectId: integer("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  repositoryUrl: text("repository_url").notNull(),
+  owner: text("owner").notNull(),
+  repo: text("repo").notNull(),
+  branch: text("branch").notNull(),
+  latestCommitSha: text("latest_commit_sha"),
+  reviewStatus: text("review_status", { enum: ["linked", "passed", "needs_changes", "error"] }).notNull().default("linked"),
+  passedTests: integer("passed_tests").notNull().default(0),
+  failedTests: integer("failed_tests").notNull().default(0),
+  reviewedAt: text("reviewed_at"),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.projectId] })]);
+
 export const userSkillProgress = sqliteTable("user_skill_progress", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
   skillId: integer("skill_id").notNull().references(() => skills.id),
