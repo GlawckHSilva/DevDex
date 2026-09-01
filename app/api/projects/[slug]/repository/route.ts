@@ -1,10 +1,12 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { BetaAccessError, ensureUser, getProject, getRecentProjectSubmissionCount, recordProjectAttempt, recordProjectSubmission, saveProjectRepository } from "@/db";
-import { fetchPublicProject, parseGitHubRepository } from "@/lib/github-project";
+import { BetaAccessError, ensureUser, getGitHubInstallation, getProject, getRecentProjectSubmissionCount, recordProjectAttempt, recordProjectSubmission, saveProjectRepository } from "@/db";
+import { reviewProjectWithAI } from "@/lib/ai-project-review";
+import { createInstallationToken } from "@/lib/github-app";
+import { fetchProject, parseGitHubRepository } from "@/lib/github-project";
 import { ProjectRunnerAdapter, type ProjectValidator } from "@/lib/runners/project-adapter";
 import { z } from "zod";
 
-const payloadSchema = z.object({ repositoryUrl: z.string().trim().max(240), branch: z.string().trim().max(100).optional().default("") });
+const payloadSchema = z.object({ repositoryUrl: z.string().trim().max(240), branch: z.string().trim().max(100).optional().default(""), aiReview: z.boolean().optional().default(false) });
 
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const user = await getChatGPTUser();
@@ -32,20 +34,25 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   let errorType: string | null = null;
   try {
     repository = parseGitHubRepository(parsed.data.repositoryUrl);
-    const snapshot = await fetchPublicProject(repository.repositoryUrl, parsed.data.branch);
+    const installation = await getGitHubInstallation(user.userId, repository.owner);
+    const githubToken = installation ? await createInstallationToken(installation.installationId) : "";
+    const snapshot = await fetchProject(repository.repositoryUrl, parsed.data.branch, githubToken);
     commitSha = snapshot.commitSha;
     const result = await ProjectRunnerAdapter.execute({ files: snapshot.files, validator: JSON.parse(step.validatorJson) as ProjectValidator });
     passedTests = result.results.filter((item) => item.passed).length;
     failedTests = result.results.length - passedTests;
     status = result.passed ? "passed" : "failed";
-    const progress = project.state === "completed" ? null : await recordProjectAttempt(user.userId, project, step, result.passed);
-    await saveProjectRepository({ userId: user.userId, projectId: project.id, repositoryUrl: snapshot.repositoryUrl, owner: snapshot.owner, repo: snapshot.repo, branch: snapshot.branch, latestCommitSha: snapshot.commitSha, reviewStatus: result.passed ? "passed" : "needs_changes", passedTests, failedTests });
     const requirements = JSON.parse(step.requirementsJson) as string[];
+    const safetyIdentifier = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(user.userId)).then((digest) => [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""));
+    const ai = parsed.data.aiReview ? await reviewProjectWithAI({ files: snapshot.files, projectTitle: project.title, stepTitle: step.title, requirements, results: result.results, safetyIdentifier }) : { status: "unavailable" as const, review: null };
+    const progress = project.state === "completed" ? null : await recordProjectAttempt(user.userId, project, step, result.passed);
+    await saveProjectRepository({ userId: user.userId, projectId: project.id, repositoryUrl: snapshot.repositoryUrl, owner: snapshot.owner, repo: snapshot.repo, branch: snapshot.branch, latestCommitSha: snapshot.commitSha, reviewStatus: result.passed ? "passed" : "needs_changes", passedTests, failedTests, aiStatus: ai.status, aiSummary: ai.review?.summary, aiStrengths: ai.review?.strengths, aiImprovements: ai.review?.improvements, aiNextStep: ai.review?.nextStep });
     return Response.json({
       ok: result.passed,
       message: result.passed ? "Commit aprovado pela revisão automática." : "O commit ainda precisa de ajustes.",
       repositoryUrl: snapshot.repositoryUrl, branch: snapshot.branch, commitSha: snapshot.commitSha,
       results: requirements.map((name, index) => ({ name, passed: result.results[index]?.passed === true })),
+      aiStatus: ai.status, aiReview: ai.review,
       projectCompleted: progress?.projectState === "completed" || project.state === "completed",
       ...(progress ?? {}),
     });

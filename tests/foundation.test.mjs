@@ -181,6 +181,19 @@ test("GitHub project reviews persist metadata without student source code", asyn
   assert.match(route, /recordProjectAttempt/);
 });
 
+test("private GitHub and AI review keep credentials server-side and XP objective", async () => {
+  const [sql, route, ai] = await Promise.all([
+    readFile(new URL("../drizzle/0019_github_app_ai_review.sql", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/projects/[slug]/repository/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/ai-project-review.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(sql, /ai_status.*github_connection_states.*github_installations/s);
+  assert.doesNotMatch(sql, /access_token|private_key|source_code|student_code/);
+  assert.match(route, /createInstallationToken.*recordProjectAttempt/s);
+  assert.match(ai, /store: false/);
+  assert.match(ai, /Não decida aprovação, XP ou desbloqueio/);
+});
+
 test("campaign lore is campaign-specific and its view state is persistent", async () => {
   const sql = await readFile(campaignLoreUrl, "utf8");
   assert.match(sql, /lore_title.*lore_subtitle.*lore_sender.*lore_intro_text.*lore_short_description.*lore_signature.*lore_transmission_id/s);

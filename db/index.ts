@@ -172,6 +172,7 @@ export async function recordAttempt(userId: string, mission: Mission, passed: bo
 
 export * from "./schema";
 export * from "./projects";
+export * from "./github";
 export * from "./metrics";
 export * from "./adventure";
 export * from "./campaigns";

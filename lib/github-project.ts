@@ -14,32 +14,36 @@ function validBranch(value: string) {
   return value.length <= 100 && !value.startsWith("/") && !value.endsWith("/") && !value.includes("..") && /^[\w./-]+$/.test(value);
 }
 
-async function githubRequest(fetcher: Fetcher, path: string, accept = "application/vnd.github+json") {
+async function githubRequest(fetcher: Fetcher, path: string, accept = "application/vnd.github+json", token = "") {
   const response = await fetcher(`${API}${path}`, {
-    headers: { Accept: accept, "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "DevDex-Project-Review" },
+    headers: { Accept: accept, ...(token ? { Authorization: `Bearer ${token}` } : {}), "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "DevDex-Project-Review" },
     cache: "no-store",
     signal: AbortSignal.timeout(10_000),
   });
   if (response.ok) return response;
   if (response.status === 403 || response.status === 429) throw new Error("O GitHub limitou as consultas agora. Aguarde alguns minutos e tente novamente.");
-  if (response.status === 404) throw new Error("Repositório, branch ou arquivo não encontrado. Confirme que o repositório é público.");
+  if (response.status === 404) throw new Error("Repositório, branch ou arquivo não encontrado. Para projetos privados, conecte a conta do GitHub.");
   throw new Error("O GitHub não conseguiu fornecer esse projeto agora.");
 }
 
-export async function fetchPublicProject(repositoryUrl: string, requestedBranch = "", fetcher: Fetcher = fetch) {
+export async function fetchProject(repositoryUrl: string, requestedBranch = "", token = "", fetcher: Fetcher = fetch) {
   const repository = parseGitHubRepository(repositoryUrl);
   const base = `/repos/${encodeURIComponent(repository.owner)}/${encodeURIComponent(repository.repo)}`;
-  const metadata = await (await githubRequest(fetcher, base)).json() as { private?: boolean; default_branch?: string };
-  if (metadata.private) throw new Error("Nesta etapa, use um repositório público.");
+  const metadata = await (await githubRequest(fetcher, base, undefined, token)).json() as { private?: boolean; default_branch?: string };
+  if (metadata.private && !token) throw new Error("Conecte a conta do GitHub para revisar este repositório privado.");
   const branch = requestedBranch.trim() || metadata.default_branch || "main";
   if (!validBranch(branch)) throw new Error("Informe um nome de branch válido.");
-  const commit = await (await githubRequest(fetcher, `${base}/commits/${encodeURIComponent(branch)}`)).json() as { sha?: string };
+  const commit = await (await githubRequest(fetcher, `${base}/commits/${encodeURIComponent(branch)}`, undefined, token)).json() as { sha?: string };
   if (!commit.sha || !/^[a-f\d]{40}$/i.test(commit.sha)) throw new Error("Não foi possível identificar o commit da branch.");
   const entries = await Promise.all(FILES.map(async (path) => {
-    const response = await githubRequest(fetcher, `${base}/contents/${path}?ref=${commit.sha}`, "application/vnd.github.raw+json");
+    const response = await githubRequest(fetcher, `${base}/contents/${path}?ref=${commit.sha}`, "application/vnd.github.raw+json", token);
     const source = await response.text();
     if (source.length > 12_000) throw new Error(`${path} excede o limite de 12.000 caracteres.`);
     return [path, source] as const;
   }));
   return { ...repository, branch, commitSha: commit.sha, files: Object.fromEntries(entries) as ProjectFiles };
+}
+
+export async function fetchPublicProject(repositoryUrl: string, requestedBranch = "", fetcher: Fetcher = fetch) {
+  return fetchProject(repositoryUrl, requestedBranch, "", fetcher);
 }

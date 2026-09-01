@@ -334,8 +334,29 @@ export const userProjectRepositories = sqliteTable("user_project_repositories", 
   passedTests: integer("passed_tests").notNull().default(0),
   failedTests: integer("failed_tests").notNull().default(0),
   reviewedAt: text("reviewed_at"),
+  aiStatus: text("ai_status", { enum: ["unavailable", "completed", "error"] }).notNull().default("unavailable"),
+  aiSummary: text("ai_summary"),
+  aiStrengthsJson: text("ai_strengths_json").notNull().default("[]"),
+  aiImprovementsJson: text("ai_improvements_json").notNull().default("[]"),
+  aiNextStep: text("ai_next_step"),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [primaryKey({ columns: [table.userId, table.projectId] })]);
+
+export const githubConnectionStates = sqliteTable("github_connection_states", {
+  stateHash: text("state_hash").primaryKey(),
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  returnPath: text("return_path").notNull(),
+  expiresAt: text("expires_at").notNull(),
+});
+
+export const githubInstallations = sqliteTable("github_installations", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  installationId: integer("installation_id").notNull(),
+  accountLogin: text("account_login").notNull(),
+  accountType: text("account_type").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.installationId] })]);
 
 export const userSkillProgress = sqliteTable("user_skill_progress", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),

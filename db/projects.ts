@@ -4,7 +4,7 @@ export type ProjectFile = { path: "index.html" | "style.css" | "script.js"; lang
 export type ProjectStep = { id: number; slug: string; title: string; briefing: string; objective: string; activeFile: ProjectFile["path"]; requirementsJson: string; validatorJson: string; xpReward: number; sortOrder: number; state: "locked" | "available" | "in_progress" | "completed" };
 export type ProjectView = { id: number; slug: string; title: string; description: string; introduction: string; deadlineDays: number; minLevel: number; requiredMaterials: number; requiredBattles: number; xpReward: number; state: "locked" | "available" | "in_progress" | "completed"; completedSteps: number; files: ProjectFile[]; steps: ProjectStep[] };
 export type ProjectSummary = { slug: string; title: string; description: string; deadlineDays: number; minLevel: number; requiredMaterials: number; requiredBattles: number; xpReward: number; state: ProjectView["state"]; completedSteps: number; totalSteps: number; newlyUnlocked: number };
-export type ProjectRepository = { repositoryUrl: string; branch: string; latestCommitSha: string | null; reviewStatus: "linked" | "passed" | "needs_changes" | "error"; passedTests: number; failedTests: number; reviewedAt: string | null };
+export type ProjectRepository = { repositoryUrl: string; branch: string; latestCommitSha: string | null; reviewStatus: "linked" | "passed" | "needs_changes" | "error"; passedTests: number; failedTests: number; reviewedAt: string | null; aiStatus: "unavailable" | "completed" | "error"; aiSummary: string | null; aiStrengths: string[]; aiImprovements: string[]; aiNextStep: string | null };
 
 export async function getProjectSummaries(userId: string): Promise<ProjectSummary[]> {
   const db = getDb();
@@ -107,17 +107,21 @@ export async function recordProjectSubmission(input: { userId: string; projectId
 }
 
 export async function getProjectRepository(userId: string, projectId: number) {
-  return getDb().prepare(`SELECT repository_url AS repositoryUrl,branch,latest_commit_sha AS latestCommitSha,
-    review_status AS reviewStatus,passed_tests AS passedTests,failed_tests AS failedTests,reviewed_at AS reviewedAt
-    FROM user_project_repositories WHERE user_id=? AND project_id=?`).bind(userId, projectId).first<ProjectRepository>();
+  const row = await getDb().prepare(`SELECT repository_url AS repositoryUrl,branch,latest_commit_sha AS latestCommitSha,
+    review_status AS reviewStatus,passed_tests AS passedTests,failed_tests AS failedTests,reviewed_at AS reviewedAt,
+    ai_status AS aiStatus,ai_summary AS aiSummary,ai_strengths_json AS aiStrengthsJson,ai_improvements_json AS aiImprovementsJson,ai_next_step AS aiNextStep
+    FROM user_project_repositories WHERE user_id=? AND project_id=?`).bind(userId, projectId).first<Omit<ProjectRepository, "aiStrengths" | "aiImprovements"> & { aiStrengthsJson: string; aiImprovementsJson: string }>();
+  return row ? { ...row, aiStrengths: JSON.parse(row.aiStrengthsJson) as string[], aiImprovements: JSON.parse(row.aiImprovementsJson) as string[] } : null;
 }
 
-export async function saveProjectRepository(input: { userId: string; projectId: number; repositoryUrl: string; owner: string; repo: string; branch: string; latestCommitSha: string | null; reviewStatus: ProjectRepository["reviewStatus"]; passedTests: number; failedTests: number }) {
+export async function saveProjectRepository(input: { userId: string; projectId: number; repositoryUrl: string; owner: string; repo: string; branch: string; latestCommitSha: string | null; reviewStatus: ProjectRepository["reviewStatus"]; passedTests: number; failedTests: number; aiStatus?: ProjectRepository["aiStatus"]; aiSummary?: string | null; aiStrengths?: string[]; aiImprovements?: string[]; aiNextStep?: string | null }) {
   await getDb().prepare(`INSERT INTO user_project_repositories
-    (user_id,project_id,repository_url,owner,repo,branch,latest_commit_sha,review_status,passed_tests,failed_tests,reviewed_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP)
+    (user_id,project_id,repository_url,owner,repo,branch,latest_commit_sha,review_status,passed_tests,failed_tests,reviewed_at,ai_status,ai_summary,ai_strengths_json,ai_improvements_json,ai_next_step)
+    VALUES (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP,?,?,?,?,?)
     ON CONFLICT(user_id,project_id) DO UPDATE SET repository_url=excluded.repository_url,owner=excluded.owner,repo=excluded.repo,
     branch=excluded.branch,latest_commit_sha=excluded.latest_commit_sha,review_status=excluded.review_status,
-    passed_tests=excluded.passed_tests,failed_tests=excluded.failed_tests,reviewed_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP`)
-    .bind(input.userId, input.projectId, input.repositoryUrl, input.owner, input.repo, input.branch, input.latestCommitSha, input.reviewStatus, input.passedTests, input.failedTests).run();
+    passed_tests=excluded.passed_tests,failed_tests=excluded.failed_tests,reviewed_at=CURRENT_TIMESTAMP,ai_status=excluded.ai_status,
+    ai_summary=excluded.ai_summary,ai_strengths_json=excluded.ai_strengths_json,ai_improvements_json=excluded.ai_improvements_json,ai_next_step=excluded.ai_next_step,updated_at=CURRENT_TIMESTAMP`)
+    .bind(input.userId, input.projectId, input.repositoryUrl, input.owner, input.repo, input.branch, input.latestCommitSha, input.reviewStatus, input.passedTests, input.failedTests,
+      input.aiStatus ?? "unavailable", input.aiSummary ?? null, JSON.stringify(input.aiStrengths ?? []), JSON.stringify(input.aiImprovements ?? []), input.aiNextStep ?? null).run();
 }

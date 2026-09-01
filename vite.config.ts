@@ -18,6 +18,13 @@ const localBindingConfig = {
     PUBLIC_BETA_ENABLED: process.env.PUBLIC_BETA_ENABLED ?? "true",
     PUBLIC_BETA_MAX_USERS: process.env.PUBLIC_BETA_MAX_USERS ?? "0",
     DEVDEX_ADMIN_EMAIL: process.env.DEVDEX_ADMIN_EMAIL ?? "",
+    GITHUB_APP_ID: process.env.GITHUB_APP_ID ?? "",
+    GITHUB_APP_SLUG: process.env.GITHUB_APP_SLUG ?? "",
+    GITHUB_APP_CLIENT_ID: process.env.GITHUB_APP_CLIENT_ID ?? "",
+    GITHUB_APP_CLIENT_SECRET: process.env.GITHUB_APP_CLIENT_SECRET ?? "",
+    GITHUB_APP_PRIVATE_KEY: process.env.GITHUB_APP_PRIVATE_KEY ?? "",
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? "",
+    OPENAI_REVIEW_MODEL: process.env.OPENAI_REVIEW_MODEL ?? "gpt-5.4-mini",
   },
   d1_databases: d1
     ? [
