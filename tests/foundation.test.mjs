@@ -202,15 +202,18 @@ test("campaign lore is campaign-specific and its view state is persistent", asyn
   assert.doesNotMatch(sql, /total_xp|awarded_xp|user_missions/);
 });
 
-test("campaign map supports bounded pointer and keyboard panning", async () => {
+test("campaign map supports bounded horizontal pointer and keyboard panning", async () => {
   const [map, css] = await Promise.all([
     readFile(new URL("../app/trilhas/[slug]/campaign-map.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
   ]);
   assert.match(map, /onPointerDown=.*startPan.*onPointerMove=.*pan.*onPointerUp=.*endPan/s);
-  assert.match(map, /viewport\.clientWidth - world\.offsetWidth.*viewport\.clientHeight - world\.offsetHeight/s);
-  assert.match(map, /centerOnPlayer.*SEGURE E ARRASTE PARA EXPLORAR/s);
-  assert.match(css, /\.map-pannable.*touch-action:none.*\.adventure-map-world/s);
+  assert.match(map, /viewport\.clientWidth - world\.offsetWidth/);
+  assert.doesNotMatch(map, /ArrowUp|ArrowDown/);
+  assert.match(map, /centerOnPlayer/);
+  assert.match(map, /ARRASTE PARA OS LADOS/);
+  assert.match(map, /--world-width/);
+  assert.match(css, /\.map-pannable.*touch-action:none.*\.adventure-map-world.*width:var\(--world-width\).*height:100%/s);
 });
 
 test("the first HTML zone maps every encounter to a dedicated sprite", async () => {

@@ -389,7 +389,7 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 .adventure-map-canvas.map-pannable.is-panning { cursor:grabbing; }
 .adventure-map-canvas.map-pannable:focus-visible { outline:2px solid var(--map-cyan); outline-offset:-3px; }
 .adventure-map-canvas.map-pannable::before,.adventure-map-canvas.map-pannable::after { z-index:0; }
-.adventure-map-world { position:absolute; z-index:1; top:0; left:0; width:max(1600px,135%); height:1000px; background-image:linear-gradient(90deg,#03101ac7 0,#0715228c 52%,#020711d6 100%),var(--map-background); background-position:center; background-size:cover; transform:translate3d(0,0,0); will-change:transform; }
+.adventure-map-world { position:absolute; z-index:1; top:0; left:0; width:var(--world-width); height:100%; background-image:linear-gradient(90deg,#03101ac7 0,#0715228c 52%,#020711d6 100%),var(--map-background); background-position:left center; background-size:1600px 100%; background-repeat:repeat-x; transform:translate3d(0,0,0); will-change:transform; }
 .adventure-map-world img { pointer-events:none; -webkit-user-drag:none; }
 .adventure-map-world.centering { transition:transform .4s cubic-bezier(.2,.75,.25,1); }
 .map-pannable.map-dense .adventure-map-node { transform:translate(-50%,-50%) scale(.9); }
@@ -400,9 +400,10 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 @media (max-width:760px) {
   .adventure-map-layout { grid-template-rows:48px 560px auto; }
   .adventure-map-canvas.map-pannable { height:560px; min-height:560px!important; }
-  .adventure-map-world { width:1200px; height:900px; }
+  .adventure-map-world { width:var(--world-width); height:100%; }
   .map-pannable .path-desktop { display:block; }
   .map-pannable .path-mobile { display:none; }
+  .map-pannable .map-player-position.arriving { animation-name:mapPlayerAdvance; }
   .map-pannable .adventure-start,.map-pannable .map-player-position,.map-pannable .adventure-map-node { left:var(--map-x)!important; top:var(--map-y)!important; }
   .map-pannable .adventure-map-node:nth-of-type(n) { top:var(--map-y)!important; }
   .map-pannable .map-fog { inset:0; height:auto; background:linear-gradient(90deg,transparent 0 calc(var(--fog-reveal) - 12%),#07101a5c var(--fog-reveal),#02060cdb calc(var(--fog-reveal) + 16%),#010309f2 100%); }

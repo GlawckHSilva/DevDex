@@ -11,21 +11,11 @@ import { CampaignTransmission } from "./campaign-transmission";
 
 type NodeState = "completed" | "available" | "in_progress" | "locked";
 type MapType = "study" | "enemy" | "bug" | "elite" | "boss";
-type LayoutNode = { x: number; y: number; mobileX: number; mobileY: number; path: string; mobilePath: string };
+type LayoutNode = { x: number; y: number; path: string };
 type SelectedNode = CampaignNode & LayoutNode & { type: MapType; title: string; icon: string; state: NodeState; order: number; description: string; href: string | null };
 
-const START = { x: 7, y: 74, mobileX: 50, mobileY: 72 };
-const MAP_LAYOUT: LayoutNode[] = [
-  { x: 12, y: 63, mobileX: 38, mobileY: 190, path: "M70 480 C95 468 92 422 120 410", mobilePath: "M180 72 C145 104 126 138 137 190" },
-  { x: 24, y: 35, mobileX: 64, mobileY: 340, path: "M120 410 C165 365 185 250 240 228", mobilePath: "M137 190 C148 250 222 275 230 340" },
-  { x: 35, y: 68, mobileX: 37, mobileY: 490, path: "M240 228 C305 250 295 405 350 442", mobilePath: "M230 340 C225 405 145 420 133 490" },
-  { x: 46, y: 40, mobileX: 63, mobileY: 640, path: "M350 442 C405 420 402 285 460 260", mobilePath: "M133 490 C141 554 219 571 227 640" },
-  { x: 57, y: 70, mobileX: 38, mobileY: 790, path: "M460 260 C520 285 515 420 570 455", mobilePath: "M227 640 C218 704 146 720 137 790" },
-  { x: 67, y: 43, mobileX: 62, mobileY: 940, path: "M570 455 C625 430 620 310 670 280", mobilePath: "M137 790 C145 850 216 875 223 940" },
-  { x: 76, y: 24, mobileX: 38, mobileY: 1090, path: "M670 280 C705 240 725 180 760 156", mobilePath: "M223 940 C214 1000 148 1020 137 1090" },
-  { x: 82, y: 58, mobileX: 62, mobileY: 1240, path: "M760 156 C820 185 790 330 820 377", mobilePath: "M137 1090 C145 1150 216 1175 223 1240" },
-];
-const BOSS_LAYOUT: LayoutNode = { x: 88, y: 30, mobileX: 50, mobileY: 1390, path: "M820 377 C875 350 850 235 880 195", mobilePath: "M223 1240 C215 1310 180 1335 180 1390" };
+const START = { x: 4, y: 52 };
+const BOSS_LAYOUT: LayoutNode = { x: 96, y: 52, path: "M910 338 C930 338 940 338 960 338" };
 const CAMPAIGN_ICONS: Record<string, string[]> = {
   "html-fundamentals": ["<>", "↗", "≡", "▣", "</>", "◫", "✦", "♛"],
   "css-fundamentals": ["#", "↔", "▢", "☷", "◈", "◎", "✦", "♛"],
@@ -55,6 +45,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
   }), [campaignPath, zone.nodes, zoneLayouts]);
   const bossNode: SelectedNode | null = boss ? { ...BOSS_LAYOUT, nodeKind: "battle", type: "boss", title: "Project Mode", icon: "♛", order: nodes.length + 1, state: boss.state, description: "Construa uma aplicação real para restaurar o sistema central da zona.", href: boss.state === "locked" ? null : boss.href, missionSlug: "boss-project", missionTitle: boss.title, skillName: "Project Mode", xpReward: 720, enemyName: boss.title, enemyType: "boss", enemyLevel: nodes.length + 1, enemyIntro: "", battleDialogue: "", sortOrder: nodes.length + 1, zoneId: zone.id, missionState: boss.state } : null;
   const allNodes = bossNode ? [...nodes, bossNode] : nodes;
+  const worldWidth = Math.max(1600, (allNodes.length + 2) * 190);
   const initial = allNodes.find((node) => node.state === "available" || node.state === "in_progress") ?? allNodes.at(-1)!;
   const [selectedSlug, setSelectedSlug] = useState(initial.missionSlug);
   const [arriving, setArriving] = useState(false);
@@ -65,22 +56,22 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
   const viewportRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef({ x: 0, y: 0 });
-  const dragRef = useRef<{ pointerId: number; x: number; y: number; offsetX: number; offsetY: number; moved: boolean } | null>(null);
+  const dragRef = useRef<{ pointerId: number; x: number; offsetX: number; moved: boolean } | null>(null);
   const suppressClickRef = useRef(false);
   const selected = allNodes.find((node) => node.missionSlug === selectedSlug) ?? initial;
   const completed = nodes.filter((node) => node.state === "completed").length;
   const target = completed === 0 ? START : completed < nodes.length ? zoneLayouts[completed] : bossNode ? BOSS_LAYOUT : zoneLayouts[nodes.length - 1];
   const previous = completed <= 1 ? (completed === 0 ? START : zoneLayouts[0]) : zoneLayouts[completed - 1];
-  const playerPosition = target === START ? { ...START, y: START.y - 9, mobileY: START.mobileY - 26 } : betweenWaypoints(previous, target);
-  const previousPosition = previous === START ? { ...START, y: START.y - 9, mobileY: START.mobileY - 26 } : previous;
+  const playerPosition = target === START ? { ...START, y: START.y - 9 } : betweenWaypoints(previous, target);
+  const previousPosition = previous === START ? { ...START, y: START.y - 9 } : previous;
 
-  const moveWorld = useCallback((x: number, y: number, animated = false) => {
+  const moveWorld = useCallback((x: number, animated = false) => {
     const viewport = viewportRef.current;
     const world = worldRef.current;
     if (!viewport || !world) return;
     const next = {
       x: Math.max(Math.min(0, viewport.clientWidth - world.offsetWidth), Math.min(0, x)),
-      y: Math.max(Math.min(0, viewport.clientHeight - world.offsetHeight), Math.min(0, y)),
+      y: 0,
     };
     offsetRef.current = next;
     world.classList.toggle("centering", animated);
@@ -93,7 +84,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
     const world = worldRef.current;
     const player = world?.querySelector<HTMLElement>("[data-testid='map-player']");
     if (!viewport || !world || !player) return;
-    moveWorld(viewport.clientWidth / 2 - player.offsetLeft, viewport.clientHeight / 2 - player.offsetTop, animated);
+    moveWorld(viewport.clientWidth / 2 - player.offsetLeft, animated);
   }, [moveWorld]);
 
   useEffect(() => {
@@ -108,26 +99,25 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => centerOnPlayer(false));
-    const resize = () => moveWorld(offsetRef.current.x, offsetRef.current.y);
+    const resize = () => moveWorld(offsetRef.current.x);
     window.addEventListener("resize", resize);
     return () => { window.cancelAnimationFrame(frame); window.removeEventListener("resize", resize); };
   }, [centerOnPlayer, moveWorld, zone.id]);
 
   function startPan(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.button !== 0 || (event.target as HTMLElement).closest(".map-pan-controls")) return;
-    dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, offsetX: offsetRef.current.x, offsetY: offsetRef.current.y, moved: false };
+    dragRef.current = { pointerId: event.pointerId, x: event.clientX, offsetX: offsetRef.current.x, moved: false };
   }
 
   function pan(event: ReactPointerEvent<HTMLDivElement>) {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     const x = event.clientX - drag.x;
-    const y = event.clientY - drag.y;
-    if (!drag.moved && Math.hypot(x, y) < 5) return;
+    if (!drag.moved && Math.abs(x) < 5) return;
     drag.moved = true;
     if (!event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.setPointerCapture(event.pointerId);
     setPanning(true);
-    moveWorld(drag.offsetX + x, drag.offsetY + y);
+    moveWorld(drag.offsetX + x);
   }
 
   function endPan(event: ReactPointerEvent<HTMLDivElement>) {
@@ -142,17 +132,17 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
 
   function panByKeyboard(event: KeyboardEvent<HTMLDivElement>) {
     if (event.target !== event.currentTarget) return;
-    const directions: Record<string, [number, number]> = { ArrowLeft: [70, 0], a: [70, 0], ArrowRight: [-70, 0], d: [-70, 0], ArrowUp: [0, 70], w: [0, 70], ArrowDown: [0, -70], s: [0, -70] };
+    const directions: Record<string, number> = { ArrowLeft: 70, a: 70, ArrowRight: -70, d: -70 };
     const direction = directions[event.key];
     if (!direction) return;
     event.preventDefault();
-    moveWorld(offsetRef.current.x + direction[0], offsetRef.current.y + direction[1], true);
+    moveWorld(offsetRef.current.x + direction, true);
   }
 
   function selectByKeyboard(event: KeyboardEvent<HTMLButtonElement>, index: number) {
-    if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(event.key)) return;
+    if (!["ArrowRight", "ArrowLeft"].includes(event.key)) return;
     event.preventDefault();
-    const next = Math.max(0, Math.min(allNodes.length - 1, index + (["ArrowRight", "ArrowDown"].includes(event.key) ? 1 : -1)));
+    const next = Math.max(0, Math.min(allNodes.length - 1, index + (event.key === "ArrowRight" ? 1 : -1)));
     setSelectedSlug(allNodes[next].missionSlug);
     document.querySelector<HTMLButtonElement>(`[data-testid="map-node-${allNodes[next].missionSlug}"]`)?.focus();
   }
@@ -175,8 +165,8 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
     })}</nav></MotionConfig>
     <div className="adventure-map-layout">
       <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona {String(zone.sortOrder).padStart(2, "0")} — {zone.title}</h2><p>{zone.storyIntro}</p></div><strong>{zone.nodes.filter((node) => node.missionState === "completed").length}/{zone.nodes.length} missões</strong></header>
-      <div aria-label="Mapa explorável. Arraste para navegar ou use as setas do teclado." className={`adventure-map-canvas map-pannable${allNodes.length > 9 ? " map-dense" : ""}${panning ? " is-panning" : ""}`} data-testid="map-viewport" onClickCapture={(event) => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); } }} onKeyDown={panByKeyboard} onPointerCancel={endPan} onPointerDown={startPan} onPointerMove={pan} onPointerUp={endPan} ref={viewportRef} role="application" style={{ "--mobile-height": `${180 + allNodes.length * 145}px`, "--fog-reveal": `${Math.min(90, 19 + (completed / Math.max(1, nodes.length)) * 71)}%` } as CSSProperties} tabIndex={0}>
-      <div className="adventure-map-world" data-testid="map-world" ref={worldRef}>
+      <div aria-label="Mapa horizontal explorável. Arraste para os lados ou use as setas esquerda e direita." className={`adventure-map-canvas map-pannable${allNodes.length > 9 ? " map-dense" : ""}${panning ? " is-panning" : ""}`} data-testid="map-viewport" onClickCapture={(event) => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); } }} onKeyDown={panByKeyboard} onPointerCancel={endPan} onPointerDown={startPan} onPointerMove={pan} onPointerUp={endPan} ref={viewportRef} role="application" style={{ "--fog-reveal": `${Math.min(90, 19 + (completed / Math.max(1, nodes.length)) * 71)}%` } as CSSProperties} tabIndex={0}>
+      <div className="adventure-map-world" data-testid="map-world" ref={worldRef} style={{ "--world-width": `${worldWidth}px` } as CSSProperties}>
         <div className="map-atmosphere" aria-hidden="true" />
         <MapPath nodes={allNodes} />
         <FogLayer />
@@ -185,7 +175,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
         {allNodes.map((node, index) => <MapNode node={node} selected={selected.missionSlug === node.missionSlug} current={node.missionSlug === initial.missionSlug} onSelect={() => setSelectedSlug(node.missionSlug)} onKeyDown={(event) => selectByKeyboard(event, index)} key={node.missionSlug} />)}
       </div>
       {arriving ? <div className="map-unlock-toast" role="status" data-testid="map-unlock-toast"><span>✦</span> NOVA ETAPA DESBLOQUEADA</div> : null}
-      <div className="map-pan-controls"><span>SEGURE E ARRASTE PARA EXPLORAR</span><button onClick={() => centerOnPlayer()} type="button">◎ Centralizar</button></div>
+      <div className="map-pan-controls"><span>ARRASTE PARA OS LADOS</span><button onClick={() => centerOnPlayer()} type="button">◎ Centralizar</button></div>
       <div className="adventure-legend"><strong>CAMINHO</strong><span><i className="completed" />Concluído</span><span><i className="available" />Disponível</span><span><i className="locked" />Bloqueado</span></div>
       </div>
       <MissionPanel node={selected} campaignPath={campaignPath} />
@@ -194,10 +184,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
 }
 
 function MapPath({ nodes }: { nodes: SelectedNode[] }) {
-  return <>
-    <svg className="adventure-paths path-desktop" viewBox="0 0 1000 650" aria-hidden="true" preserveAspectRatio="none">{nodes.map((node) => <path className={`path-${node.state}`} d={node.path} key={node.missionSlug} />)}</svg>
-    <svg className="adventure-paths path-mobile" viewBox="0 0 360 1060" aria-hidden="true" preserveAspectRatio="none">{nodes.map((node) => <path className={`path-${node.state}`} d={node.mobilePath} key={node.missionSlug} />)}</svg>
-  </>;
+  return <svg className="adventure-paths path-desktop" viewBox="0 0 1000 650" aria-hidden="true" preserveAspectRatio="none">{nodes.map((node) => <path className={`path-${node.state}`} d={node.path} key={node.missionSlug} />)}</svg>;
 }
 
 function FogLayer() {
@@ -209,20 +196,16 @@ function PlayerMarker({ archetype, position, previous, arriving }: { archetype: 
 }
 
 function layoutsFor(total: number): LayoutNode[] {
-  if (total <= MAP_LAYOUT.length) return MAP_LAYOUT.slice(0, total);
-  const points = Array.from({ length: total }, (_, index) => {
-    const row = Math.floor(index / 5);
-    const column = row % 2 ? 4 - index % 5 : index % 5;
-    return { x: 12 + column * 18.5, y: 86 - row * 18, mobileX: index % 2 ? 64 : 36, mobileY: 190 + index * 145 };
-  });
+  const points = Array.from({ length: total }, (_, index) => ({ x: 9 + 82 * index / Math.max(1, total - 1), y: 52 }));
   return points.map((point, index) => {
     const previous = index ? points[index - 1] : START;
-    return { ...point, path: `M${previous.x * 10} ${previous.y * 6.5} C${previous.x * 10} ${point.y * 6.5} ${point.x * 10} ${previous.y * 6.5} ${point.x * 10} ${point.y * 6.5}`, mobilePath: "" };
+    const midpoint = (previous.x + point.x) * 5;
+    return { ...point, path: `M${previous.x * 10} ${previous.y * 6.5} C${midpoint} ${previous.y * 6.5} ${midpoint} ${point.y * 6.5} ${point.x * 10} ${point.y * 6.5}` };
   });
 }
 
 function betweenWaypoints(from: typeof START, to: typeof START) {
-  return { x: Math.round((from.x + to.x) / 2), y: Math.round((from.y + to.y) / 2), mobileX: Math.round((from.mobileX + to.mobileX) / 2), mobileY: Math.round((from.mobileY + to.mobileY) / 2) };
+  return { x: Math.round((from.x + to.x) / 2), y: Math.round((from.y + to.y) / 2) };
 }
 
 function MapNode({ node, selected, current, onSelect, onKeyDown }: { node: SelectedNode; selected: boolean; current: boolean; onSelect: () => void; onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void }) {

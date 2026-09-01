@@ -66,7 +66,7 @@ test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ pa
   await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/);
 });
 
-test("explora o mapa arrastando e volta ao personagem", async ({ page, request }) => {
+test("explora o mapa horizontal arrastando e volta ao personagem", async ({ page, request }) => {
   const userId = "map-pan-user";
   await chooseCharacter(request, userId);
   await page.setExtraHTTPHeaders(userHeaders(userId));
@@ -84,7 +84,9 @@ test("explora o mapa arrastando e volta ao personagem", async ({ page, request }
   await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2 - 170, box.y + box.height / 2 - 80, { steps: 6 });
   await page.mouse.up();
-  await expect.poll(() => world.evaluate((element) => element.style.transform)).not.toBe(before);
+  const after = await world.evaluate((element) => element.style.transform);
+  expect(after).not.toBe(before);
+  expect(after.match(/translate3d\([^,]+,([^,]+)/)?.[1]).toBe(before.match(/translate3d\([^,]+,([^,]+)/)?.[1]);
   await viewport.getByRole("button", { name: /Centralizar/ }).click();
   await expect.poll(() => world.evaluate((element) => element.style.transform)).toBe(before);
 });
