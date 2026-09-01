@@ -1,0 +1,389 @@
+{
+  "courses": [{
+    "key": "github",
+    "name": "GitHub",
+    "pdf": "/materials/github/github-guia-completo.pdf",
+    "referenceRoot": "https://docs.github.com/pt",
+    "referenceLabel": "Documentação oficial do GitHub",
+    "zones": [
+      {
+        "slug": "portal-da-identidade",
+        "title": "Portal da Identidade",
+        "intro": "Crie e proteja sua identidade, prepare o Git e publique o primeiro repositório.",
+        "modules": [
+          {
+            "slug": "conta-segura",
+            "title": "Conta, perfil e segurança",
+            "concepts": "criação da conta, email verificado, perfil, 2FA, passkeys e recuperação",
+            "example": "email verificado\n2FA ativado\ncódigos de recuperação salvos",
+            "resource": "https://docs.github.com/pt/get-started/start-your-journey/creating-an-account-on-github",
+            "practices": [
+              ["Checklist da primeira conta", "email verificado\n2FA ativado"],
+              ["Recuperação protegida", "2FA ativado\ncódigos de recuperação salvos"],
+              ["Perfil profissional", "nome público\nbio objetiva\nREADME de perfil"],
+              ["Privacidade dos commits", "email verificado\nemail noreply configurado"],
+              ["Auditoria da conta", "2FA ativado\nsessões revisadas\naplicativos autorizados revisados\ncódigos de recuperação salvos"]
+            ]
+          },
+          {
+            "slug": "git-local",
+            "title": "Instalação e configuração do Git",
+            "concepts": "instalação, versão, identidade, branch padrão, editor e escopo de configuração",
+            "example": "git --version\ngit config --global user.name \"Dev Dex\"\ngit config --global user.email \"dev@example.com\"",
+            "resource": "https://docs.github.com/pt/get-started/git-basics/set-up-git",
+            "practices": [
+              ["Confirmar instalação", "git --version"],
+              ["Configurar identidade", "git config --global user.name \"Dev Dex\"\ngit config --global user.email \"dev@example.com\""],
+              ["Definir branch principal", "git config --global init.defaultBranch main"],
+              ["Inspecionar configuração", "git config --global --list"],
+              ["Preparar ambiente completo", "git --version\ngit config --global user.name \"Dev Dex\"\ngit config --global user.email \"dev@example.com\"\ngit config --global init.defaultBranch main"]
+            ]
+          },
+          {
+            "slug": "autenticacao",
+            "title": "HTTPS, SSH, tokens e GitHub CLI",
+            "concepts": "autenticação no navegador, gh auth, SSH Ed25519, HTTPS, tokens com escopo mínimo e teste de conexão",
+            "example": "ssh-keygen -t ed25519 -C \"dev@example.com\"\nssh -T git@github.com",
+            "resource": "https://docs.github.com/pt/authentication",
+            "practices": [
+              ["Entrar com GitHub CLI", "gh auth login"],
+              ["Gerar chave moderna", "ssh-keygen -t ed25519 -C \"dev@example.com\""],
+              ["Carregar chave no agente", "ssh-add ~/.ssh/id_ed25519"],
+              ["Testar conexão SSH", "ssh -T git@github.com"],
+              ["Autenticação segura completa", "ssh-keygen -t ed25519 -C \"dev@example.com\"\nssh-add ~/.ssh/id_ed25519\nssh -T git@github.com"]
+            ]
+          },
+          {
+            "slug": "primeiro-repositorio",
+            "title": "Repositórios, README e licenças",
+            "concepts": "criação, visibilidade, descrição, README, LICENSE, clone e primeiro push",
+            "example": "gh repo create devdex-lab --public --add-readme --clone",
+            "resource": "https://docs.github.com/pt/repositories/creating-and-managing-repositories/quickstart-for-repositories",
+            "practices": [
+              ["Criar repositório público", "gh repo create devdex-lab --public --add-readme"],
+              ["Criar e clonar", "gh repo create devdex-lab --private --add-readme --clone"],
+              ["Clonar por HTTPS", "git clone https://github.com/octocat/Hello-World.git"],
+              ["Documentar o projeto", "# DevDex Lab\n## Instalação\n## Uso\n## Licença"],
+              ["Publicar o primeiro projeto", "git init\ngit add README.md\ngit commit -m \"docs: inicia projeto\"\ngit branch -M main\ngit remote add origin https://github.com/dev/devdex-lab.git\ngit push -u origin main"]
+            ]
+          }
+        ]
+      },
+      {
+        "slug": "oficina-dos-commits",
+        "title": "Oficina dos Commits",
+        "intro": "Domine o histórico local, selecione alterações e recupere o trabalho com segurança.",
+        "modules": [
+          {
+            "slug": "estado-repositorio",
+            "title": "Init, clone, status e diff",
+            "concepts": "working tree, staging area, repositório, arquivos rastreados e comparação de mudanças",
+            "example": "git status --short\ngit diff\ngit diff --staged",
+            "resource": "https://docs.github.com/pt/get-started/git-basics/about-git",
+            "practices": [
+              ["Iniciar repositório", "git init"],
+              ["Ver estado resumido", "git status --short"],
+              ["Revisar mudanças locais", "git diff"],
+              ["Revisar staging", "git diff --staged"],
+              ["Diagnóstico completo", "git status --short\ngit diff\ngit diff --staged"]
+            ]
+          },
+          {
+            "slug": "staging-commits",
+            "title": "Staging, commits e histórico",
+            "concepts": "git add, commits atômicos, mensagens, log, show e inspeção por arquivo",
+            "example": "git add src/app.js\ngit commit -m \"feat: adiciona login\"\ngit log --oneline --decorate --graph",
+            "resource": "https://docs.github.com/pt/get-started/using-git/about-git",
+            "practices": [
+              ["Adicionar arquivo específico", "git add src/app.js"],
+              ["Criar commit convencional", "git commit -m \"feat: adiciona login\""],
+              ["Visualizar histórico compacto", "git log --oneline --decorate --graph"],
+              ["Inspecionar último commit", "git show HEAD"],
+              ["Commit atômico revisado", "git add src/app.js\ngit diff --staged\ngit commit -m \"feat: adiciona login\"\ngit log -1 --oneline"]
+            ]
+          },
+          {
+            "slug": "desfazer-recuperar",
+            "title": "Restore, reset, revert e reflog",
+            "concepts": "desfazer sem perder trabalho, retirar do staging, reverter histórico público e recuperar referências",
+            "example": "git restore --staged arquivo.js\ngit revert HEAD\ngit reflog",
+            "resource": "https://docs.github.com/pt/get-started/using-git/dealing-with-non-fast-forward-errors",
+            "practices": [
+              ["Descartar alteração local", "git restore arquivo.js"],
+              ["Retirar do staging", "git restore --staged arquivo.js"],
+              ["Reverter commit publicado", "git revert HEAD"],
+              ["Localizar referência perdida", "git reflog"],
+              ["Recuperar commit com segurança", "git reflog\ngit branch recuperacao HEAD@{1}"]
+            ]
+          },
+          {
+            "slug": "arquivos-especiais",
+            "title": ".gitignore, atributos e Git LFS",
+            "concepts": "padrões de exclusão, arquivos já rastreados, normalização de linha, linguist e arquivos grandes",
+            "example": "node_modules/\n.env\ndist/\n*.log",
+            "resource": "https://docs.github.com/pt/repositories/working-with-files/managing-large-files/about-large-files-on-github",
+            "practices": [
+              ["Ignorar artefatos", "node_modules/\ndist/\n*.log"],
+              ["Proteger segredos locais", ".env\n.env.*\n!.env.example"],
+              ["Remover arquivo do índice", "git rm --cached .env"],
+              ["Normalizar finais de linha", "* text=auto\n*.sh text eol=lf"],
+              ["Rastrear binários grandes", "git lfs install\ngit lfs track \"*.psd\"\ngit add .gitattributes"]
+            ]
+          }
+        ]
+      },
+      {
+        "slug": "labirinto-das-branches",
+        "title": "Labirinto das Branches",
+        "intro": "Isole funcionalidades, integre mudanças e mantenha um histórico compreensível.",
+        "modules": [
+          {
+            "slug": "branches-switch",
+            "title": "Branches e git switch",
+            "concepts": "criação, troca, listagem, renomeação, exclusão e convenções de nomes",
+            "example": "git switch -c feat/login\ngit branch --show-current",
+            "resource": "https://docs.github.com/pt/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-branches",
+            "practices": [
+              ["Criar branch de feature", "git switch -c feat/login"],
+              ["Listar branches", "git branch --all"],
+              ["Confirmar branch atual", "git branch --show-current"],
+              ["Renomear branch", "git branch -m feat/autenticacao"],
+              ["Encerrar branch integrada", "git switch main\ngit branch -d feat/autenticacao"]
+            ]
+          },
+          {
+            "slug": "merge-conflitos",
+            "title": "Merge e resolução de conflitos",
+            "concepts": "fast-forward, merge commit, marcadores de conflito, abortar, resolver e validar",
+            "example": "git switch main\ngit merge --no-ff feat/login",
+            "resource": "https://docs.github.com/pt/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts",
+            "practices": [
+              ["Integrar uma feature", "git switch main\ngit merge feat/login"],
+              ["Preservar merge commit", "git merge --no-ff feat/login"],
+              ["Listar conflitos", "git diff --name-only --diff-filter=U"],
+              ["Abortar merge inseguro", "git merge --abort"],
+              ["Concluir conflito resolvido", "git add src/app.js\ngit commit -m \"merge: resolve conflito de login\""]
+            ]
+          },
+          {
+            "slug": "rebase-cherry-pick",
+            "title": "Rebase e cherry-pick",
+            "concepts": "reaplicar commits, histórico linear, rebase interativo, continuar/abortar e transportar correções",
+            "example": "git switch feat/login\ngit rebase main",
+            "resource": "https://docs.github.com/pt/get-started/using-git/about-git-rebase",
+            "practices": [
+              ["Atualizar feature linearmente", "git switch feat/login\ngit rebase main"],
+              ["Continuar rebase resolvido", "git add src/app.js\ngit rebase --continue"],
+              ["Abortar rebase", "git rebase --abort"],
+              ["Reorganizar commits locais", "git rebase -i HEAD~3"],
+              ["Transportar hotfix", "git switch main\ngit cherry-pick abc1234"]
+            ]
+          },
+          {
+            "slug": "tags-releases",
+            "title": "Tags, versões e releases",
+            "concepts": "tags anotadas, SemVer, assinatura, push de tags, notas e releases pela CLI",
+            "example": "git tag -a v1.0.0 -m \"Primeira versão estável\"\ngit push origin v1.0.0",
+            "resource": "https://docs.github.com/pt/repositories/releasing-projects-on-github/about-releases",
+            "practices": [
+              ["Criar tag anotada", "git tag -a v1.0.0 -m \"Primeira versão estável\""],
+              ["Publicar uma tag", "git push origin v1.0.0"],
+              ["Listar versões", "git tag --list \"v1.*\""],
+              ["Remover tag incorreta", "git tag -d v1.0.0\ngit push origin :refs/tags/v1.0.0"],
+              ["Criar release com notas", "gh release create v1.0.0 --generate-notes --title \"v1.0.0\""]
+            ]
+          }
+        ]
+      },
+      {
+        "slug": "salao-da-colaboracao",
+        "title": "Salão da Colaboração",
+        "intro": "Trabalhe com remotos, contribua em projetos e conduza revisões de código profissionais.",
+        "modules": [
+          {
+            "slug": "remotos-sincronizacao",
+            "title": "Remotes, fetch, pull e push",
+            "concepts": "origin, rastreamento, fetch, pull com rebase, push, upstream e divergência",
+            "example": "git remote -v\ngit fetch origin\ngit pull --rebase origin main",
+            "resource": "https://docs.github.com/pt/get-started/git-basics/managing-remote-repositories",
+            "practices": [
+              ["Adicionar origin", "git remote add origin https://github.com/dev/projeto.git"],
+              ["Inspecionar remotos", "git remote -v"],
+              ["Buscar sem integrar", "git fetch origin --prune"],
+              ["Atualizar com rebase", "git pull --rebase origin main"],
+              ["Publicar e rastrear branch", "git push -u origin feat/login"]
+            ]
+          },
+          {
+            "slug": "fork-upstream",
+            "title": "Forks e upstream",
+            "concepts": "fork, clone, remote upstream, sincronização, contribuição externa e atualização do fork",
+            "example": "gh repo fork org/projeto --clone\ngit remote add upstream https://github.com/org/projeto.git",
+            "resource": "https://docs.github.com/pt/pull-requests/collaborating-with-pull-requests/working-with-forks/about-permissions-and-visibility-of-forks",
+            "practices": [
+              ["Criar e clonar fork", "gh repo fork org/projeto --clone"],
+              ["Adicionar upstream", "git remote add upstream https://github.com/org/projeto.git"],
+              ["Buscar projeto original", "git fetch upstream"],
+              ["Sincronizar main", "git switch main\ngit rebase upstream/main\ngit push origin main"],
+              ["Preparar contribuição", "git switch -c fix/documentacao\ngit add README.md\ngit commit -m \"docs: corrige instalação\"\ngit push -u origin fix/documentacao"]
+            ]
+          },
+          {
+            "slug": "planejamento",
+            "title": "Issues, Discussions, Projects e milestones",
+            "concepts": "issue acionável, labels, responsáveis, templates, discussions, projetos e marcos",
+            "example": "gh issue create --title \"Corrigir login\" --body \"Passos e critérios\" --label bug",
+            "resource": "https://docs.github.com/pt/issues",
+            "practices": [
+              ["Criar issue de bug", "gh issue create --title \"Corrigir login\" --body \"Passos para reproduzir e resultado esperado\" --label bug"],
+              ["Listar trabalho aberto", "gh issue list --state open --assignee @me"],
+              ["Fechar issue entregue", "gh issue close 42 --comment \"Resolvido no PR #51\""],
+              ["Template de issue", "name: Relato de bug\ndescription: Informe um comportamento incorreto\nlabels: bug"],
+              ["Planejamento completo", "objetivo definido\ncritérios de aceite\nresponsável atribuído\nlabels aplicadas\nmilestone definido"]
+            ]
+          },
+          {
+            "slug": "pull-requests-reviews",
+            "title": "Pull requests e revisão de código",
+            "concepts": "PR pequeno, descrição, draft, review, sugestões, merge, CODEOWNERS e templates",
+            "example": "gh pr create --fill --base main --head feat/login\ngh pr checks --watch",
+            "resource": "https://docs.github.com/pt/pull-requests",
+            "practices": [
+              ["Abrir pull request", "gh pr create --fill --base main --head feat/login"],
+              ["Criar PR em rascunho", "gh pr create --draft --title \"feat: login\" --body \"Em desenvolvimento\""],
+              ["Acompanhar verificações", "gh pr checks --watch"],
+              ["Definir responsáveis", "* @org/time\n/docs/ @org/documentacao"],
+              ["Revisar e integrar", "gh pr review 51 --approve\ngh pr merge 51 --squash --delete-branch"]
+            ]
+          }
+        ]
+      },
+      {
+        "slug": "cidadela-da-automacao",
+        "title": "Cidadela da Automação",
+        "intro": "Automatize testes e entregas com workflows seguros, reproduzíveis e observáveis.",
+        "modules": [
+          {
+            "slug": "actions-fundamentos",
+            "title": "GitHub Actions e workflows",
+            "concepts": "eventos, jobs, runners, steps, actions, comandos e validação de pull requests",
+            "example": "name: CI\non: [push, pull_request]\njobs:\n  test:\n    runs-on: ubuntu-latest",
+            "resource": "https://docs.github.com/pt/actions/writing-workflows/quickstart",
+            "practices": [
+              ["Workflow mínimo", "name: CI\non: [push]\njobs:\n  test:\n    runs-on: ubuntu-latest"],
+              ["Fazer checkout", "steps:\n  - uses: actions/checkout@v4"],
+              ["Executar testes", "steps:\n  - run: npm ci\n  - run: npm test"],
+              ["Validar pull requests", "on: [push, pull_request]"],
+              ["CI Node completa", "name: CI\non: [push, pull_request]\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n      - run: npm ci\n      - run: npm test"]
+            ]
+          },
+          {
+            "slug": "actions-avancado",
+            "title": "Matrizes, cache, artifacts e reutilização",
+            "concepts": "strategy matrix, cache de dependências, artifacts, outputs, needs e workflows reutilizáveis",
+            "example": "strategy:\n  matrix:\n    node: [20, 22]",
+            "resource": "https://docs.github.com/pt/actions/using-jobs/using-a-matrix-for-your-jobs",
+            "practices": [
+              ["Testar duas versões", "strategy:\n  matrix:\n    node: [20, 22]"],
+              ["Usar valor da matriz", "uses: actions/setup-node@v4\nwith:\n  node-version: ${{ matrix.node }}\n  cache: npm"],
+              ["Publicar artifact", "uses: actions/upload-artifact@v4\nwith:\n  name: relatorio\n  path: coverage/"],
+              ["Encadear jobs", "deploy:\n  needs: test\n  runs-on: ubuntu-latest"],
+              ["Chamar workflow reutilizável", "jobs:\n  quality:\n    uses: ./.github/workflows/quality.yml"]
+            ]
+          },
+          {
+            "slug": "segredos-permissoes",
+            "title": "Secrets, environments e permissões",
+            "concepts": "secrets, variables, environments, approvals, GITHUB_TOKEN, permissions e OIDC",
+            "example": "permissions:\n  contents: read\n  pull-requests: write",
+            "resource": "https://docs.github.com/pt/actions/security-guides/automatic-token-authentication",
+            "practices": [
+              ["Princípio do menor privilégio", "permissions:\n  contents: read"],
+              ["Usar segredo sem revelar", "env:\n  API_TOKEN: ${{ secrets.API_TOKEN }}"],
+              ["Usar variável não sensível", "env:\n  API_URL: ${{ vars.API_URL }}"],
+              ["Selecionar ambiente", "environment: production"],
+              ["Autenticação OIDC", "permissions:\n  contents: read\n  id-token: write"]
+            ]
+          },
+          {
+            "slug": "plataforma-entrega",
+            "title": "Packages, Pages, Codespaces e dev containers",
+            "concepts": "registro de pacotes, Pages, Codespaces, devcontainer, ambientes reproduzíveis e publicação",
+            "example": "{\n  \"image\": \"mcr.microsoft.com/devcontainers/javascript-node:22\"\n}",
+            "resource": "https://docs.github.com/pt/codespaces",
+            "practices": [
+              ["Configurar dev container", "{\n  \"image\": \"mcr.microsoft.com/devcontainers/javascript-node:22\"\n}"],
+              ["Criar Codespace pela CLI", "gh codespace create --repo dev/projeto"],
+              ["Publicar site no Pages", "gh workflow run pages.yml"],
+              ["Entrar no registro de containers", "echo $CR_PAT | docker login ghcr.io -u dev --password-stdin"],
+              ["Publicar imagem versionada", "docker build -t ghcr.io/dev/app:v1.0.0 .\ndocker push ghcr.io/dev/app:v1.0.0"]
+            ]
+          }
+        ]
+      },
+      {
+        "slug": "nucleo-profissional",
+        "title": "Núcleo Profissional",
+        "intro": "Proteja organizações, integre APIs e investigue históricos em projetos de produção.",
+        "modules": [
+          {
+            "slug": "seguranca-codigo",
+            "title": "Dependabot e segurança de código",
+            "concepts": "Dependabot, secret scanning, code scanning, alertas, políticas e atualização segura",
+            "example": "version: 2\nupdates:\n  - package-ecosystem: npm\n    directory: /\n    schedule:\n      interval: weekly",
+            "resource": "https://docs.github.com/pt/code-security",
+            "practices": [
+              ["Atualizações semanais", "version: 2\nupdates:\n  - package-ecosystem: npm\n    directory: /\n    schedule:\n      interval: weekly"],
+              ["CodeQL para JavaScript", "uses: github/codeql-action/init@v3\nwith:\n  languages: javascript-typescript"],
+              ["Analisar com CodeQL", "uses: github/codeql-action/analyze@v3"],
+              ["Tratar segredo exposto", "revogar credencial\nremover do histórico\nrotacionar segredo\nativar secret scanning"],
+              ["Resposta a vulnerabilidade", "avaliar alerta\ncriar branch de correção\natualizar dependência\nexecutar testes\nrevisar e publicar"]
+            ]
+          },
+          {
+            "slug": "governanca-organizacoes",
+            "title": "Rulesets, organizações e governança",
+            "concepts": "branch protection, rulesets, equipes, papéis, revisões obrigatórias, status checks e auditoria",
+            "example": "branch: main\nrequire_pull_request: true\nrequired_approvals: 2\nrequire_status_checks: true",
+            "resource": "https://docs.github.com/pt/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets",
+            "practices": [
+              ["Proteger a main", "branch: main\nrequire_pull_request: true"],
+              ["Exigir duas revisões", "required_approvals: 2\ndismiss_stale_reviews: true"],
+              ["Exigir CI", "require_status_checks: true\nstatus_check: test"],
+              ["Aplicar menor privilégio", "time-dev: write\ntime-seguranca: maintain\nvisitantes: read"],
+              ["Ruleset profissional", "branch: main\nrequire_pull_request: true\nrequired_approvals: 2\nrequire_status_checks: true\nblock_force_push: true\nrequire_signed_commits: true"]
+            ]
+          },
+          {
+            "slug": "cli-api-webhooks",
+            "title": "GitHub CLI, APIs, webhooks e Apps",
+            "concepts": "gh api, REST, GraphQL, paginação, webhooks, assinaturas, GitHub Apps e automações",
+            "example": "gh api repos/{owner}/{repo}/issues --method GET --paginate",
+            "resource": "https://docs.github.com/pt/rest",
+            "practices": [
+              ["Consultar repositório", "gh api repos/octocat/Hello-World"],
+              ["Listar issues paginadas", "gh api repos/octocat/Hello-World/issues --paginate"],
+              ["Criar issue via API", "gh api repos/dev/projeto/issues --method POST -f title=Falha -f body=Detalhes"],
+              ["Validar webhook", "X-Hub-Signature-256\nHMAC SHA-256\nsegredo do webhook\ncomparação em tempo constante"],
+              ["Escolher integração segura", "GitHub App\npermissões mínimas\ntoken de instalação com expiração\nwebhook assinado"]
+            ]
+          },
+          {
+            "slug": "git-avancado",
+            "title": "Git avançado e manutenção",
+            "concepts": "worktree, submodules, bisect, blame, reflog, gc, fsck, assinatura e diagnóstico",
+            "example": "git bisect start\ngit bisect bad HEAD\ngit bisect good v1.0.0",
+            "resource": "https://git-scm.com/docs",
+            "practices": [
+              ["Abrir trabalho paralelo", "git worktree add ../hotfix -b hotfix/login main"],
+              ["Adicionar submódulo", "git submodule add https://github.com/org/lib.git libs/lib"],
+              ["Iniciar busca binária", "git bisect start\ngit bisect bad HEAD\ngit bisect good v1.0.0"],
+              ["Investigar linha e arquivo", "git blame -L 10,20 src/app.js\ngit log --follow -- src/app.js"],
+              ["Auditoria final do repositório", "git status\ngit fsck --full\ngit count-objects -v\ngit log --oneline --decorate --graph --all"]
+            ]
+          }
+        ]
+      }
+    ]
+  }]
+}

@@ -2,6 +2,7 @@ import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { BetaAccessError, ensureUser, getBattle, getMission, getMissionTests, getRecentBattleEventCount, getSqlMissionConfig, getWebMissionConfig, recordAttempt, recordBattleAction, researchBattle, reviveBattle } from "@/db";
 import { getRecentSubmissionCount, recordSubmission, type SubmissionStatus } from "@/db/runner";
 import { JavaScriptRunnerAdapter } from "@/lib/runners/javascript-adapter";
+import { GitHubRunnerAdapter, type GitHubValidationRule } from "@/lib/runners/github-adapter";
 import { PythonRunnerAdapter } from "@/lib/runners/python-adapter";
 import { SqlRunnerAdapter, type SqlExpectedResult } from "@/lib/runners/sql-adapter";
 import { WebRunnerAdapter, type WebValidationRule } from "@/lib/runners/web-adapter";
@@ -125,7 +126,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       input: JSON.parse(test.inputJson) as unknown[],
       expected: JSON.parse(test.expectedJson) as unknown,
     })) };
-    const results = mission.runtime === "python"
+    const results = mission.runtime === "github"
+      ? await GitHubRunnerAdapter.execute({ code: payload.code, tests: tests.map((test) => ({ name: test.name, expected: JSON.parse(test.expectedJson) as GitHubValidationRule })) })
+      : mission.runtime === "python"
       ? await PythonRunnerAdapter.execute(runnerInput)
       : await JavaScriptRunnerAdapter.execute(runnerInput);
     const passed = results.every((result) => result.passed);
@@ -133,7 +136,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     failedTests = results.length - passedTests;
     const battleOutcome = passed ? "passed" : passedTests > 0 ? "progress" : "failed";
     status = passed ? "passed" : "failed";
-    if (payload.mode === "run") return Response.json({ ok: true, compiled: true, message: passed ? "Código seguro; todos os testes passaram." : "Código seguro; alguns testes ainda falharam.", results: results.map((result, index) => ({ name: `Teste ${index + 1}`, passed: result.passed })), battle: battle ? await recordBattleAction(user.userId, mission.id, "test", battleOutcome) : undefined });
+    if (payload.mode === "run") return Response.json({ ok: true, compiled: true, message: passed ? "Solução segura; todos os testes passaram." : "Solução segura; alguns testes ainda falharam.", results: results.map((result, index) => ({ name: `Teste ${index + 1}`, passed: result.passed })), battle: battle ? await recordBattleAction(user.userId, mission.id, "test", battleOutcome) : undefined });
     const progress = await recordAttempt(user.userId, mission, passed);
     const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", battleOutcome) : null;
     return Response.json({

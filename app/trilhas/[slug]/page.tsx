@@ -12,6 +12,7 @@ const CAMPAIGN_MARKS: Record<string, string> = {
   "javascript-fundamentals": "◇",
   "sql-fundamentals-sqlite": "▦",
   "python-fundamentals": "Py",
+  "github-fundamentals": "GH",
 };
 
 export default async function CampaignPage({ params }: { params: Promise<{ slug: string }> }) {

@@ -15,7 +15,7 @@ test("renders the DevDex foundation landing page", async () => {
   const html = await response.text();
   assert.match(html, /<html lang="pt-BR">/);
   assert.match(html, /Escrevendo código de verdade/);
-  assert.match(html, /Cinco cursos\. Do básico ao profissional/);
+  assert.match(html, /Seis cursos\. Do básico ao profissional/);
   assert.match(html, /150 ETAPAS/);
   assert.match(html, /QuickJS \+ Python \+ SQLite/);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);

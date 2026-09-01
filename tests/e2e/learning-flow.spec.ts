@@ -32,7 +32,7 @@ async function submitProject(request: APIRequestContext, userId: string, files: 
 
 async function chooseCharacter(request: APIRequestContext, userId: string) {
   const response = await request.post("/api/character", { headers: userHeaders(userId), data: { archetype: "adventurer" } });
-  await Promise.all(["html-fundamentals", "css-fundamentals", "javascript-fundamentals", "sql-fundamentals-sqlite", "python-fundamentals"].map((slug) => request.post(`/api/campaigns/${slug}/lore`, { headers: userHeaders(userId) })));
+  await Promise.all(["github-fundamentals", "html-fundamentals", "css-fundamentals", "javascript-fundamentals", "sql-fundamentals-sqlite", "python-fundamentals"].map((slug) => request.post(`/api/campaigns/${slug}/lore`, { headers: userHeaders(userId) })));
   return response;
 }
 
@@ -243,6 +243,7 @@ test("alterna entre campanhas sem bloquear tecnologias independentes", async ({ 
   await chooseCharacter(request, userId);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   for (const [path, title, theme] of [
+    ["github-fundamentals", "Forja Colaborativa", "theme-repository-forge"],
     ["html-fundamentals", "Crônicas da Estrutura", "theme-structure-ruins"],
     ["sql-fundamentals-sqlite", "Minas dos Dados", "theme-data-mines"],
     ["javascript-fundamentals", "Cidade da Lógica", "theme-logic-city"],

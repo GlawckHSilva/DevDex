@@ -9,7 +9,7 @@ export default async function Dashboard() {
   const user = await requireChatGPTUser("/dashboard");
   const [{ profile }, projects, campaigns] = await Promise.all([getDashboard(user), getProjectSummaries(user.userId), getCampaignSummaries(user.userId)]);
   const activeCampaign = campaigns.find((campaign) => campaign.progress > 0 && campaign.progress < 100)
-    ?? campaigns.find((campaign) => campaign.slug === "cidade-da-logica") ?? campaigns[0];
+    ?? campaigns.find((campaign) => campaign.pathSlug === "github-fundamentals") ?? campaigns[0];
 
   return <main className="dashboard-shell">
     <aside className="sidebar">

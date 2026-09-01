@@ -1,9 +1,10 @@
 const tracks = [
-  ["HTML", "Semântica, formulários e acessibilidade", "01", "48 BATALHAS"],
-  ["CSS", "Design systems, layouts e responsividade", "02", "48 BATALHAS"],
-  ["JavaScript", "Lógica, coleções e aplicações", "03", "48 BATALHAS"],
-  ["SQL", "Consultas, relações e análise de dados", "04", "48 BATALHAS"],
-  ["Python", "Fundamentos, dados, objetos e engenharia", "05", "150 ETAPAS"],
+  ["GitHub", "Conta, Git, colaboração, automação e segurança", "01", "150 ETAPAS"],
+  ["HTML", "Semântica, formulários e acessibilidade", "02", "150 ETAPAS"],
+  ["CSS", "Design systems, layouts e responsividade", "03", "150 ETAPAS"],
+  ["JavaScript", "Lógica, coleções e aplicações", "04", "150 ETAPAS"],
+  ["SQL", "Consultas, relações e análise de dados", "05", "150 ETAPAS"],
+  ["Python", "Fundamentos, dados, objetos e engenharia", "06", "150 ETAPAS"],
 ] as const;
 
 export default function Home() {
@@ -40,7 +41,7 @@ export default function Home() {
       </section>
 
       <section className="section container" id="trilhas">
-        <div className="section-heading"><div><span className="kicker">CURRÍCULO COMPLETO</span><h2>Cinco cursos. Do básico ao profissional.</h2></div><p>Aprenda por zonas, estude materiais dedicados e avance por batalhas liberadas por pré-requisitos.</p></div>
+        <div className="section-heading"><div><span className="kicker">CURRÍCULO COMPLETO</span><h2>Seis cursos. Do básico ao profissional.</h2></div><p>Comece por GitHub e avance por materiais e batalhas liberados por pré-requisitos.</p></div>
         <div className="track-grid">
           {tracks.map(([title, description, number, total]) => <article className="track-card" key={title}><span className="track-number">{number}</span><div className="track-icon">{title.slice(0, 2)}</div><h3>{title}{title === "SQL" ? " · SQLite" : ""}</h3><p>{description}</p><span className="track-state">{total}</span></article>)}
         </div>

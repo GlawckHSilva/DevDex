@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 
 from reportlab.lib import colors
@@ -11,7 +12,8 @@ from reportlab.platypus import PageBreak, Paragraph, Preformatted, SimpleDocTemp
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "output" / "pdf"
 OUT.mkdir(parents=True, exist_ok=True)
-DATA = json.loads((ROOT / "scripts" / "core-courses-outline.json").read_text(encoding="utf-8"))
+source = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "scripts" / "core-courses-outline.json"
+DATA = json.loads(source.read_text(encoding="utf-8"))
 
 styles = getSampleStyleSheet()
 styles.add(ParagraphStyle(name="Kicker", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=8.5, leading=11, textColor=colors.HexColor("#15A6B8"), alignment=TA_CENTER, spaceAfter=8))
@@ -20,7 +22,15 @@ styles.add(ParagraphStyle(name="H1x", parent=styles["Heading1"], fontName="Helve
 styles.add(ParagraphStyle(name="H2x", parent=styles["Heading2"], fontName="Helvetica-Bold", fontSize=12, leading=15, textColor=colors.HexColor("#087E8B"), spaceBefore=5, spaceAfter=5))
 styles.add(ParagraphStyle(name="Bodyx", parent=styles["BodyText"], fontName="Helvetica", fontSize=9.7, leading=14.5, textColor=colors.HexColor("#334155"), spaceAfter=7))
 styles.add(ParagraphStyle(name="Smallx", parent=styles["BodyText"], fontName="Helvetica", fontSize=8.3, leading=11.5, textColor=colors.HexColor("#64748B")))
+styles.add(ParagraphStyle(name="ZoneCell", parent=styles["Smallx"], fontName="Helvetica-Bold", textColor=colors.HexColor("#6D3BD1")))
+styles.add(ParagraphStyle(name="TableCell", parent=styles["Smallx"], fontSize=7.6, leading=9.5))
 code_style = ParagraphStyle("Code", fontName="Courier", fontSize=7.5, leading=10.5, textColor=colors.HexColor("#102A43"), backColor=colors.HexColor("#EDF2F7"), borderPadding=8, spaceAfter=7)
+
+
+def module_fields(module):
+    if isinstance(module, dict):
+        return module["slug"], module["title"], module["concepts"], module["example"], module["resource"]
+    return module
 
 
 def page(course_name):
@@ -44,7 +54,7 @@ def build(course):
     public = ROOT / "public" / "materials" / course["key"] / target.name
     public.parent.mkdir(parents=True, exist_ok=True)
     story = [Spacer(1, 28 * mm), Paragraph("GUIA COMPLETO DE ESTUDO", styles["Kicker"]), Paragraph(course["name"], styles["Cover"]), Paragraph("6 zonas - 24 materiais - 126 batalhas - 150 etapas", styles["Bodyx"]), Spacer(1, 9 * mm)]
-    rows = [[f"ZONA {index + 1:02d}", " / ".join(module[1] for module in zone["modules"])] for index, zone in enumerate(course["zones"])]
+    rows = [[Paragraph(f"ZONA {index + 1:02d}", styles["ZoneCell"]), Paragraph(" / ".join(module_fields(module)[1] for module in zone["modules"]), styles["TableCell"])] for index, zone in enumerate(course["zones"])]
     table = Table(rows, colWidths=[27 * mm, 127 * mm])
     table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F4F7FB")), ("GRID", (0, 0), (-1, -1), .4, colors.HexColor("#CAD5E2")), ("TEXTCOLOR", (0, 0), (0, -1), colors.HexColor("#6D3BD1")), ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"), ("FONTNAME", (1, 0), (1, -1), "Helvetica"), ("FONTSIZE", (0, 0), (-1, -1), 8), ("LEADING", (0, 0), (-1, -1), 11), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("PADDING", (0, 0), (-1, -1), 7)]))
     story.extend([table, PageBreak()])
@@ -53,7 +63,7 @@ def build(course):
         for module_index, module in enumerate(zone["modules"]):
             if module_index in (0, 2):
                 story.extend([Paragraph(f"ZONA {zone_index + 1:02d}", styles["Kicker"]), Paragraph("Fundamentos e pratica progressiva", styles["H1x"])])
-            slug, title, concepts, example, resource = module
+            slug, title, concepts, example, resource = module_fields(module)
             story.extend([
                 Paragraph(f"BLOCO {module_index + 1:02d} - {title}", styles["H2x"]),
                 Paragraph(concepts, styles["Bodyx"]),

@@ -30,6 +30,7 @@ const ARENA_ASSETS: Record<string, string> = {
   JAVASCRIPT: "/campaigns/javascript/bosque-fundamentos-v1.png",
   SQL: "/campaigns/sql/arquivo-perdido-v1.png",
   PYTHON: "/campaigns/javascript/bosque-fundamentos-v1.png",
+  GITHUB: "/campaigns/sql/arquivo-perdido-v1.png",
 };
 
 export function BattleStudyOverlay({ material, enemyType, pathSlug, started, onContinue }: { material: MissionStudyMaterial; enemyType: BattleView["enemyType"]; pathSlug: string; started: boolean; onContinue: () => void }) {

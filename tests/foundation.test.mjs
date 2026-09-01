@@ -19,6 +19,8 @@ const pythonCurriculumUrl = new URL("../drizzle/0013_python_curriculum.sql", imp
 const studyNodesUrl = new URL("../drizzle/0014_study_nodes.sql", import.meta.url);
 const pythonCourseV2Url = new URL("../drizzle/0015_python_course_v2.sql", import.meta.url);
 const coreCoursesV2Url = new URL("../drizzle/0016_core_courses_v2.sql", import.meta.url);
+const githubCurriculumUrl = new URL("../drizzle/0020_github_curriculum.sql", import.meta.url);
+const githubGuideUrl = new URL("../public/materials/github/github-guia-completo.pdf", import.meta.url);
 const enemyAssetsUrl = new URL("../lib/enemy-assets.ts", import.meta.url);
 
 test("D1 models five private, sequential missions", async () => {
@@ -114,7 +116,7 @@ test("every programming course exposes six zones and 150 aligned stages", async 
     (SELECT COUNT(*) FROM missions m JOIN skills s ON s.id=m.skill_id WHERE s.learning_path_id=lp.id AND m.status='published') AS battles,
     (SELECT COUNT(*) FROM mission_lesson_prerequisites mlp JOIN missions m ON m.id=mlp.mission_id JOIN skills s ON s.id=m.skill_id WHERE s.learning_path_id=lp.id) AS lesson_gates,
     (SELECT COUNT(*) FROM mission_study_materials msm JOIN missions m ON m.id=msm.mission_id JOIN skills s ON s.id=m.skill_id WHERE s.learning_path_id=lp.id AND m.status='published') AS inline_materials
-    FROM learning_paths lp WHERE lp.id BETWEEN 1 AND 5 ORDER BY lp.id`)[0];
+    FROM learning_paths lp WHERE lp.id BETWEEN 1 AND 6 ORDER BY lp.id`)[0];
   const complexBattles = db.exec(`SELECT COUNT(*) FROM (
     SELECT m.id FROM missions m JOIN skills s ON s.id=m.skill_id JOIN mission_tests mt ON mt.mission_id=m.id
     WHERE s.learning_path_id=5 AND m.status='published' GROUP BY m.id HAVING COUNT(mt.id)>=3)`)[0];
@@ -125,11 +127,22 @@ test("every programming course exposes six zones and 150 aligned stages", async 
     JOIN missions m ON m.id=mt.mission_id JOIN skills s ON s.id=m.skill_id
     WHERE s.learning_path_id=5 AND m.status='published'`)[0];
   db.close();
-  assert.deepEqual(courseZones.values, Array.from({ length: 5 }, (_, campaign) => Array.from({ length: 6 }, (_, zone) => [campaign + 1,zone + 1,21,4,25])).flat());
-  assert.deepEqual(courseTotals.values, Array.from({ length: 5 }, (_, path) => [path + 1,24,126,24,0]));
+  assert.deepEqual(courseZones.values, Array.from({ length: 6 }, (_, campaign) => Array.from({ length: 6 }, (_, zone) => [campaign + 1,zone + 1,21,4,25])).flat());
+  assert.deepEqual(courseTotals.values, Array.from({ length: 6 }, (_, path) => [path + 1,24,126,24,0]));
   assert.deepEqual(testedBattles.values, [[126]]);
   assert.ok(Number(complexBattles.values[0][0]) >= 50);
   for (const [input, expected] of pythonTests.values) { JSON.parse(input); JSON.parse(expected); }
+});
+
+test("GitHub is the first campaign and teaches a safe professional workflow", async () => {
+  const [course, guide] = await Promise.all([readFile(githubCurriculumUrl, "utf8"), readFile(githubGuideUrl)]);
+  assert.equal([...course.matchAll(/INSERT OR IGNORE INTO lessons /g)].length, 24);
+  assert.equal([...course.matchAll(/'github','github-validator-1'/g)].length, 126);
+  assert.equal([...course.matchAll(/INSERT OR IGNORE INTO mission_lesson_prerequisites /g)].length, 24);
+  assert.match(course, /'repository-forge','published',0/);
+  assert.match(course, /creating-an-account-on-github.*automatic-token-authentication.*webhooks/s);
+  assert.doesNotMatch(course, /Referência de treino|student_code|source_code/);
+  assert.equal(guide.subarray(0, 4).toString(), "%PDF");
 });
 
 test("Python study nodes are backend-gated and ship verified support resources", async () => {
