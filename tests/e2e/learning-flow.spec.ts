@@ -66,6 +66,29 @@ test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ pa
   await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/);
 });
 
+test("explora o mapa arrastando e volta ao personagem", async ({ page, request }) => {
+  const userId = "map-pan-user";
+  await chooseCharacter(request, userId);
+  await page.setExtraHTTPHeaders(userHeaders(userId));
+  await page.goto("/trilhas/html-fundamentals");
+  const viewport = page.getByTestId("map-viewport");
+  const world = page.getByTestId("map-world");
+  const current = page.getByTestId("map-node-html-estudo-estrutura-documento");
+  await current.click();
+  await expect(current).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(() => world.evaluate((element) => element.style.transform)).toContain("translate3d");
+  const before = await world.evaluate((element) => element.style.transform);
+  const box = await viewport.boundingBox();
+  if (!box) throw new Error("Mapa não renderizado.");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 - 170, box.y + box.height / 2 - 80, { steps: 6 });
+  await page.mouse.up();
+  await expect.poll(() => world.evaluate((element) => element.style.transform)).not.toBe(before);
+  await viewport.getByRole("button", { name: /Centralizar/ }).click();
+  await expect.poll(() => world.evaluate((element) => element.style.transform)).toBe(before);
+});
+
 test("escolhe personagem e vence a primeira batalha com três vidas", async ({ page, request }) => {
   const userId = "rpg-user";
   const headers = userHeaders(userId);

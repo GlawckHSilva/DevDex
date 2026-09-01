@@ -1,6 +1,7 @@
 "use client";
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex -- canvas de mapa operável por ponteiro e teclado */
 
-import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import Image from "next/image";
 import { PixelHero } from "@/app/aventura/character-select";
 import type { Archetype, CampaignLore, CampaignNode, CampaignZone } from "@/db";
@@ -60,12 +61,40 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
   const [loreSeen, setLoreSeen] = useState(initialLoreSeen);
   const [transmissionOpen, setTransmissionOpen] = useState(!initialLoreSeen);
   const [firstView, setFirstView] = useState(!initialLoreSeen);
+  const [panning, setPanning] = useState(false);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const worldRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef({ x: 0, y: 0 });
+  const dragRef = useRef<{ pointerId: number; x: number; y: number; offsetX: number; offsetY: number; moved: boolean } | null>(null);
+  const suppressClickRef = useRef(false);
   const selected = allNodes.find((node) => node.missionSlug === selectedSlug) ?? initial;
   const completed = nodes.filter((node) => node.state === "completed").length;
   const target = completed === 0 ? START : completed < nodes.length ? zoneLayouts[completed] : bossNode ? BOSS_LAYOUT : zoneLayouts[nodes.length - 1];
   const previous = completed <= 1 ? (completed === 0 ? START : zoneLayouts[0]) : zoneLayouts[completed - 1];
   const playerPosition = target === START ? { ...START, y: START.y - 9, mobileY: START.mobileY - 26 } : betweenWaypoints(previous, target);
   const previousPosition = previous === START ? { ...START, y: START.y - 9, mobileY: START.mobileY - 26 } : previous;
+
+  const moveWorld = useCallback((x: number, y: number, animated = false) => {
+    const viewport = viewportRef.current;
+    const world = worldRef.current;
+    if (!viewport || !world) return;
+    const next = {
+      x: Math.max(Math.min(0, viewport.clientWidth - world.offsetWidth), Math.min(0, x)),
+      y: Math.max(Math.min(0, viewport.clientHeight - world.offsetHeight), Math.min(0, y)),
+    };
+    offsetRef.current = next;
+    world.classList.toggle("centering", animated);
+    world.style.transform = `translate3d(${next.x}px,${next.y}px,0)`;
+    if (animated) window.setTimeout(() => world.classList.remove("centering"), 420);
+  }, []);
+
+  const centerOnPlayer = useCallback((animated = true) => {
+    const viewport = viewportRef.current;
+    const world = worldRef.current;
+    const player = world?.querySelector<HTMLElement>("[data-testid='map-player']");
+    if (!viewport || !world || !player) return;
+    moveWorld(viewport.clientWidth / 2 - player.offsetLeft, viewport.clientHeight / 2 - player.offsetTop, animated);
+  }, [moveWorld]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -76,6 +105,49 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
     const timer = window.setTimeout(() => setArriving(false), 3000);
     return () => { window.cancelAnimationFrame(frame); window.clearTimeout(timer); };
   }, []);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => centerOnPlayer(false));
+    const resize = () => moveWorld(offsetRef.current.x, offsetRef.current.y);
+    window.addEventListener("resize", resize);
+    return () => { window.cancelAnimationFrame(frame); window.removeEventListener("resize", resize); };
+  }, [centerOnPlayer, moveWorld, zone.id]);
+
+  function startPan(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.button !== 0 || (event.target as HTMLElement).closest(".map-pan-controls")) return;
+    dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, offsetX: offsetRef.current.x, offsetY: offsetRef.current.y, moved: false };
+  }
+
+  function pan(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const x = event.clientX - drag.x;
+    const y = event.clientY - drag.y;
+    if (!drag.moved && Math.hypot(x, y) < 5) return;
+    drag.moved = true;
+    if (!event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.setPointerCapture(event.pointerId);
+    setPanning(true);
+    moveWorld(drag.offsetX + x, drag.offsetY + y);
+  }
+
+  function endPan(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    suppressClickRef.current = drag.moved;
+    dragRef.current = null;
+    setPanning(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    window.setTimeout(() => { suppressClickRef.current = false; }, 0);
+  }
+
+  function panByKeyboard(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.target !== event.currentTarget) return;
+    const directions: Record<string, [number, number]> = { ArrowLeft: [70, 0], a: [70, 0], ArrowRight: [-70, 0], d: [-70, 0], ArrowUp: [0, 70], w: [0, 70], ArrowDown: [0, -70], s: [0, -70] };
+    const direction = directions[event.key];
+    if (!direction) return;
+    event.preventDefault();
+    moveWorld(offsetRef.current.x + direction[0], offsetRef.current.y + direction[1], true);
+  }
 
   function selectByKeyboard(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(event.key)) return;
@@ -103,14 +175,17 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
     })}</nav></MotionConfig>
     <div className="adventure-map-layout">
       <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona {String(zone.sortOrder).padStart(2, "0")} — {zone.title}</h2><p>{zone.storyIntro}</p></div><strong>{zone.nodes.filter((node) => node.missionState === "completed").length}/{zone.nodes.length} missões</strong></header>
-      <div className={`adventure-map-canvas${allNodes.length > 9 ? " map-dense" : ""}`} style={{ "--mobile-height": `${180 + allNodes.length * 145}px`, "--fog-reveal": `${Math.min(90, 19 + (completed / Math.max(1, nodes.length)) * 71)}%` } as CSSProperties}>
-      <div className="map-atmosphere" aria-hidden="true" />
-      <MapPath nodes={allNodes} />
-      <FogLayer />
-      <button aria-label="Abrir transmissão da campanha" className="adventure-start" data-testid="campaign-prologue" onClick={reopenTransmission} style={{ left: `${START.x}%`, top: `${START.y}%`, "--mobile-x": `${START.mobileX}%`, "--mobile-y": `${START.mobileY}px` } as CSSProperties} type="button"><span><Image alt="" aria-hidden="true" height={48} src="/ui/prologue-terminal-v1.png" width={48} /></span><strong>PRÓLOGO</strong><small>Transmissão</small></button>
-      <PlayerMarker archetype={archetype} position={playerPosition} previous={previousPosition} arriving={arriving} />
-      {allNodes.map((node, index) => <MapNode node={node} selected={selected.missionSlug === node.missionSlug} current={node.missionSlug === initial.missionSlug} onSelect={() => setSelectedSlug(node.missionSlug)} onKeyDown={(event) => selectByKeyboard(event, index)} key={node.missionSlug} />)}
+      <div aria-label="Mapa explorável. Arraste para navegar ou use as setas do teclado." className={`adventure-map-canvas map-pannable${allNodes.length > 9 ? " map-dense" : ""}${panning ? " is-panning" : ""}`} data-testid="map-viewport" onClickCapture={(event) => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); } }} onKeyDown={panByKeyboard} onPointerCancel={endPan} onPointerDown={startPan} onPointerMove={pan} onPointerUp={endPan} ref={viewportRef} role="application" style={{ "--mobile-height": `${180 + allNodes.length * 145}px`, "--fog-reveal": `${Math.min(90, 19 + (completed / Math.max(1, nodes.length)) * 71)}%` } as CSSProperties} tabIndex={0}>
+      <div className="adventure-map-world" data-testid="map-world" ref={worldRef}>
+        <div className="map-atmosphere" aria-hidden="true" />
+        <MapPath nodes={allNodes} />
+        <FogLayer />
+        <button aria-label="Abrir transmissão da campanha" className="adventure-start" data-testid="campaign-prologue" onClick={reopenTransmission} style={{ left: `${START.x}%`, top: `${START.y}%`, "--map-x": `${START.x}%`, "--map-y": `${START.y}%` } as CSSProperties} type="button"><span><Image alt="" aria-hidden="true" height={48} src="/ui/prologue-terminal-v1.png" width={48} /></span><strong>PRÓLOGO</strong><small>Transmissão</small></button>
+        <PlayerMarker archetype={archetype} position={playerPosition} previous={previousPosition} arriving={arriving} />
+        {allNodes.map((node, index) => <MapNode node={node} selected={selected.missionSlug === node.missionSlug} current={node.missionSlug === initial.missionSlug} onSelect={() => setSelectedSlug(node.missionSlug)} onKeyDown={(event) => selectByKeyboard(event, index)} key={node.missionSlug} />)}
+      </div>
       {arriving ? <div className="map-unlock-toast" role="status" data-testid="map-unlock-toast"><span>✦</span> NOVA ETAPA DESBLOQUEADA</div> : null}
+      <div className="map-pan-controls"><span>SEGURE E ARRASTE PARA EXPLORAR</span><button onClick={() => centerOnPlayer()} type="button">◎ Centralizar</button></div>
       <div className="adventure-legend"><strong>CAMINHO</strong><span><i className="completed" />Concluído</span><span><i className="available" />Disponível</span><span><i className="locked" />Bloqueado</span></div>
       </div>
       <MissionPanel node={selected} campaignPath={campaignPath} />
@@ -130,7 +205,7 @@ function FogLayer() {
 }
 
 function PlayerMarker({ archetype, position, previous, arriving }: { archetype: Archetype; position: typeof START; previous: typeof START; arriving: boolean }) {
-  return <div className={`map-player-position${arriving ? " arriving" : ""}`} data-testid="map-player" style={{ left: `${position.x}%`, top: `${position.y}%`, "--mobile-x": `${position.mobileX}%`, "--mobile-y": `${position.mobileY}px`, "--from-x": `${previous.x}%`, "--from-y": `${previous.y}%`, "--to-x": `${position.x}%`, "--to-y": `${position.y}%`, "--mobile-from-x": `${previous.mobileX}%`, "--mobile-from-y": `${previous.mobileY}px`, "--mobile-to-x": `${position.mobileX}%`, "--mobile-to-y": `${position.mobileY}px` } as CSSProperties}><div className="player-traveler"><PixelHero archetype={archetype} /></div><span>VOCÊ</span></div>;
+  return <div className={`map-player-position${arriving ? " arriving" : ""}`} data-testid="map-player" style={{ left: `${position.x}%`, top: `${position.y}%`, "--map-x": `${position.x}%`, "--map-y": `${position.y}%`, "--from-x": `${previous.x}%`, "--from-y": `${previous.y}%`, "--to-x": `${position.x}%`, "--to-y": `${position.y}%` } as CSSProperties}><div className="player-traveler"><PixelHero archetype={archetype} /></div><span>VOCÊ</span></div>;
 }
 
 function layoutsFor(total: number): LayoutNode[] {
@@ -159,7 +234,7 @@ function MapNode({ node, selected, current, onSelect, onKeyDown }: { node: Selec
     data-testid={`map-node-${node.missionSlug}`}
     onClick={onSelect}
     onKeyDown={onKeyDown}
-    style={{ left: `${node.x}%`, top: `${node.y}%`, "--mobile-x": `${node.mobileX}%`, "--mobile-y": `${node.mobileY}px` } as CSSProperties}
+    style={{ left: `${node.x}%`, top: `${node.y}%`, "--map-x": `${node.x}%`, "--map-y": `${node.y}%` } as CSSProperties}
     type="button"
   ><span className={`map-node-encounter${enemyAsset ? " has-sprite" : ""}`}><i className="map-enemy-silhouette">{enemyAsset ? <Image alt="" aria-hidden="true" fill sizes="130px" src={enemyAsset} /> : node.icon}</i><i className="map-node-pedestal" />{node.state === "completed" ? <b aria-hidden="true">✓</b> : node.state === "locked" ? <b aria-hidden="true">⌁</b> : null}</span><strong>{node.enemyName}</strong><small>{node.title}</small><em>{node.type === "boss" ? "CHEFE" : node.type === "bug" ? "DESAFIO" : node.type === "elite" ? "ELITE" : `NÍVEL ${node.enemyLevel}`}</em></button>;
 }

@@ -384,6 +384,34 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 .adventure-map-canvas.map-dense .adventure-map-node>strong { max-width:132px; font-size:9px; }
 .adventure-map-canvas.map-dense .adventure-map-node>small { max-width:124px; font-size:8px; }
 
+/* Draggable campaign world. */
+.adventure-map-canvas.map-pannable { height:650px; min-height:650px; overflow:hidden; background:#030912; cursor:grab; touch-action:none; user-select:none; overscroll-behavior:contain; }
+.adventure-map-canvas.map-pannable.is-panning { cursor:grabbing; }
+.adventure-map-canvas.map-pannable:focus-visible { outline:2px solid var(--map-cyan); outline-offset:-3px; }
+.adventure-map-canvas.map-pannable::before,.adventure-map-canvas.map-pannable::after { z-index:0; }
+.adventure-map-world { position:absolute; z-index:1; top:0; left:0; width:max(1600px,135%); height:1000px; background-image:linear-gradient(90deg,#03101ac7 0,#0715228c 52%,#020711d6 100%),var(--map-background); background-position:center; background-size:cover; transform:translate3d(0,0,0); will-change:transform; }
+.adventure-map-world img { pointer-events:none; -webkit-user-drag:none; }
+.adventure-map-world.centering { transition:transform .4s cubic-bezier(.2,.75,.25,1); }
+.map-pannable.map-dense .adventure-map-node { transform:translate(-50%,-50%) scale(.9); }
+.map-pannable.map-dense .adventure-map-node:hover { transform:translate(-50%,-50%) scale(.95); }
+.map-pan-controls { position:absolute; z-index:12; top:14px; left:14px; display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid #30465a; border-radius:8px; background:#06111be6; color:#8295a8; box-shadow:0 8px 24px #0008; backdrop-filter:blur(8px); font:700 8px var(--font-geist-mono); letter-spacing:.06em; }
+.map-pan-controls button { padding:6px 8px; border:1px solid #426175; border-radius:5px; background:#0d1b29; color:#8ff4ee; cursor:pointer; font:700 8px var(--font-geist-mono); }
+.map-pan-controls button:hover { border-color:var(--map-cyan); color:white; }
+@media (max-width:760px) {
+  .adventure-map-layout { grid-template-rows:48px 560px auto; }
+  .adventure-map-canvas.map-pannable { height:560px; min-height:560px!important; }
+  .adventure-map-world { width:1200px; height:900px; }
+  .map-pannable .path-desktop { display:block; }
+  .map-pannable .path-mobile { display:none; }
+  .map-pannable .adventure-start,.map-pannable .map-player-position,.map-pannable .adventure-map-node { left:var(--map-x)!important; top:var(--map-y)!important; }
+  .map-pannable .adventure-map-node:nth-of-type(n) { top:var(--map-y)!important; }
+  .map-pannable .map-fog { inset:0; height:auto; background:linear-gradient(90deg,transparent 0 calc(var(--fog-reveal) - 12%),#07101a5c var(--fog-reveal),#02060cdb calc(var(--fog-reveal) + 16%),#010309f2 100%); }
+  .adventure-map-canvas.map-pannable::after { inset:0; width:auto; height:auto; border-radius:0; background:repeating-linear-gradient(0deg,transparent 0 3px,#9cecff05 4px); box-shadow:none; }
+  .map-pan-controls { top:9px; left:9px; }
+  .map-pan-controls>span { display:none; }
+  .map-pannable .adventure-legend { top:auto; right:9px; bottom:9px; }
+}
+
 .study-page { min-height:100vh; padding:0 24px 48px; background:radial-gradient(circle at 75% 4%,#39216938,transparent 28%),#050b13; color:#edf5fb; }
 .study-topbar { height:82px; display:flex; align-items:center; justify-content:space-between; max-width:1180px; margin:auto; border-bottom:1px solid #213447; }.study-topbar>a:last-child { color:#a9b9c8; font-size:13px; }
 .study-hero { max-width:1180px; margin:34px auto 18px; display:flex; align-items:flex-end; justify-content:space-between; gap:30px; padding:34px; border:1px solid #2a4055; border-radius:14px; background:linear-gradient(135deg,#0d1b2c,#0a1220); }.study-hero span { display:flex; align-items:center; gap:8px; color:#58e1dd; font:800 10px var(--font-geist-mono); letter-spacing:.1em; }.study-hero h1 { margin:13px 0 9px; font-size:clamp(34px,5vw,58px); letter-spacing:-.055em; }.study-hero p { max-width:760px; margin:0; color:#9fb0c0; line-height:1.65; }.study-hero>strong { color:#b783ff; font:800 10px var(--font-geist-mono); white-space:nowrap; }
