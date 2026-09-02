@@ -52,7 +52,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     return Response.json({
       ok: passed,
       message: passed ? "Etapa concluída." : "Alguns requisitos ainda precisam de atenção.",
-      results: requirements.map((name, index) => ({ name, passed: result.results[index]?.passed === true })),
+      results: requirements.map((name, index) => ({ name, passed: (result.results.length === 1 ? result.results[0] : result.results[index])?.passed === true })),
       projectCompleted: progress.projectState === "completed",
       ...progress,
     });

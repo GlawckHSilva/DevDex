@@ -1,6 +1,5 @@
 import generate from "css-tree/generator";
 import parseCss from "css-tree/parser";
-import walk from "css-tree/walker";
 import { parse, type DefaultTreeAdapterMap } from "parse5";
 import type { RunnerAdapter } from "./types";
 
@@ -58,17 +57,15 @@ function validateCss(code: string, rules: (CssRule | CssRawRule)[]) {
     throw new Error("Este recurso CSS não é permitido no preview isolado.");
   }
   const ast = parseCss(code, { context: "stylesheet", positions: false });
+  if (ast.type !== "StyleSheet") throw new Error("Folha CSS inválida.");
   const styles = new Map<string, Map<string, string>>();
-  walk(ast, {
-    visit: "Rule",
-    enter(node) {
-      if (node.type !== "Rule" || node.block.type !== "Block") return;
-      const declarations = new Map<string, string>();
-      node.block.children.forEach((child) => {
-        if (child.type === "Declaration") declarations.set(child.property.toLowerCase(), normalize(generate(child.value)));
-      });
-      generate(node.prelude).split(",").forEach((selector) => styles.set(normalize(selector), declarations));
-    },
+  ast.children.forEach((node) => {
+    if (node.type !== "Rule" || node.block.type !== "Block") return;
+    const declarations = new Map<string, string>();
+    node.block.children.forEach((child) => {
+      if (child.type === "Declaration") declarations.set(child.property.toLowerCase(), normalize(generate(child.value)));
+    });
+    generate(node.prelude).split(",").forEach((selector) => styles.set(normalize(selector), declarations));
   });
   return rules.map((rule) => {
     if (rule.type === "raw") return { passed: new RegExp(rule.pattern, "i").test(code) };

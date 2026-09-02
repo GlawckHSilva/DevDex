@@ -13,7 +13,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   const content = await getLibraryContent(user.userId, slug);
   if (!content) return Response.json({ ok: false, message: "Conteúdo não encontrado." }, { status: 404 });
   const form = await request.formData();
-  const answer = Number(form.get("answer"));
+  const rawAnswer = form.get("answer");
+  const answer = typeof rawAnswer === "string" && rawAnswer.trim() ? Number(rawAnswer) : Number.NaN;
   const result = await answerContentQuiz(user.userId, content.id, answer);
   if (!result) return Response.json({ ok: false, message: "Resposta inválida." }, { status: 400 });
   const status = result.correct ? "correto" : "revisar";
