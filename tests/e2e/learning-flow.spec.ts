@@ -66,6 +66,15 @@ test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ pa
   await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/);
 });
 
+test("exibe e recolhe o menu lateral no mapa da campanha", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.setExtraHTTPHeaders(userHeaders("campaign-sidebar-user"));
+  await page.goto("/trilhas/html-fundamentals");
+  await expect(page.locator(".app-sidebar")).toBeVisible();
+  await page.locator(".sidebar-toggle").click();
+  await expect(page.getByRole("checkbox", { name: "Recolher menu lateral" })).toBeChecked();
+});
+
 test("pesquisa, favorita e revisa conteúdo sem conceder XP", async ({ page, request }) => {
   const userId = "library-user";
   const headers = userHeaders(userId);
