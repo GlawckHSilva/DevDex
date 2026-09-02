@@ -1,7 +1,9 @@
 import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
 import { getCampaignSummaries, getDashboard, getProjectSummaries } from "@/db";
 import { isAdminEmail } from "@/lib/runtime-config";
-import { BookOpen, Braces, CodeXml, Database, FolderKanban, GitBranch, LogOut, Map, Palette, Sparkles, Terminal, Trophy } from "lucide-react";
+import { BookOpen, Database, FolderKanban, LogOut, Map, Sparkles, Terminal, Trophy } from "lucide-react";
+import { SiCss3, SiGithub, SiHtml5, SiJavascript, SiPython } from "react-icons/si";
+import { TbSql } from "react-icons/tb";
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -35,6 +37,7 @@ export default async function Dashboard() {
 }
 
 function CampaignIcon({ technology }: { technology: string }) {
-  const Icon = technology === "GitHub" ? GitBranch : technology === "HTML" ? CodeXml : technology === "CSS" ? Palette : technology === "JavaScript" ? Braces : technology === "SQL" ? Database : Terminal;
-  return <Icon />;
+  const icon = technology === "GitHub" ? [SiGithub, "github"] : technology === "HTML" ? [SiHtml5, "html"] : technology === "CSS" ? [SiCss3, "css"] : technology === "JavaScript" ? [SiJavascript, "javascript"] : technology === "SQL" ? [TbSql, "sql"] : technology === "Python" ? [SiPython, "python"] : [Terminal, "default"];
+  const [Icon, name] = icon;
+  return <Icon className={`technology-icon technology-${name}`} aria-hidden="true" />;
 }
