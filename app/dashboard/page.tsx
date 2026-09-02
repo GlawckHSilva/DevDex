@@ -1,6 +1,7 @@
 import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
 import { getCampaignSummaries, getDashboard, getProjectSummaries } from "@/db";
 import { isAdminEmail } from "@/lib/runtime-config";
+import { BookOpen, Braces, CodeXml, Database, FolderKanban, GitBranch, LogOut, Map, Palette, Sparkles, Terminal, Trophy } from "lucide-react";
 
 export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -14,8 +15,12 @@ export default async function Dashboard() {
   return <main className="dashboard-shell">
     <aside className="sidebar">
       <a className="brand" href="/"><span className="brand-mark">D_</span>DevDex</a>
-      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Campanhas</a><a href="/biblioteca">▤ Biblioteca</a><a href="/habilidades">✦ Habilidades</a>{campaigns.map((campaign) => <a href={`/trilhas/${campaign.pathSlug}`} key={campaign.slug}>◇ {campaign.technologyName}</a>)}<a href="/projetos/lista-de-tarefas">▣ Projetos</a>{isAdminEmail(user.email) ? <a href="/admin/metricas">◉ Métricas</a> : null}<span>☆ Conquistas</span></nav>
-      <a className="signout" href={chatGPTSignOutPath("/")}>Sair</a>
+      <nav aria-label="Área do aluno">
+        <div className="sidebar-nav-section"><small>EXPLORAR</small><a className="sidebar-active" href="/dashboard"><Map /><span>Campanhas</span></a><a href="/biblioteca"><BookOpen /><span>Biblioteca</span></a><a href="/habilidades"><Sparkles /><span>Habilidades</span>{profile.skillPoints ? <b>{profile.skillPoints}</b> : null}</a></div>
+        <div className="sidebar-nav-section"><small>TRILHAS</small>{campaigns.map((campaign) => <a href={`/trilhas/${campaign.pathSlug}`} key={campaign.slug}><CampaignIcon technology={campaign.technologyName} /><span>{campaign.technologyName}</span><i>{campaign.progress}%</i></a>)}</div>
+        <div className="sidebar-nav-section"><small>CARREIRA</small><a href="/projetos/lista-de-tarefas"><FolderKanban /><span>Projetos</span></a>{isAdminEmail(user.email) ? <a href="/admin/metricas"><Database /><span>Métricas</span></a> : null}<span className="sidebar-disabled" aria-disabled="true"><Trophy /><span>Conquistas</span><em>EM BREVE</em></span></div>
+      </nav>
+      <a className="signout" href={chatGPTSignOutPath("/")}><LogOut /><span>Sair</span></a>
     </aside>
     <section className="dashboard-content">
       <header className="dashboard-top"><div><span className="kicker">UNIVERSO DEVDEX</span><h1>Escolha sua próxima aventura, {user.displayName.split("@")[0]}.</h1></div><a className="level-chip" href="/habilidades"><small>NÍVEL GLOBAL {profile.level}</small><strong>{profile.withinLevel} / {profile.required} XP</strong><div className="progress-track"><i style={{ width: `${profile.percent}%` }} /></div><span>❤️ {profile.hearts}/{profile.maxHearts} · 💡 {profile.hints}/{profile.maxHints} · ◇ {profile.skillPoints}</span></a></header>
@@ -27,4 +32,9 @@ export default async function Dashboard() {
       <div className="project-card-grid">{projects.map((project) => <a className={`project-card state-${project.state}`} href={`/projetos/${project.slug}`} key={project.slug}><span>{project.newlyUnlocked ? "✦ NOVO PROJETO LIBERADO" : project.state === "completed" ? "🏆 CONCLUÍDO" : project.state === "locked" ? "⌁ EM PREPARAÇÃO" : "PROJECT MODE"}</span><h3>{project.title}</h3><p>{project.description}</p><div><small>{project.state === "locked" ? `Nível ${project.minLevel} · ${project.requiredMaterials} materiais · ${project.requiredBattles} batalhas` : `${project.completedSteps}/${project.totalSteps} etapas · ${project.deadlineDays} dias`}</small><strong>{project.xpReward} XP</strong></div></a>)}</div>
     </section>
   </main>;
+}
+
+function CampaignIcon({ technology }: { technology: string }) {
+  const Icon = technology === "GitHub" ? GitBranch : technology === "HTML" ? CodeXml : technology === "CSS" ? Palette : technology === "JavaScript" ? Braces : technology === "SQL" ? Database : Terminal;
+  return <Icon />;
 }

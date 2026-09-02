@@ -62,7 +62,7 @@ test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ pa
   await expect(page).toHaveURL(/\/projetos\/lista-de-tarefas$/);
   await expect(page.getByText("PRÓXIMA CONQUISTA")).toBeVisible();
   await page.getByRole("link", { name: "CONTINUAR NAS CAMPANHAS" }).click();
-  await page.getByRole("link", { name: "◇ HTML", exact: true }).click();
+  await page.locator(".sidebar").getByRole("link", { name: /^HTML/ }).click();
   await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/);
 });
 
