@@ -20,6 +20,8 @@ const studyNodesUrl = new URL("../drizzle/0014_study_nodes.sql", import.meta.url
 const pythonCourseV2Url = new URL("../drizzle/0015_python_course_v2.sql", import.meta.url);
 const coreCoursesV2Url = new URL("../drizzle/0016_core_courses_v2.sql", import.meta.url);
 const githubCurriculumUrl = new URL("../drizzle/0020_github_curriculum.sql", import.meta.url);
+const educationalLibraryUrl = new URL("../drizzle/0021_educational_library.sql", import.meta.url);
+const contentReviewUrl = new URL("../drizzle/0022_content_review.sql", import.meta.url);
 const githubGuideUrl = new URL("../public/materials/github/github-guia-completo.pdf", import.meta.url);
 const enemyAssetsUrl = new URL("../lib/enemy-assets.ts", import.meta.url);
 
@@ -143,6 +145,39 @@ test("GitHub is the first campaign and teaches a safe professional workflow", as
   assert.match(course, /creating-an-account-on-github.*automatic-token-authentication.*webhooks/s);
   assert.doesNotMatch(course, /Referência de treino|student_code|source_code/);
   assert.equal(guide.subarray(0, 4).toString(), "%PDF");
+});
+
+test("educational library indexes every course without changing progression", async () => {
+  const [migration, reviewMigration, library, quizRoute] = await Promise.all([
+    readFile(educationalLibraryUrl, "utf8"),
+    readFile(contentReviewUrl, "utf8"),
+    readFile(new URL("../db/library.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/library/[slug]/quiz/route.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(migration, /CREATE TABLE `educational_contents`/);
+  assert.match(migration, /CREATE TABLE `content_examples`/);
+  assert.match(migration, /CREATE TABLE `content_snippets`/);
+  assert.match(migration, /CREATE TABLE `content_prerequisites`/);
+  assert.match(migration, /CREATE TABLE `user_content_favorites`/);
+  assert.match(migration, /CREATE TABLE `user_content_history`/);
+  assert.match(reviewMigration, /CREATE TABLE `user_content_reviews`/);
+  assert.match(migration, /FROM lessons l.*JOIN technologies t/s);
+  assert.match(library, /lower\(ec\.title\|\|' '\|\|ec\.description/);
+  assert.doesNotMatch(migration, /UPDATE (?:user_missions|profiles|user_xp_history)/);
+  assert.doesNotMatch(library, /starter_code|source_code|student_code/);
+  assert.doesNotMatch(quizRoute, /recordAttempt|awardedXp|total_xp|user_xp_history/);
+  const SQL = await initSqlJs();
+  const db = new SQL.Database();
+  const directory = new URL("../drizzle/", import.meta.url);
+  for (const file of (await readdir(directory)).filter((name) => /^\d{4}.*\.sql$/.test(name)).sort()) {
+    const sql = await readFile(new URL(file, directory), "utf8");
+    for (const statement of sql.split("--> statement-breakpoint").map((value) => value.trim()).filter(Boolean)) db.run(statement);
+  }
+  assert.deepEqual(db.exec("SELECT COUNT(*),COUNT(DISTINCT technology_id) FROM educational_contents")[0].values, [[144,6]]);
+  assert.deepEqual(db.exec("SELECT COUNT(*) FROM content_snippets")[0].values, [[144]]);
+  assert.deepEqual(db.exec("SELECT COUNT(*) FROM educational_contents WHERE json_array_length(common_mistakes_json)=2 AND json_array_length(json_extract(quiz_json,'$.options'))=3")[0].values, [[144]]);
+  assert.deepEqual(db.exec("SELECT COUNT(*) FROM content_prerequisites")[0].values, [[138]]);
+  db.close();
 });
 
 test("Python study nodes are backend-gated and ship verified support resources", async () => {

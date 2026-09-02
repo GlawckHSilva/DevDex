@@ -61,9 +61,45 @@ test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ pa
   await page.getByRole("link", { name: /To-do App/ }).click();
   await expect(page).toHaveURL(/\/projetos\/lista-de-tarefas$/);
   await expect(page.getByText("PRÓXIMA CONQUISTA")).toBeVisible();
-  await page.getByRole("link", { name: "Dashboard" }).click();
+  await page.getByRole("link", { name: "CONTINUAR NAS CAMPANHAS" }).click();
   await page.getByRole("link", { name: "◇ HTML", exact: true }).click();
   await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/);
+});
+
+test("pesquisa, favorita e revisa conteúdo sem conceder XP", async ({ page, request }) => {
+  const userId = "library-user";
+  const headers = userHeaders(userId);
+  await chooseCharacter(request, userId);
+  await submit(request, userId, "guardar-nome", "const nome = 42;");
+  await submit(request, userId, "guardar-nome", "const nome = 42;");
+  await page.setExtraHTTPHeaders(headers);
+
+  await page.goto("/biblioteca");
+  await expect(page.getByRole("heading", { name: "Consulte sem sair da aventura." })).toBeVisible();
+  await expect(page.getByText("Dificuldade detectada na batalha")).toBeVisible();
+  await page.getByLabel("Buscar na biblioteca").fill("variáveis");
+  await page.getByRole("button", { name: "BUSCAR" }).click();
+  await expect(page.getByRole("heading", { name: "Busca por “variáveis”" })).toBeVisible();
+
+  await page.goto("/biblioteca/referencia-javascript-estudo-valores-variaveis");
+  await expect(page.getByText("REVISÃO RÁPIDA")).toBeVisible();
+  await page.getByRole("button", { name: "FAVORITAR" }).click();
+  await expect(page.getByRole("button", { name: "SALVO" })).toBeVisible();
+
+  const invalid = await request.post("/api/library/referencia-javascript-estudo-valores-variaveis/quiz", {
+    headers,
+    form: {},
+    maxRedirects: 0,
+  });
+  expect(invalid.status()).toBe(400);
+  await page.getByRole("radio").first().check();
+  await page.getByRole("button", { name: "CONFIRMAR RESPOSTA" }).click();
+  await expect(page.getByText(/Resposta correta/)).toBeVisible();
+
+  await page.goto("/biblioteca?favoritos=1");
+  await expect(page.getByRole("heading", { name: "Valores e variáveis" })).toBeVisible();
+  await page.goto("/dashboard");
+  await expect(page.locator("header").getByText("0 XP", { exact: true })).toBeVisible();
 });
 
 test("explora o mapa horizontal arrastando e volta ao personagem", async ({ page, request }) => {
@@ -256,7 +292,7 @@ test("alterna entre campanhas sem bloquear tecnologias independentes", async ({ 
   }
 });
 
-test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ page, request }) => {
+test("mapa usa progresso real, seleção contextual e navegação horizontal mobile", async ({ page, request }) => {
   const userId = "campaign-map-user";
   await chooseCharacter(request, userId);
   expect((await completeLesson(request, userId, "javascript-estudo-valores-variaveis")).status()).toBe(303);
@@ -289,8 +325,8 @@ test("mapa usa progresso real, seleção contextual e trilha mobile", async ({ p
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByTestId("campaign-map")).toBeVisible();
   await expect(variables).toBeVisible();
-  await expect(page.locator(".path-mobile")).toBeVisible();
-  expect((await locked.boundingBox())!.y).toBeGreaterThan((await variables.boundingBox())!.y);
+  await expect(page.locator(".path-desktop")).toBeVisible();
+  expect((await locked.boundingBox())!.x).toBeGreaterThan((await variables.boundingBox())!.x);
 });
 
 test("Python exige o material e libera cinco batalhas alinhadas pelo backend", async ({ page, request }) => {
@@ -326,8 +362,8 @@ test("mantém o Project Mode bloqueado até as 25 etapas da zona JavaScript", as
   await expect(page.locator(".adventure-map-node")).toHaveCount(26);
   await expect(page.getByTestId("map-node-guardar-nome")).toHaveClass(/state-available/);
   await expect(page.getByTestId("map-node-boss-project")).toHaveClass(/type-boss.*state-locked/);
-  await page.getByTestId("map-node-boss-project").click();
-  await expect(page.getByTestId("mission-panel").getByRole("button")).toBeDisabled();
+  await expect(page.getByTestId("map-node-boss-project")).toHaveAttribute("aria-label", /Bloqueada/);
+  await expect(page.locator('a[href="/projetos/lista-de-tarefas"]')).toHaveCount(0);
 });
 
 test("executa SQLite/Wasm descartável sem misturar progresso", async ({ page, request }) => {
@@ -528,6 +564,6 @@ test("libera e conclui um projeto inicial depois do estudo e da batalha", async 
   expect(await repeated.json()).toMatchObject({ ok: true, projectCompleted: true });
 
   await page.goto("/dashboard");
-  await expect(page.locator("header").getByText("360 XP", { exact: true })).toBeVisible();
+  await expect(page.locator("header").getByText("460 XP", { exact: true })).toBeVisible();
   await expect(page.getByText("🏆 CONCLUÍDO")).toBeVisible();
 });

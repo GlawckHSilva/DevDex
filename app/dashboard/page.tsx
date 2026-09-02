@@ -14,7 +14,7 @@ export default async function Dashboard() {
   return <main className="dashboard-shell">
     <aside className="sidebar">
       <a className="brand" href="/"><span className="brand-mark">D_</span>DevDex</a>
-      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Campanhas</a>{campaigns.map((campaign) => <a href={`/trilhas/${campaign.pathSlug}`} key={campaign.slug}>◇ {campaign.technologyName}</a>)}<a href="/projetos/lista-de-tarefas">▣ Projetos</a>{isAdminEmail(user.email) ? <a href="/admin/metricas">◉ Métricas</a> : null}<span>☆ Conquistas</span></nav>
+      <nav aria-label="Área do aluno"><a className="sidebar-active" href="/dashboard">⌂ Campanhas</a><a href="/biblioteca">▤ Biblioteca</a>{campaigns.map((campaign) => <a href={`/trilhas/${campaign.pathSlug}`} key={campaign.slug}>◇ {campaign.technologyName}</a>)}<a href="/projetos/lista-de-tarefas">▣ Projetos</a>{isAdminEmail(user.email) ? <a href="/admin/metricas">◉ Métricas</a> : null}<span>☆ Conquistas</span></nav>
       <a className="signout" href={chatGPTSignOutPath("/")}>Sair</a>
     </aside>
     <section className="dashboard-content">
