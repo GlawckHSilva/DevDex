@@ -176,3 +176,4 @@ export * from "./github";
 export * from "./metrics";
 export * from "./adventure";
 export * from "./campaigns";
+export * from "./library";

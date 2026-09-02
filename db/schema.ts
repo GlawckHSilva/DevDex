@@ -68,6 +68,63 @@ export const lessons = sqliteTable("lessons", {
   status: text("status", { enum: ["draft", "published", "deprecated"] }).notNull().default("published"),
 });
 
+export const educationalContents = sqliteTable("educational_contents", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  technologyId: integer("technology_id").notNull().references(() => technologies.id),
+  learningPathId: integer("learning_path_id").notNull().references(() => learningPaths.id),
+  zoneId: integer("zone_id"),
+  skillId: integer("skill_id").references(() => skills.id),
+  lessonId: integer("lesson_id").unique().references(() => lessons.id, { onDelete: "cascade" }),
+  relatedMissionId: integer("related_mission_id"),
+  relatedProjectId: integer("related_project_id"),
+  slug: text("slug").notNull().unique(),
+  contentType: text("content_type", { enum: ["concept", "reference", "glossary", "review", "project"] }).notNull().default("reference"),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  theory: text("theory").notNull().default(""),
+  syntax: text("syntax").notNull().default(""),
+  parametersJson: text("parameters_json").notNull().default("[]"),
+  returnDescription: text("return_description").notNull().default(""),
+  whenToUse: text("when_to_use").notNull().default(""),
+  commonMistakesJson: text("common_mistakes_json").notNull().default("[]"),
+  comparisonsJson: text("comparisons_json").notNull().default("[]"),
+  quizJson: text("quiz_json").notNull().default("[]"),
+  tagsJson: text("tags_json").notNull().default("[]"),
+  difficulty: text("difficulty", { enum: ["beginner", "intermediate", "advanced", "professional"] }).notNull().default("beginner"),
+  xpReward: integer("xp_reward").notNull().default(0),
+  sortOrder: integer("sort_order").notNull(),
+  version: integer("version").notNull().default(1),
+  status: text("status", { enum: ["draft", "published", "deprecated"] }).notNull().default("published"),
+}, (table) => [
+  index("idx_educational_contents_path_order").on(table.learningPathId, table.sortOrder),
+  index("idx_educational_contents_technology_difficulty").on(table.technologyId, table.difficulty),
+]);
+
+export const contentExamples = sqliteTable("content_examples", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  contentId: integer("content_id").notNull().references(() => educationalContents.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  code: text("code").notNull(),
+  explanation: text("explanation").notNull().default(""),
+  exampleType: text("example_type", { enum: ["simple", "practical", "interactive"] }).notNull().default("simple"),
+  sortOrder: integer("sort_order").notNull(),
+}, (table) => [index("idx_content_examples_content_order").on(table.contentId, table.sortOrder)]);
+
+export const contentSnippets = sqliteTable("content_snippets", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  contentId: integer("content_id").notNull().references(() => educationalContents.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  language: text("language").notNull(),
+  code: text("code").notNull(),
+  explanation: text("explanation").notNull().default(""),
+  sortOrder: integer("sort_order").notNull(),
+}, (table) => [index("idx_content_snippets_content_order").on(table.contentId, table.sortOrder)]);
+
+export const contentPrerequisites = sqliteTable("content_prerequisites", {
+  contentId: integer("content_id").notNull().references(() => educationalContents.id, { onDelete: "cascade" }),
+  prerequisiteContentId: integer("prerequisite_content_id").notNull().references(() => educationalContents.id, { onDelete: "cascade" }),
+}, (table) => [primaryKey({ columns: [table.contentId, table.prerequisiteContentId] })]);
+
 export const missions = sqliteTable("missions", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   skillId: integer("skill_id").notNull().references(() => skills.id),
@@ -269,6 +326,35 @@ export const userLessons = sqliteTable("user_lessons", {
   state: text("state", { enum: ["completed"] }).notNull().default("completed"),
   completedAt: text("completed_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [primaryKey({ columns: [table.userId, table.lessonId] })]);
+
+export const userContentFavorites = sqliteTable("user_content_favorites", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  contentId: integer("content_id").notNull().references(() => educationalContents.id, { onDelete: "cascade" }),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.contentId] })]);
+
+export const userContentHistory = sqliteTable("user_content_history", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  contentId: integer("content_id").notNull().references(() => educationalContents.id, { onDelete: "cascade" }),
+  viewCount: integer("view_count").notNull().default(1),
+  lastViewedAt: text("last_viewed_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+  primaryKey({ columns: [table.userId, table.contentId] }),
+  index("idx_user_content_history_recent").on(table.userId, table.lastViewedAt),
+]);
+
+export const userContentReviews = sqliteTable("user_content_reviews", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  contentId: integer("content_id").notNull().references(() => educationalContents.id, { onDelete: "cascade" }),
+  correctAnswers: integer("correct_answers").notNull().default(0),
+  incorrectAnswers: integer("incorrect_answers").notNull().default(0),
+  intervalDays: integer("interval_days").notNull().default(1),
+  nextReviewAt: text("next_review_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  lastReviewedAt: text("last_reviewed_at"),
+}, (table) => [
+  primaryKey({ columns: [table.userId, table.contentId] }),
+  index("idx_user_content_reviews_due").on(table.userId, table.nextReviewAt),
+]);
 
 export const userMissions = sqliteTable("user_missions", {
   userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),

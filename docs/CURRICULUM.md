@@ -18,3 +18,16 @@ Conteúdo nunca fica acoplado a componentes. A interface recebe uma versão publ
 ## Domínio
 
 0 nunca estudado; 25 introduzido; 50 praticando; 75 consistente; 100 dominado. Acertos, erros, dificuldade, dicas e tempo desde a prática alimentam a atualização server-side.
+
+## Biblioteca educacional
+
+`educational_contents` é a camada de consulta sobre o currículo existente. Ela referencia tecnologia, trilha, zona, skill, aula, missão e projeto sem substituir essas entidades nem alterar XP ou desbloqueios. Exemplos, snippets e pré-requisitos usam tabelas próprias; favoritos e histórico permanecem isolados por usuário.
+
+Evolução prevista, em etapas:
+
+1. catálogo, busca, detalhes, snippets, favoritos e histórico;
+2. quizzes e revisões espaçadas baseadas em conteúdo já concluído (implementado);
+3. recomendações por pré-requisito e dificuldade real da batalha (implementado sem alterar XP);
+4. editoria/versionamento para novas tecnologias sem condicionais na interface.
+
+As revisões usam acertos, erros, tentativas de missão e tempo desde o último estudo. O intervalo cresce de 1 até 30 dias quando o aluno acerta e volta para 1 dia quando erra. Esse domínio de revisão é independente de conclusão, XP e desbloqueio das campanhas.
