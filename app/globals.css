@@ -91,6 +91,7 @@ h1 { margin:26px auto 22px; max-width:920px; font-size:clamp(45px,7vw,78px); lin
 h1 span { color:#8b95a6; }
 .hero-copy { max-width:690px; margin:0 auto; color:#9ca8b8; font-size:18px; line-height:1.65; }
 .hero-actions { display:flex; justify-content:center; gap:12px; margin:32px 0 56px; }
+.button-google { gap:10px; background:#fff; color:#172033; border-color:#d8dee8; box-shadow:0 10px 30px #0005; }.button-google:hover { background:#f5f7fa; color:#111827; border-color:#fff; }.button-google svg { width:19px; height:19px; }
 .terminal { overflow:hidden; max-width:940px; margin:auto; text-align:left; border:1px solid #29374a; border-radius:14px; background:#0a0f16; box-shadow:0 30px 100px #00000080; }
 .terminal-bar { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; height:45px; padding:0 15px; border-bottom:1px solid #1d2734; background:#10161f; color:#68778a; font:11px var(--font-geist-mono); }
 .terminal-dots { display:flex; gap:6px; }.terminal-dots i { width:8px; height:8px; border-radius:50%; background:#354151; }.terminal-dots i:first-child { background:#e06161; }.terminal-dots i:nth-child(2) { background:#d7aa52; }.terminal-dots i:last-child { background:#4bb58f; }

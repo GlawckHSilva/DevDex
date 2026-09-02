@@ -1,3 +1,6 @@
+import { chatGPTSignInPath } from "@/app/chatgpt-auth";
+import { FcGoogle } from "react-icons/fc";
+
 const tracks = [
   ["GitHub", "Conta, Git, colaboração, automação e segurança", "01", "150 ETAPAS"],
   ["HTML", "Semântica, formulários e acessibilidade", "02", "150 ETAPAS"],
@@ -8,6 +11,7 @@ const tracks = [
 ] as const;
 
 export default function Home() {
+  const googleSignInPath = chatGPTSignInPath("/dashboard");
   return (
     <main>
       <nav className="nav container" aria-label="Navegação principal">
@@ -25,7 +29,7 @@ export default function Home() {
         <h1>Aprenda programação.<br /><span>Escrevendo código de verdade.</span></h1>
         <p className="hero-copy">Uma jornada gamificada por missões, desafios e projetos que ensina você a construir, testar e depurar software real.</p>
         <div className="hero-actions">
-          <a className="button" href="/dashboard">Explorar fundação <span>→</span></a>
+          <a className="button button-google" href={googleSignInPath} target="_top"><FcGoogle aria-hidden="true" /> Entrar com Google</a>
           <a className="button button-ghost" href="#arquitetura">Ver arquitetura</a>
         </div>
 

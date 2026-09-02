@@ -36,6 +36,10 @@ export function chatGPTSignOutPath(returnTo = "/") {
   return `/signout-with-chatgpt?return_to=${encodeURIComponent(safeReturnPath(returnTo))}`;
 }
 
+export function chatGPTSignInPath(returnTo = "/") {
+  return `/signin-with-chatgpt?return_to=${encodeURIComponent(safeReturnPath(returnTo))}`;
+}
+
 function safeReturnPath(value: string) {
   if (!value.startsWith("/") || value.startsWith("//")) return "/";
   try {

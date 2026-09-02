@@ -167,6 +167,11 @@ test("escolhe personagem, usa recursos globais e vence a primeira batalha", asyn
   await expect(page.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Concluída/);
 });
 
+test("oferece entrada com conta Google", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Entrar com Google" })).toHaveAttribute("href", "/signin-with-chatgpt?return_to=%2Fdashboard");
+});
+
 test("bloqueia somente avaliações quando os corações chegam a zero", async ({ page, request }) => {
   const userId = "zero-hearts-user";
   const headers = userHeaders(userId);
