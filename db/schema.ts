@@ -261,9 +261,110 @@ export const profiles = sqliteTable("profiles", {
   displayName: text("display_name").notNull(),
   totalXp: integer("total_xp").notNull().default(0),
   level: integer("level").notNull().default(1),
+  skillPointsEarned: integer("skill_points_earned").notNull().default(0),
+  skillPointsSpent: integer("skill_points_spent").notNull().default(0),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
+
+export const missionHints = sqliteTable("mission_hints", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  missionId: integer("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
+  hintLevel: integer("hint_level").notNull(),
+  hintType: text("hint_type", { enum: ["concept", "direction", "similar_example"] }).notNull(),
+  content: text("content").notNull(),
+}, (table) => [uniqueIndex("idx_mission_hints_level").on(table.missionId, table.hintLevel)]);
+
+export const userMissionHints = sqliteTable("user_mission_hints", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  missionId: integer("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
+  hintLevel: integer("hint_level").notNull(),
+  unlockedAt: text("unlocked_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.missionId, table.hintLevel] })]);
+
+export const missionPerformance = sqliteTable("mission_performance", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  missionId: integer("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
+  attempts: integer("attempts").notNull().default(0),
+  errors: integer("errors").notNull().default(0),
+  successes: integer("successes").notNull().default(0),
+  hintsUsed: integer("hints_used").notNull().default(0),
+  completedWithoutHints: integer("completed_without_hints", { mode: "boolean" }).notNull().default(false),
+  completedFirstAttempt: integer("completed_first_attempt", { mode: "boolean" }).notNull().default(false),
+  resolutionMs: integer("resolution_ms").notNull().default(0),
+  startedAt: text("started_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.missionId] }), index("idx_mission_performance_user_errors").on(table.userId, table.errors)]);
+
+export const missionAttemptHistory = sqliteTable("mission_attempt_history", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  missionId: integer("mission_id").notNull().references(() => missions.id, { onDelete: "cascade" }),
+  passed: integer("passed", { mode: "boolean" }).notNull(),
+  codeHash: text("code_hash").notNull(),
+  sourceCode: text("source_code"),
+  explanation: text("explanation").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [index("idx_mission_attempt_history_user_mission").on(table.userId, table.missionId)]);
+
+export const gameBalanceSettings = sqliteTable("game_balance_settings", {
+  key: text("key").primaryKey(),
+  value: integer("value").notNull(),
+});
+
+export const userResources = sqliteTable("user_resources", {
+  userId: text("user_id").primaryKey().references(() => profiles.userId, { onDelete: "cascade" }),
+  hearts: integer("hearts").notNull().default(5),
+  heartUpdatedAt: text("heart_updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  hints: integer("hints").notNull().default(3),
+  hintUpdatedAt: text("hint_updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  secondChanceUsedOn: text("second_chance_used_on"),
+  lastBreathUsedOn: text("last_breath_used_on"),
+});
+
+export const skillAbilities = sqliteTable("skill_abilities", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  category: text("category", { enum: ["knowledge", "resilience", "strategy"] }).notNull(),
+  cost: integer("cost").notNull(),
+  minLevel: integer("min_level").notNull().default(1),
+  maxRanks: integer("max_ranks").notNull().default(1),
+  effectKey: text("effect_key").notNull(),
+  effectValue: integer("effect_value").notNull().default(0),
+  icon: text("icon").notNull(),
+  positionX: integer("position_x").notNull(),
+  positionY: integer("position_y").notNull(),
+  sortOrder: integer("sort_order").notNull(),
+});
+
+export const skillAbilityPrerequisites = sqliteTable("skill_ability_prerequisites", {
+  skillId: text("skill_id").notNull().references(() => skillAbilities.id, { onDelete: "cascade" }),
+  prerequisiteSkillId: text("prerequisite_skill_id").notNull().references(() => skillAbilities.id, { onDelete: "cascade" }),
+  minimumRank: integer("minimum_rank").notNull().default(1),
+}, (table) => [primaryKey({ columns: [table.skillId, table.prerequisiteSkillId] })]);
+
+export const userAbilities = sqliteTable("user_abilities", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  skillId: text("skill_id").notNull().references(() => skillAbilities.id, { onDelete: "cascade" }),
+  rank: integer("rank").notNull().default(1),
+  purchasedAt: text("purchased_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.skillId] })]);
+
+export const userAbilityPurchases = sqliteTable("user_ability_purchases", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  skillId: text("skill_id").notNull().references(() => skillAbilities.id, { onDelete: "cascade" }),
+  rank: integer("rank").notNull(),
+  cost: integer("cost").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.skillId, table.rank] })]);
+
+export const levelUpHistory = sqliteTable("level_up_history", {
+  userId: text("user_id").notNull().references(() => profiles.userId, { onDelete: "cascade" }),
+  level: integer("level").notNull(),
+  skillPointsGranted: integer("skill_points_granted").notNull().default(1),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [primaryKey({ columns: [table.userId, table.level] })]);
 
 export const betaMembers = sqliteTable("beta_members", {
   userId: text("user_id").primaryKey(),

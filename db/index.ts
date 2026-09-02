@@ -3,6 +3,7 @@ import { getBetaConfig, isAdminEmail } from "@/lib/runtime-config";
 import { getDb } from "./client";
 import { missionState } from "./mission-state";
 import { refreshProjectUnlocks } from "./projects";
+import { getMissionReward, getUserProgression, recordMissionPerformance, syncProfileProgression } from "./progression";
 export { missionState } from "./mission-state";
 
 export type MissionSummary = { slug: string; title: string; xpReward: number; skillName: string; pathSlug?: string; pathName?: string; state: "locked" | "available" | "in_progress" | "completed" };
@@ -42,20 +43,22 @@ export async function ensureUser(user: ChatGPTUser) {
       SELECT ?,id FROM learning_paths WHERE status='published'`).bind(user.userId),
     db.prepare(`INSERT OR IGNORE INTO user_project_progress (user_id,project_id,current_step_id,state)
       SELECT ?,p.id,(SELECT id FROM project_steps WHERE project_id=p.id ORDER BY sort_order LIMIT 1),'locked' FROM projects p WHERE p.status='published'`).bind(user.userId),
+    db.prepare("INSERT OR IGNORE INTO user_resources (user_id) VALUES (?)").bind(user.userId),
   ]);
+  await syncProfileProgression(user.userId);
   await refreshProjectUnlocks(user.userId);
 }
 
 export async function getDashboard(user: ChatGPTUser) {
   const db = getDb();
   const [profile, missions] = await Promise.all([
-    db.prepare("SELECT total_xp AS totalXp,level FROM profiles WHERE user_id=?").bind(user.userId).first<{ totalXp: number; level: number }>(),
+    getUserProgression(user.userId),
     db.prepare(`SELECT m.slug,m.title,m.xp_reward AS xpReward,s.name AS skillName,lp.slug AS pathSlug,lp.name AS pathName,${missionState} AS state
       FROM missions m JOIN skills s ON s.id=m.skill_id JOIN learning_paths lp ON lp.id=s.learning_path_id
       LEFT JOIN user_missions um ON um.mission_id=m.id AND um.user_id=?
       WHERE m.status='published' ORDER BY lp.id,m.sort_order`).bind(user.userId, user.userId, user.userId).all<MissionSummary>(),
   ]);
-  return { profile: profile ?? { totalXp: 0, level: 1 }, missions: missions.results };
+  return { profile, missions: missions.results };
 }
 
 export async function getLearningPath(user: ChatGPTUser, slug: string): Promise<LearningPathView | null> {
@@ -136,8 +139,9 @@ export async function getWebMissionConfig(missionId: number): Promise<WebMission
   return config ? { ...config, starterCode: config.starterCode.replaceAll("\\n", "\n"), previewHtml: config.previewHtml.replaceAll("\\n", "\n"), previewCss: config.previewCss.replaceAll("\\n", "\n") } : null;
 }
 
-export async function recordAttempt(userId: string, mission: Mission, passed: boolean) {
+export async function recordAttempt(userId: string, mission: Mission, passed: boolean, details?: { codeHash: string; sourceCode: string; durationMs: number }) {
   const db = getDb();
+  const performance = details ? await recordMissionPerformance({ userId, missionId: mission.id, skillId: mission.skillId, passed, ...details }) : { guidance: null };
   if (!passed) {
     await db.batch([
       db.prepare(`INSERT INTO user_missions (user_id,mission_id,state,attempts) VALUES (?,?,'in_progress',1)
@@ -146,16 +150,18 @@ export async function recordAttempt(userId: string, mission: Mission, passed: bo
       db.prepare(`INSERT INTO user_skill_progress (user_id,skill_id,failed_attempts) VALUES (?,?,1)
         ON CONFLICT(user_id,skill_id) DO UPDATE SET failed_attempts=failed_attempts+1`).bind(userId, mission.skillId),
     ]);
-    return { gainedXp: 0, totalXp: null, unlockedSlug: null, newlyCompleted: false };
+    return { gainedXp: 0, totalXp: null, unlockedSlug: null, newlyCompleted: false, guidance: performance.guidance };
   }
+
+  const reward = await getMissionReward(userId, mission.id, mission.xpReward);
 
   const statements = [
     db.prepare("INSERT OR IGNORE INTO user_missions (user_id,mission_id,state) VALUES (?,?,'available')").bind(userId, mission.id),
-    db.prepare(`UPDATE profiles SET total_xp=total_xp+?,level=CAST((total_xp+?)/500 AS INTEGER)+1,updated_at=CURRENT_TIMESTAMP
-      WHERE user_id=? AND EXISTS (SELECT 1 FROM user_missions WHERE user_id=? AND mission_id=? AND awarded_xp=0)`).bind(mission.xpReward, mission.xpReward, userId, userId, mission.id),
+    db.prepare(`UPDATE profiles SET total_xp=total_xp+?,updated_at=CURRENT_TIMESTAMP
+      WHERE user_id=? AND EXISTS (SELECT 1 FROM user_missions WHERE user_id=? AND mission_id=? AND awarded_xp=0)`).bind(reward.amount, userId, userId, mission.id),
     db.prepare(`INSERT OR IGNORE INTO user_xp_history (user_id,mission_id,amount,reason)
-      SELECT ?,?,?,? WHERE EXISTS (SELECT 1 FROM user_missions WHERE user_id=? AND mission_id=? AND awarded_xp=0)`).bind(userId, mission.id, mission.xpReward, `mission:${mission.slug}`, userId, mission.id),
-    db.prepare("UPDATE user_missions SET attempts=attempts+1,state='completed',awarded_xp=?,completed_at=COALESCE(completed_at,CURRENT_TIMESTAMP) WHERE user_id=? AND mission_id=?").bind(mission.xpReward, userId, mission.id),
+      SELECT ?,?,?,? WHERE EXISTS (SELECT 1 FROM user_missions WHERE user_id=? AND mission_id=? AND awarded_xp=0)`).bind(userId, mission.id, reward.amount, `mission:${mission.slug}`, userId, mission.id),
+    db.prepare("UPDATE user_missions SET attempts=attempts+1,state='completed',awarded_xp=?,completed_at=COALESCE(completed_at,CURRENT_TIMESTAMP) WHERE user_id=? AND mission_id=?").bind(reward.amount, userId, mission.id),
     db.prepare(`INSERT INTO user_skill_progress (user_id,skill_id,mastery,successful_attempts) VALUES (?,?,50,1)
       ON CONFLICT(user_id,skill_id) DO UPDATE SET mastery=MIN(100,MAX(mastery,50)+10),successful_attempts=successful_attempts+1`).bind(userId, mission.skillId),
   ];
@@ -164,10 +170,11 @@ export async function recordAttempt(userId: string, mission: Mission, passed: bo
       SELECT ?,id,'available' FROM missions WHERE slug=?`).bind(userId, mission.nextMissionSlug));
   }
   const results = await db.batch(statements);
+  const levelUp = results[1]?.meta?.changes === 1 ? await syncProfileProgression(userId) : null;
   const profile = await db.prepare("SELECT total_xp AS totalXp FROM profiles WHERE user_id=?").bind(userId).first<{ totalXp: number }>();
   const newlyCompleted = results[1]?.meta?.changes === 1;
-  const gainedXp = newlyCompleted ? mission.xpReward : 0;
-  return { gainedXp, totalXp: profile?.totalXp ?? 0, unlockedSlug: mission.nextMissionSlug, newlyCompleted };
+  const gainedXp = newlyCompleted ? reward.amount : 0;
+  return { gainedXp, totalXp: profile?.totalXp ?? 0, unlockedSlug: mission.nextMissionSlug, newlyCompleted, levelUp, xpBreakdown: newlyCompleted ? reward : null, guidance: performance.guidance };
 }
 
 export * from "./schema";
@@ -177,3 +184,4 @@ export * from "./metrics";
 export * from "./adventure";
 export * from "./campaigns";
 export * from "./library";
+export * from "./progression";

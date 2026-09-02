@@ -1,5 +1,5 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { BetaAccessError, ensureUser, getGitHubInstallation, getProject, getRecentProjectSubmissionCount, recordProjectAttempt, recordProjectSubmission, saveProjectRepository } from "@/db";
+import { BetaAccessError, ensureUser, getGitHubInstallation, getProject, getRecentProjectSubmissionCount, getUserProgression, recordProjectAttempt, recordProjectSubmission, saveProjectRepository, spendHeart } from "@/db";
 import { reviewProjectWithAI } from "@/lib/ai-project-review";
 import { createInstallationToken } from "@/lib/github-app";
 import { fetchProject, parseGitHubRepository } from "@/lib/github-project";
@@ -21,6 +21,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   if (project.state === "locked") return Response.json({ ok: false, message: "Este projeto ainda está bloqueado." }, { status: 403 });
   const step = project.steps.find((item) => item.state === "available" || item.state === "in_progress") ?? project.steps.at(-1);
   if (!step) return Response.json({ ok: false, message: "Projeto sem etapas configuradas." }, { status: 422 });
+  if ((await getUserProgression(user.userId)).hearts === 0) return Response.json({ ok: false, message: "Você está sem corações. Continue estudando enquanto o próximo se recupera." }, { status: 409 });
   if (await getRecentProjectSubmissionCount(user.userId) >= 25) return Response.json({ ok: false, message: "Muitas revisões. Tente novamente em alguns minutos." }, { status: 429, headers: { "Retry-After": "300" } });
 
   const parsed = payloadSchema.safeParse(await request.json().catch(() => null));
@@ -46,6 +47,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     const safetyIdentifier = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(user.userId)).then((digest) => [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""));
     const ai = parsed.data.aiReview ? await reviewProjectWithAI({ files: snapshot.files, projectTitle: project.title, stepTitle: step.title, requirements, results: result.results, safetyIdentifier }) : { status: "unavailable" as const, review: null };
     const progress = project.state === "completed" ? null : await recordProjectAttempt(user.userId, project, step, result.passed);
+    const resources = await spendHeart(user.userId, result.passed);
     await saveProjectRepository({ userId: user.userId, projectId: project.id, repositoryUrl: snapshot.repositoryUrl, owner: snapshot.owner, repo: snapshot.repo, branch: snapshot.branch, latestCommitSha: snapshot.commitSha, reviewStatus: result.passed ? "passed" : "needs_changes", passedTests, failedTests, aiStatus: ai.status, aiSummary: ai.review?.summary, aiStrengths: ai.review?.strengths, aiImprovements: ai.review?.improvements, aiNextStep: ai.review?.nextStep });
     return Response.json({
       ok: result.passed,
@@ -54,6 +56,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       results: requirements.map((name, index) => ({ name, passed: result.results[index]?.passed === true })),
       aiStatus: ai.status, aiReview: ai.review,
       projectCompleted: progress?.projectState === "completed" || project.state === "completed",
+      resources: resources.progression,
       ...(progress ?? {}),
     });
   } catch (error) {

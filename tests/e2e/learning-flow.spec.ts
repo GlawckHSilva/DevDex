@@ -99,7 +99,7 @@ test("pesquisa, favorita e revisa conteúdo sem conceder XP", async ({ page, req
   await page.goto("/biblioteca?favoritos=1");
   await expect(page.getByRole("heading", { name: "Valores e variáveis" })).toBeVisible();
   await page.goto("/dashboard");
-  await expect(page.locator("header").getByText("0 XP", { exact: true })).toBeVisible();
+  await expect(page.locator("header").getByText("0 / 100 XP", { exact: true })).toBeVisible();
 });
 
 test("explora o mapa horizontal arrastando e volta ao personagem", async ({ page, request }) => {
@@ -127,7 +127,7 @@ test("explora o mapa horizontal arrastando e volta ao personagem", async ({ page
   await expect.poll(() => world.evaluate((element) => element.style.transform)).toBe(before);
 });
 
-test("escolhe personagem e vence a primeira batalha com três vidas", async ({ page, request }) => {
+test("escolhe personagem, usa recursos globais e vence a primeira batalha", async ({ page, request }) => {
   const userId = "rpg-user";
   const headers = userHeaders(userId);
   await page.setExtraHTTPHeaders(headers);
@@ -143,25 +143,48 @@ test("escolhe personagem e vence a primeira batalha com três vidas", async ({ p
   await page.goto("/missoes/guardar-nome");
   await expect(page.getByTestId("battle-workspace")).toBeVisible();
   await expect(page.locator(".battle-player .pixel-hero")).toHaveAttribute("style", /adventuress-female-v1/);
-  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await expect(page.getByLabel("5 de 5 corações disponíveis")).toBeVisible();
 
   const action = (mode: "run" | "test" | "research" | "revive", code = "") => request.post("/api/missions/guardar-nome/submit", { headers, data: { mode, code } });
   const run = await action("run", "function criarSaudacao() { return ''; }");
   const runResult = await run.json();
-  expect(runResult).toMatchObject({ ok: true, battle: { lives: 3, state: "active" } });
+  expect(runResult).toMatchObject({ ok: true, battle: { lives: 5, state: "active" } });
   expect(runResult.results).toHaveLength(2);
   expect(runResult.results.every((result: { passed: boolean }) => !result.passed)).toBe(true);
   const research = await action("research");
-  expect(await research.json()).toMatchObject({ ok: true, battle: { lives: 3, state: "active" } });
-  for (const lives of [2, 1, 0]) {
-    const failed = await action("test", "function criarSaudacao() { return ''; }");
-    expect(await failed.json()).toMatchObject({ ok: false, battle: { lives } });
-  }
-  expect((await action("test", solution)).status()).toBe(409);
-  expect(await (await action("revive")).json()).toMatchObject({ ok: true, battle: { lives: 3, state: "active" } });
-  expect(await (await action("test", solution)).json()).toMatchObject({ ok: true, gainedXp: 100, battle: { lives: 3, state: "completed" } });
+  expect(await research.json()).toMatchObject({ ok: true, battle: { lives: 5, hints: 2, state: "active" } });
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Desbloquear dica; 2 disponíveis" })).toBeVisible();
+  await expect(page.locator(".battle-brief-hint")).not.toContainText("Teste seu código sem medo");
+  expect(await (await action("research")).json()).toMatchObject({ ok: true, battle: { lives: 5, hints: 1 } });
+  expect(await (await action("research")).json()).toMatchObject({ ok: true, battle: { lives: 5, hints: 0 } });
+  expect(await (await action("research")).json()).toMatchObject({ ok: true, battle: { lives: 5, hints: 0 }, message: "Todas as dicas desta missão já estão desbloqueadas." });
+  const failed = await action("test", "function criarSaudacao() { return ''; }");
+  expect(await failed.json()).toMatchObject({ ok: false, battle: { lives: 4, state: "active" } });
+  expect(await (await action("test", solution)).json()).toMatchObject({ ok: true, gainedXp: 70, battle: { lives: 4, state: "completed" } });
+  expect((await request.post("/api/missions/verificar-maioridade/submit", { headers, data: { mode: "research" } })).status()).toBe(409);
   await page.goto("/trilhas/javascript-fundamentals");
   await expect(page.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Concluída/);
+});
+
+test("bloqueia somente avaliações quando os corações chegam a zero", async ({ page, request }) => {
+  const userId = "zero-hearts-user";
+  const headers = userHeaders(userId);
+  await chooseCharacter(request, userId);
+  await completeLesson(request, userId, "javascript-estudo-valores-variaveis");
+  const action = (mode: "run" | "test", code: string) => request.post("/api/missions/guardar-nome/submit", { headers, data: { mode, code } });
+  for (const lives of [4, 3, 2, 1, 0]) {
+    const response = await action("test", "function criarSaudacao() { return ''; }");
+    expect(await response.json()).toMatchObject({ ok: false, battle: { lives } });
+  }
+  expect((await action("test", solution)).status()).toBe(409);
+  expect((await action("run", solution)).status()).toBe(200);
+  await page.setExtraHTTPHeaders(headers);
+  await page.goto("/missoes/guardar-nome");
+  await expect(page.getByLabel("0 de 5 corações disponíveis")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeDisabled();
+  await page.goto("/biblioteca");
+  await expect(page.getByRole("heading", { name: "Consulte sem sair da aventura." })).toBeVisible();
 });
 
 test("apresenta e persiste a transmissão de lore sem alterar progresso", async ({ page, request }) => {
@@ -212,7 +235,7 @@ test("percorre trilha, conclui missão e persiste apó novo login", async ({ bro
   await chooseCharacter(request, userId);
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/dashboard");
-  await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
+  await expect(page.getByText("0 / 100 XP", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cidade da Lógica" }).first()).toBeVisible();
 
   await page.goto("/trilhas/javascript-fundamentals");
@@ -225,17 +248,23 @@ test("percorre trilha, conclui missão e persiste apó novo login", async ({ bro
   const response = await submit(request, userId, "guardar-nome", solution);
   expect(response.status()).toBe(200);
   const result = await response.json();
-  expect(result).toMatchObject({ ok: true, gainedXp: 100, totalXp: 100, unlockedSlug: "verificar-maioridade" });
+  expect(result).toMatchObject({ ok: true, gainedXp: 115, totalXp: 115, unlockedSlug: "verificar-maioridade", levelUp: { fromLevel: 1, toLevel: 2, skillPointsGained: 1 } });
   expect(JSON.stringify(result)).not.toMatch(/saúda|Ana|expected|input/i);
   expect(result.results).toEqual([{ name: "Teste 1", passed: true }, { name: "Teste 2", passed: true }]);
 
   const relogin = await browser.newContext({ extraHTTPHeaders: userHeaders(userId) });
   const restored = await relogin.newPage();
   await restored.goto("/dashboard");
-  await expect(restored.getByText("100 XP", { exact: true })).toBeVisible();
+  await expect(restored.getByText("15 / 150 XP", { exact: true })).toBeVisible();
   await restored.goto("/trilhas/javascript-fundamentals");
   await expect(restored.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Concluída/);
   await expect(restored.getByTestId("map-node-verificar-maioridade")).toHaveAttribute("aria-label", /Disponível/);
+  const purchase = await restored.request.post("/api/skills/clinical-eye/purchase");
+  expect(await purchase.json()).toMatchObject({ ok: true, progression: { skillPoints: 0 } });
+  expect((await restored.request.post("/api/skills/clinical-eye/purchase")).status()).toBe(409);
+  expect((await restored.request.post("/api/skills/code-memory/purchase")).status()).toBe(409);
+  await restored.goto("/habilidades");
+  await expect(restored.getByRole("button", { name: "Olho Clínico: acquired" })).toBeVisible();
   await relogin.close();
 });
 
@@ -248,11 +277,11 @@ test("impede atalho, falha sem XP e isola usuários", async ({ page, request }) 
   expect(await failed.json()).toMatchObject({ ok: false, gainedXp: 0 });
   await page.setExtraHTTPHeaders(userHeaders("failed-user"));
   await page.goto("/dashboard");
-  await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
+  await expect(page.getByText("0 / 100 XP", { exact: true })).toBeVisible();
 
   await page.setExtraHTTPHeaders(userHeaders("isolated-user"));
   await page.goto("/dashboard");
-  await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
+  await expect(page.getByText("0 / 100 XP", { exact: true })).toBeVisible();
 });
 
 test("credita XP uma vez sob repetição e concorrência", async ({ page, request }) => {
@@ -262,7 +291,7 @@ test("credita XP uma vez sob repetição e concorrência", async ({ page, reques
   }
   await page.setExtraHTTPHeaders(userHeaders("repeat-user"));
   await page.goto("/dashboard");
-  await expect(page.getByText("100 XP", { exact: true })).toBeVisible();
+  await expect(page.getByText("15 / 150 XP", { exact: true })).toBeVisible();
 
   const responses = await Promise.all([
     submit(request, "concurrent-user", "guardar-nome", solution),
@@ -271,7 +300,7 @@ test("credita XP uma vez sob repetição e concorrência", async ({ page, reques
   expect(responses.every((response) => response.status() === 200)).toBe(true);
   await page.setExtraHTTPHeaders(userHeaders("concurrent-user"));
   await page.goto("/dashboard");
-  await expect(page.getByText("100 XP", { exact: true })).toBeVisible();
+  await expect(page.getByText("15 / 150 XP", { exact: true })).toBeVisible();
 });
 
 test("alterna entre campanhas sem bloquear tecnologias independentes", async ({ page, request }) => {
@@ -396,10 +425,10 @@ test("executa SQLite/Wasm descartável sem misturar progresso", async ({ page, r
 
   await page.setExtraHTTPHeaders(userHeaders("sql-repeat"));
   await page.goto("/dashboard");
-  await expect(page.getByText("100 XP", { exact: true })).toBeVisible();
+  await expect(page.getByText("15 / 150 XP", { exact: true })).toBeVisible();
   await page.setExtraHTTPHeaders(userHeaders("sql-isolated"));
   await page.goto("/dashboard");
-  await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
+  await expect(page.getByText("0 / 100 XP", { exact: true })).toBeVisible();
 });
 
 test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, request }) => {
@@ -416,17 +445,17 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByTestId("web-editor").locator(".view-lines")).toContainText("<html>");
   await expect(page.getByTestId("web-editor").locator(".view-lines")).toContainText("<body>");
   await expect(page.getByTestId("web-editor").locator(".view-lines")).not.toContainText("<main>");
-  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await expect(page.getByLabel("5 de 5 corações disponíveis")).toBeVisible();
   await page.goto("/dashboard");
-  await expect(page.getByText("0 XP", { exact: true })).toBeVisible();
+  await expect(page.getByText("0 / 100 XP", { exact: true })).toBeVisible();
   await page.goto("/missoes/pagina-da-oficina");
   await expect(page.getByTestId("web-editor")).toBeVisible();
   await expect(page.locator(".battle-arena")).toHaveAttribute("style", /ruinas-da-estrutura-v1/);
   await expect(page.getByText("Espectro do Esqueleto", { exact: true })).toBeVisible();
   await expect(page.getByTestId("enemy-hp")).toContainText("100 / 100 HP");
-  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await expect(page.getByLabel("5 de 5 corações disponíveis")).toBeVisible();
   await expect(page.getByRole("link", { name: /Voltar (?:para )?o mapa/ })).toHaveAttribute("href", "/trilhas/html-fundamentals");
-  await expect(page.getByRole("button", { name: /Pesquisar uma dica/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Desbloquear dica/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Testar código/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeVisible();
   const audio = page.getByRole("button", { name: "Desativar sons" });
@@ -449,14 +478,14 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByTestId("battle-toast")).toBeVisible();
   await expect(page.getByTestId("battle-panel")).toHaveClass(/hit-enemy/);
   await expect(page.locator(".battle-enemy img")).toHaveCSS("animation-name", "enemyDamageFlash");
-  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await expect(page.getByLabel("5 de 5 corações disponíveis")).toBeVisible();
   await expect(page.getByTestId("battle-objectives").locator(".passed")).toHaveCount(1);
   await expect(page.locator(".battle-coach")).toContainText("PRÓXIMO PASSO");
-  await page.getByRole("button", { name: /Pesquisar uma dica/ }).click();
+  await page.getByRole("button", { name: /Desbloquear dica/ }).click();
   await expect(page.getByTestId("study-material")).toHaveCount(0);
-  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await expect(page.getByLabel("5 de 5 corações disponíveis")).toBeVisible();
   await page.getByRole("button", { name: /Atacar com a solução/ }).click();
-  await expect(page.getByLabel("3 vidas restantes")).toBeVisible();
+  await expect(page.getByLabel("5 de 5 corações disponíveis")).toBeVisible();
   await expect(page.getByTestId("battle-panel")).toHaveClass(/hit-enemy/);
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator(".battle-mobile-tabs")).toBeVisible();
@@ -476,7 +505,7 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await expect(page.getByTestId("enemy-hp")).toContainText("0 / 100 HP");
   await expect(page.getByTestId("victory-sequence")).toContainText("INIMIGO DERROTADO");
   await expect(page.getByTestId("victory-sequence")).toContainText("CONCLUÍDO");
-  await expect(page.getByTestId("victory-sequence")).toContainText("+100 XP");
+  await expect(page.getByTestId("victory-sequence")).toContainText("+90 XP");
   await expect(page.locator(".battle-enemy img")).toHaveCSS("animation-name", "enemyDefeated");
   await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/, { timeout: 5000 });
   await expect(page.getByTestId("map-unlock-toast")).toContainText("NOVA ETAPA DESBLOQUEADA");
@@ -512,9 +541,9 @@ test("valida HTML/CSS e mantém o preview visual isolado", async ({ page, reques
   await page.goto("/missoes/cores-do-cartao");
   await expect(page.getByTestId("web-editor")).toBeVisible();
   const css = await submit(request, userId, "cores-do-cartao", ".card { color: #f8fafc; background-color: #0f172a; }");
-  expect(await css.json()).toMatchObject({ ok: true, gainedXp: 100, unlockedSlug: "espaco-do-cartao" });
+  expect(await css.json()).toMatchObject({ ok: true, gainedXp: 115, unlockedSlug: "espaco-do-cartao" });
   await page.goto("/dashboard");
-  await expect(page.getByText("200 XP", { exact: true })).toBeVisible();
+  await expect(page.getByText("105 / 150 XP", { exact: true })).toBeVisible();
   await expect(page.locator(".campaign-card", { hasText: "Cidade da Lógica" }).getByText("0%", { exact: true })).toBeVisible();
   await expect(page.locator(".campaign-card", { hasText: "Minas dos Dados" }).getByText("0%", { exact: true })).toBeVisible();
 });
@@ -564,6 +593,6 @@ test("libera e conclui um projeto inicial depois do estudo e da batalha", async 
   expect(await repeated.json()).toMatchObject({ ok: true, projectCompleted: true });
 
   await page.goto("/dashboard");
-  await expect(page.locator("header").getByText("460 XP", { exact: true })).toBeVisible();
+  await expect(page.locator("header").getByText("25 / 250 XP", { exact: true })).toBeVisible();
   await expect(page.getByText("🏆 CONCLUÍDO")).toBeVisible();
 });

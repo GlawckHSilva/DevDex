@@ -1,4 +1,5 @@
 import { getDb } from "./client";
+import { syncProfileProgression } from "./progression";
 
 export type ProjectFile = { path: "index.html" | "style.css" | "script.js"; language: "html" | "css" | "javascript"; starterCode: string };
 export type ProjectStep = { id: number; slug: string; title: string; briefing: string; objective: string; activeFile: ProjectFile["path"]; requirementsJson: string; validatorJson: string; xpReward: number; sortOrder: number; state: "locked" | "available" | "in_progress" | "completed" };
@@ -74,8 +75,8 @@ export async function recordProjectAttempt(userId: string, project: ProjectView,
 
   const results = await db.batch([
     db.prepare(`INSERT OR IGNORE INTO user_project_steps (user_id,step_id,state) VALUES (?,?,'in_progress')`).bind(userId, step.id),
-    db.prepare(`UPDATE profiles SET total_xp=total_xp+?,level=CAST((total_xp+?)/500 AS INTEGER)+1,updated_at=CURRENT_TIMESTAMP
-      WHERE user_id=? AND EXISTS (SELECT 1 FROM user_project_steps WHERE user_id=? AND step_id=? AND awarded_xp=0)`).bind(step.xpReward, step.xpReward, userId, userId, step.id),
+    db.prepare(`UPDATE profiles SET total_xp=total_xp+?,updated_at=CURRENT_TIMESTAMP
+      WHERE user_id=? AND EXISTS (SELECT 1 FROM user_project_steps WHERE user_id=? AND step_id=? AND awarded_xp=0)`).bind(step.xpReward, userId, userId, step.id),
     db.prepare(`INSERT OR IGNORE INTO project_xp_history (user_id,project_id,step_id,amount) SELECT ?,?,?,?
       WHERE EXISTS (SELECT 1 FROM user_project_steps WHERE user_id=? AND step_id=? AND awarded_xp=0)`).bind(userId, project.id, step.id, step.xpReward, userId, step.id),
     db.prepare(`UPDATE user_project_steps SET state='completed',attempts=attempts+1,awarded_xp=?,completed_at=COALESCE(completed_at,CURRENT_TIMESTAMP) WHERE user_id=? AND step_id=?`).bind(step.xpReward, userId, step.id),
@@ -86,6 +87,7 @@ export async function recordProjectAttempt(userId: string, project: ProjectView,
       completed_at=CASE WHEN ?=(SELECT MAX(sort_order) FROM project_steps WHERE project_id=?) THEN COALESCE(completed_at,CURRENT_TIMESTAMP) ELSE completed_at END,updated_at=CURRENT_TIMESTAMP
       WHERE user_id=? AND project_id=?`).bind(userId, project.id, project.id, userId, project.id, userId, project.id, project.id, step.sortOrder, step.sortOrder, project.id, userId, project.id),
   ]);
+  if (results[1]?.meta?.changes === 1) await syncProfileProgression(userId);
   return projectProgress(db, userId, project.id, results[1]?.meta?.changes === 1 ? step.xpReward : 0);
 }
 

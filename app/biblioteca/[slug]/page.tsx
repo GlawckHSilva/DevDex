@@ -31,7 +31,7 @@ export default async function LibraryContentPage({ params, searchParams }: { par
         {content.commonMistakes.length ? <section><h2>Erros comuns</h2><ul>{content.commonMistakes.map((mistake) => <li key={mistake}>{mistake}</li>)}</ul></section> : null}
         {content.comparisons.length ? <section><h2>Compare com</h2><ul>{content.comparisons.map((comparison) => <li key={comparison}>{comparison}</li>)}</ul></section> : null}
         {content.quiz ? <section className="library-quiz"><span className="reference-label">REVISÃO RÁPIDA</span><h2>{content.quiz.question}</h2>
-          {feedback.quiz ? <p className={feedback.quiz === "correto" ? "quiz-correct" : "quiz-wrong"}>{feedback.quiz === "correto" ? `✓ Resposta correta. Próxima revisão em ${feedback.intervalo ?? 1} dia(s).` : "Ainda não. Revise os pontos importantes e tente novamente."}</p> : null}
+          {feedback.quiz ? <p className={feedback.quiz === "correto" ? "quiz-correct" : "quiz-wrong"}>{feedback.quiz === "correto" ? `✓ Resposta correta. Próxima revisão em ${feedback.intervalo ?? 1} dia(s).` : feedback.quiz === "sem-coracoes" ? "Você está sem corações. Continue revisando enquanto o próximo se recupera." : "Ainda não. Revise os pontos importantes e tente novamente."}</p> : null}
           <form action={`/api/library/${content.slug}/quiz`} method="post">{content.quiz.options.map((option, index) => <label key={option}><input type="radio" name="answer" value={index} required /><span>{option}</span></label>)}<button type="submit">CONFIRMAR RESPOSTA</button></form>
         </section> : null}
       </article>

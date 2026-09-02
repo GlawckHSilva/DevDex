@@ -22,6 +22,7 @@ const coreCoursesV2Url = new URL("../drizzle/0016_core_courses_v2.sql", import.m
 const githubCurriculumUrl = new URL("../drizzle/0020_github_curriculum.sql", import.meta.url);
 const educationalLibraryUrl = new URL("../drizzle/0021_educational_library.sql", import.meta.url);
 const contentReviewUrl = new URL("../drizzle/0022_content_review.sql", import.meta.url);
+const progressionUrl = new URL("../drizzle/0023_gamified_progression.sql", import.meta.url);
 const githubGuideUrl = new URL("../public/materials/github/github-guia-completo.pdf", import.meta.url);
 const enemyAssetsUrl = new URL("../lib/enemy-assets.ts", import.meta.url);
 
@@ -271,4 +272,16 @@ test("the first HTML zone maps every encounter to a dedicated sprite", async () 
   ]);
   for (const name of ["Espectro do Esqueleto", "Bug de Atalho para serviços", "Bug de Catálogo organizado", "Bug de Contato do cliente", "Bug de Metadados essenciais", "Bug de Parágrafos organizados", "Elite de Link externo seguro", "Guardião de Página de apresentação"]) assert.match(source, new RegExp(name));
   assert.equal(files.filter((file) => /(?:bug|elite|guardiao|espectro).+\.png$/.test(file)).length >= 8, true);
+});
+
+test("gamified progression migration preserves XP and adds global resources", async () => {
+  const sql = await readFile(progressionUrl, "utf8");
+  assert.match(sql, /ALTER TABLE `profiles` ADD `skill_points_earned`/);
+  assert.match(sql, /CREATE TABLE `user_resources`/);
+  assert.match(sql, /CREATE TABLE `skill_abilities`/);
+  assert.match(sql, /CREATE TABLE `mission_hints`/);
+  assert.match(sql, /CREATE TABLE `mission_performance`/);
+  assert.match(sql, /\('max_hearts',5\)/);
+  assert.match(sql, /\('max_hints',3\)/);
+  assert.doesNotMatch(sql, /DELETE FROM `?profiles`?/i);
 });

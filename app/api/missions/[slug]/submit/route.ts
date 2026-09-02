@@ -41,11 +41,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   if ((payload.mode === "research" || payload.mode === "revive") && await getRecentBattleEventCount(user.userId) >= 40) return Response.json({ ok: false, message: "Muitas ações. Tente novamente em alguns minutos." }, { status: 429 });
   if (payload.mode === "research") {
     if (!battle) return Response.json({ ok: false, message: "Esta missão não possui batalha." }, { status: 400 });
-    return Response.json({ ok: true, message: "Conhecimento encontrado.", battle: await researchBattle(user.userId, battle) });
+    const researched = await researchBattle(user.userId, battle);
+    return Response.json({ ok: !researched.hintUnavailable, message: researched.hintUnavailable ? `Você está sem dicas. Próxima dica em ${researched.progression?.nextHintMinutes ?? 0} min.` : researched.alreadyUnlocked ? "Todas as dicas desta missão já estão desbloqueadas." : "Nova dica desbloqueada.", battle: researched }, { status: researched.hintUnavailable ? 409 : 200 });
   }
   if (payload.mode === "revive") {
     if (!battle) return Response.json({ ok: false, message: "Esta missão não possui batalha." }, { status: 400 });
-    return Response.json({ ok: true, message: "Você voltou à batalha com três vidas.", battle: await reviveBattle(user.userId, mission.id) });
+    const revived = await reviveBattle(user.userId, mission.id);
+    return Response.json({ ok: revived?.state !== "defeated", message: revived?.state === "defeated" ? `Próximo coração em ${revived.nextHeartMinutes ?? 0} min.` : "Você voltou à batalha.", battle: revived }, { status: revived?.state === "defeated" ? 409 : 200 });
   }
   if (typeof payload.code !== "string" || (payload.mode !== "run" && payload.mode !== "test")) return Response.json({ ok: false, message: "Código e modo são obrigatórios." }, { status: 400 });
   if (payload.mode === "test" && battle?.state === "defeated") return Response.json({ ok: false, message: "Você foi derrotado. Recupere suas vidas para atacar novamente.", battle }, { status: 409 });
@@ -77,7 +79,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       const battleOutcome = passed ? "passed" : passedTests > 0 ? "progress" : "failed";
       status = passed ? "passed" : "failed";
       if (payload.mode === "run") return Response.json({ ok: true, message: passed ? "Código seguro; todos os critérios foram atendidos." : "Código seguro; alguns critérios ainda precisam de atenção.", results: result.results.map((item, index) => ({ name: `Critério ${index + 1}`, passed: item.passed })), battle: battle ? await recordBattleAction(user.userId, mission.id, "test", battleOutcome) : undefined });
-      const progress = await recordAttempt(user.userId, mission, passed);
+      const progress = await recordAttempt(user.userId, mission, passed, { codeHash, sourceCode: payload.code, durationMs: Date.now() - startedAt });
       const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", battleOutcome) : null;
       return Response.json({
         ok: passed,
@@ -106,7 +108,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       if (payload.mode === "run") return Response.json({ ok: true, message: `${resultRows} linha(s) retornada(s).`, columns: result.columns, rows: result.rows, results: [{ name: "Resultado esperado", passed }], dialect: config.dialect, battle: battle ? await recordBattleAction(user.userId, mission.id, "test", passed ? "passed" : "failed") : undefined });
       passedTests = passed ? 1 : 0;
       failedTests = passed ? 0 : 1;
-      const progress = await recordAttempt(user.userId, mission, passed);
+      const progress = await recordAttempt(user.userId, mission, passed, { codeHash, sourceCode: payload.code, durationMs: Date.now() - startedAt });
       const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", passed ? "passed" : "failed") : null;
       return Response.json({
         ok: passed,
@@ -137,7 +139,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     const battleOutcome = passed ? "passed" : passedTests > 0 ? "progress" : "failed";
     status = passed ? "passed" : "failed";
     if (payload.mode === "run") return Response.json({ ok: true, compiled: true, message: passed ? "Solução segura; todos os testes passaram." : "Solução segura; alguns testes ainda falharam.", results: results.map((result, index) => ({ name: `Teste ${index + 1}`, passed: result.passed })), battle: battle ? await recordBattleAction(user.userId, mission.id, "test", battleOutcome) : undefined });
-    const progress = await recordAttempt(user.userId, mission, passed);
+    const progress = await recordAttempt(user.userId, mission, passed, { codeHash, sourceCode: payload.code, durationMs: Date.now() - startedAt });
     const battleState = battle ? await recordBattleAction(user.userId, mission.id, "attack", battleOutcome) : null;
     return Response.json({
       ok: passed,
@@ -149,8 +151,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   } catch (error) {
     errorType = error instanceof Error ? error.name : "UnknownError";
     console.error(JSON.stringify({ event: "runner_error", runtime: mission.runtime, mission: mission.slug, errorType }));
-    if (payload.mode === "test") await recordAttempt(user.userId, mission, false);
     const battleState = battle ? await recordBattleAction(user.userId, mission.id, payload.mode === "test" ? "attack" : "test", "error") : null;
+    if (payload.mode === "test") await recordAttempt(user.userId, mission, false, { codeHash, sourceCode: payload.code, durationMs: Date.now() - startedAt });
     return Response.json({ ok: false, message: error instanceof Error ? error.message : "Não foi possível avaliar o código.", battle: battleState }, { status: 422 });
   } finally {
     await recordSubmission({ userId: user.userId, missionId: mission.id, mode: payload.mode, status, codeHash, runtime: mission.runtime, runnerVersion: mission.runnerVersion, durationMs: Date.now() - startedAt, passedTests, failedTests, resultRows, errorType }).catch(console.error);

@@ -14,7 +14,7 @@ import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Image from "next/image";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
-export type BattleView = { enemyName: string; enemyType: "enemy" | "elite" | "boss"; enemyLevel: number; playerLevel: number; lives: number; state: "active" | "defeated" | "completed"; archetype: Archetype };
+export type BattleView = { enemyName: string; enemyType: "enemy" | "elite" | "boss"; enemyLevel: number; playerLevel: number; playerXpPercent: number; skillPoints: number; lives: number; maxLives: number; hints: number; maxHints: number; nextHeartMinutes: number | null; nextHintMinutes: number | null; hint?: string | null; nextHintType?: string | null; state: "active" | "defeated" | "completed"; archetype: Archetype };
 export type BattleResultItem = { name: string; passed: boolean };
 export type BattleAction = "run" | "test" | "research" | "revive";
 export type BattleFeedback = "enemy" | "player" | null;
@@ -50,7 +50,7 @@ export function BattleHeader({ battle, pathSlug, pathLabel, title, xpReward }: {
   return <header className="battle-page-header">
     <div className="battle-header-start"><a className="battle-brand" href="/dashboard">Dev<span>Dex</span></a><a className="battle-back" href={`/trilhas/${pathSlug}`}><ArrowLeft aria-hidden="true" size={17} /> <span>Voltar para o mapa</span></a></div>
     <div className="battle-header-mission"><small>{pathLabel}</small><strong>{title}</strong></div>
-    <div className="battle-header-status"><BattleAudioToggle /><div className="battle-xp"><span>◈ Nível {battle?.playerLevel ?? 1}</span><div><i style={{ width: `${Math.min(88, 34 + xpReward / 3)}%` }} /></div><small>+{xpReward} XP na missão</small></div><BattleLives lives={battle?.lives ?? 3} /></div>
+    <div className="battle-header-status"><BattleAudioToggle /><div className="battle-xp"><span>◈ Nível {battle?.playerLevel ?? 1}</span><div><i style={{ width: `${battle?.playerXpPercent ?? 0}%` }} /></div><small>até +{Math.round(xpReward * 1.15)} XP</small></div><BattleResources battle={battle} /></div>
   </header>;
 }
 
@@ -73,15 +73,13 @@ export function useBattleFeedbackAudio(feedback: BattleFeedback) {
   useEffect(() => { if (feedback) playBattleSound(feedback); }, [feedback]);
 }
 
-export function BattlePanel({ battle, technology, objective, results, hint, feedback, loading, onRevive, victoryXp, review }: {
+export function BattlePanel({ battle, technology, objective, results, hint, feedback, victoryXp, review }: {
   battle: BattleView;
   technology: string;
   objective: string;
   results?: BattleResultItem[];
   hint?: string | null;
   feedback: BattleFeedback;
-  loading: BattleAction | null;
-  onRevive: () => void;
   victoryXp: number | null;
   review: boolean;
 }) {
@@ -101,7 +99,7 @@ export function BattlePanel({ battle, technology, objective, results, hint, feed
       <AnimatePresence>{victoryXp !== null ? <motion.div className="battle-victory-overlay" data-testid="victory-sequence" aria-live="assertive" initial={{ opacity: 0, scale: .86 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: .35, ease: "easeOut" }}><span>INIMIGO DERROTADO</span><strong>CONCLUÍDO</strong>{victoryXp > 0 ? <b>+{victoryXp} XP</b> : null}</motion.div> : null}</AnimatePresence>
     </div>
     <section className="battle-objectives" data-testid="battle-objectives"><h2>⚗ TESTES <b>{passed}/{visibleResults.length}</b></h2>{visibleResults.map((result) => <p className={result.passed ? "passed" : "pending"} key={result.name}><span>{result.passed ? "✓" : "○"}</span>{result.name}</p>)}{results?.length ? <BattleCoach results={visibleResults} hint={hint} /> : null}</section>
-    {battle.state === "defeated" ? <div className="battle-state-overlay"><strong>DERROTADO</strong><p>Você ficou sem vidas nesta batalha.</p><button className="button" disabled={loading !== null} onClick={onRevive}>{loading === "revive" ? "RECUPERANDO…" : "TENTAR NOVAMENTE"}</button></div> : null}
+    {battle.state === "defeated" ? <div className="battle-state-overlay"><strong>SEM CORAÇÕES</strong><p>Próximo coração em {battle.nextHeartMinutes ?? 0} min. Você ainda pode estudar, consultar dicas já abertas e testar o código.</p></div> : null}
     {battle.state === "completed" && victoryXp === null ? <div className="battle-victory-banner"><strong>{review ? "REVISÃO" : "CONCLUÍDO"}</strong><span>{battle.enemyName} derrotado</span></div> : null}
   </aside></MotionConfig>;
 }
@@ -137,12 +135,11 @@ export function BattleToast({ message, success }: { message: string; success: bo
 }
 
 export function BattleActions({ battle, loading, onAction, victory = false }: { battle?: BattleView; loading: BattleAction | null; onAction: (action: BattleAction) => void; victory?: boolean }) {
-  if (battle?.state === "defeated") return <section className="battle-actions"><button className={battleActionClass({ intent: "attack" })} aria-label="Tentar batalha novamente" disabled={loading !== null} onClick={() => onAction("revive")}>{loading === "revive" ? "RECUPERANDO…" : "♥ TENTAR NOVAMENTE"}</button></section>;
   return <Tooltip.Provider delayDuration={350}><section className="battle-actions" aria-label="Ações da batalha">
     <span className="battle-safe-note">Ctrl+Enter · Testar<br />Ctrl+Shift+Enter · Atacar</span>
-    <ActionTooltip label="Abra o material da missão sem perder vida"><button className={battleActionClass({ intent: "research" })} aria-label="Pesquisar uma dica sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("research")}><Lightbulb aria-hidden="true" size={18} /><span>Ver dica</span></button></ActionTooltip>
+    <ActionTooltip label={battle?.nextHintType ? `Próxima ajuda: ${hintTypeLabel(battle.nextHintType)}` : "Desbloqueie uma ajuda permanente para esta missão"}><button className={battleActionClass({ intent: "research" })} aria-label={`Desbloquear dica; ${battle?.hints ?? 0} disponíveis`} disabled={loading !== null || victory || (battle?.hints ?? 0) === 0} onClick={() => onAction("research")}><Lightbulb aria-hidden="true" size={18} /><span>Dica {battle?.hints ?? 0}/{battle?.maxHints ?? 3}</span></button></ActionTooltip>
     <ActionTooltip label="Execute os testes sem consumir uma vida"><button className={battleActionClass({ intent: "run" })} aria-label="Testar código sem perder vida" disabled={loading !== null || victory} onClick={() => onAction("run")}><FlaskConical aria-hidden="true" size={18} /><span>{loading === "run" ? "Testando…" : "Testar código"}</span></button></ActionTooltip>
-    <ActionTooltip label="Ataque com a solução; um erro pode consumir uma vida"><button className={battleActionClass({ intent: "attack" })} aria-label="Atacar com a solução; uma solução incorreta perde uma vida" disabled={loading !== null || battle?.state === "completed" || victory} onClick={() => onAction("test")}><Swords aria-hidden="true" size={21} /><span>{loading === "test" ? "Atacando…" : "Atacar solução"}</span></button></ActionTooltip>
+    <ActionTooltip label="Ataque avaliativo; uma solução incorreta consome um coração"><button className={battleActionClass({ intent: "attack" })} aria-label="Atacar com a solução; uma solução incorreta perde um coração" disabled={loading !== null || battle?.state === "completed" || battle?.lives === 0 || victory} onClick={() => onAction("test")}><Swords aria-hidden="true" size={21} /><span>{battle?.lives === 0 ? `Próximo ♥ em ${battle.nextHeartMinutes ?? 0} min` : loading === "test" ? "Atacando…" : "Atacar solução"}</span></button></ActionTooltip>
   </section></Tooltip.Provider>;
 }
 
@@ -161,8 +158,19 @@ function BattleAudioToggle() {
   return <button className="battle-audio-toggle" type="button" aria-label={enabled ? "Desativar sons" : "Ativar sons"} aria-pressed={enabled} onClick={() => { const next = !enabled; setEnabled(next); setAudioEnabled(next); if (next) playBattleSound("ui"); }}>{enabled ? <Volume2 aria-hidden="true" size={17} /> : <VolumeX aria-hidden="true" size={17} />}</button>;
 }
 
-export function BattleLives({ lives }: { lives: number }) {
-  return <div className="battle-lives-ui" aria-label={`${lives} vidas restantes`}>{[1, 2, 3].map((life) => <span className={life <= lives ? "alive" : "lost"} key={life}>♥</span>)}</div>;
+export function BattleResources({ battle }: { battle?: BattleView }) {
+  const lives = battle?.lives ?? 5;
+  const maxLives = battle?.maxLives ?? 5;
+  return <div className="battle-resource-stack"><div className="battle-lives-ui" aria-label={`${lives} de ${maxLives} corações disponíveis`}>{Array.from({ length: maxLives }, (_, index) => <span className={index < lives ? "alive" : "lost"} key={index}>♥</span>)}</div><small aria-label={`${battle?.hints ?? 3} de ${battle?.maxHints ?? 3} dicas disponíveis`}>💡 {battle?.hints ?? 3}/{battle?.maxHints ?? 3}</small></div>;
+}
+
+export function LevelUpOverlay({ levelUp }: { levelUp?: { fromLevel: number; toLevel: number; skillPointsGained: number } | null }) {
+  if (!levelUp) return null;
+  return <div className="level-up-overlay" role="status" data-testid="level-up"><span>LEVEL UP</span><strong>LV. {levelUp.fromLevel} → LV. {levelUp.toLevel}</strong><b>+{levelUp.skillPointsGained} Ponto{levelUp.skillPointsGained === 1 ? "" : "s"} de Habilidade</b></div>;
+}
+
+function hintTypeLabel(type: string) {
+  return type === "concept" ? "orientação conceitual" : type === "direction" ? "direção mais específica" : "exemplo semelhante";
 }
 
 function publicObjectives(objective: string) {

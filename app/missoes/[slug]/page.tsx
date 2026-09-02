@@ -26,7 +26,7 @@ async function MissionContent({ slug }: { slug: string }) {
   if (mission.runtime === "sqlite" && !sqlConfig) notFound();
   if ((mission.runtime === "html" || mission.runtime === "css") && !webConfig) notFound();
   const pathLabel = `${mission.technologyName} · ${mission.campaignTitle}`;
-  const battleView = battle ? { enemyName: battle.enemyName, enemyType: battle.enemyType, enemyLevel: battle.enemyLevel, playerLevel: profile.level, lives: battle.lives, state: battle.state, archetype: character.archetype } : undefined;
+  const battleView = battle ? { ...battle, hint: battle.unlockedHint, playerLevel: profile.level, playerXpPercent: profile.percent, skillPoints: profile.skillPoints, archetype: character.archetype } : undefined;
 
   return <main className="workspace-page battle-page">
     {sqlConfig ? <SqlWorkspace mission={{ slug: mission.slug, title: mission.title, briefing: mission.briefing, objective: mission.objective, starterSql: sqlConfig.starterSql, completed: mission.state === "completed", nextMissionSlug: mission.nextMissionSlug, pathSlug: mission.pathSlug, pathLabel, technologyName: mission.technologyName, xpReward: mission.xpReward, dialect: sqlConfig.dialect, tableSchema: JSON.parse(sqlConfig.tableSchemaJson), tablePreview: JSON.parse(sqlConfig.tablePreviewJson), study }} initialBattle={battleView} />

@@ -1,5 +1,5 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { BetaAccessError, ensureUser, getProject, getRecentProjectSubmissionCount, recordProjectAttempt, recordProjectSubmission } from "@/db";
+import { BetaAccessError, ensureUser, getProject, getRecentProjectSubmissionCount, getUserProgression, recordProjectAttempt, recordProjectSubmission, spendHeart } from "@/db";
 import { ProjectRunnerAdapter, type ProjectFiles, type ProjectValidator } from "@/lib/runners/project-adapter";
 
 type Payload = { files?: Partial<ProjectFiles>; mode?: "run" | "test" };
@@ -30,6 +30,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   if ((payload.mode !== "run" && payload.mode !== "test") || !payload.files || FILES.some((path) => typeof payload.files?.[path] !== "string")) {
     return Response.json({ ok: false, message: "Os três arquivos e o modo são obrigatórios." }, { status: 400 });
   }
+  if (payload.mode === "test" && (await getUserProgression(user.userId)).hearts === 0) return Response.json({ ok: false, message: "Você está sem corações. Continue estudando enquanto o próximo se recupera." }, { status: 409 });
   if (await getRecentProjectSubmissionCount(user.userId) >= 25) return Response.json({ ok: false, message: "Muitas validações. Tente novamente em alguns minutos." }, { status: 429, headers: { "Retry-After": "300" } });
 
   const files = payload.files as ProjectFiles;
@@ -48,18 +49,20 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     passedTests = result.results.filter((item) => item.passed).length;
     failedTests = result.results.length - passedTests;
     const progress = await recordProjectAttempt(user.userId, project, step, passed);
+    const resources = await spendHeart(user.userId, passed);
     const requirements = JSON.parse(step.requirementsJson) as string[];
     return Response.json({
       ok: passed,
       message: passed ? "Etapa concluída." : "Alguns requisitos ainda precisam de atenção.",
       results: requirements.map((name, index) => ({ name, passed: (result.results.length === 1 ? result.results[0] : result.results[index])?.passed === true })),
       projectCompleted: progress.projectState === "completed",
+      resources: resources.progression,
       ...progress,
     });
   } catch (error) {
     errorType = error instanceof Error ? error.name : "UnknownError";
     console.error(JSON.stringify({ event: "project_runner_error", project: project.slug, step: step.slug, errorType }));
-    if (payload.mode === "test") await recordProjectAttempt(user.userId, project, step, false);
+    if (payload.mode === "test") { await recordProjectAttempt(user.userId, project, step, false); await spendHeart(user.userId, false); }
     return Response.json({ ok: false, message: error instanceof Error ? error.message : "Não foi possível validar o projeto." }, { status: 422 });
   } finally {
     await recordProjectSubmission({ userId: user.userId, projectId: project.id, stepId: step.id, status, sourceHash, durationMs: Date.now() - startedAt, passedTests, failedTests, errorType }).catch(console.error);

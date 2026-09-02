@@ -3,11 +3,11 @@
 import Editor from "@monaco-editor/react";
 import type { MissionStudyMaterial } from "@/db";
 import { useMemo, useState } from "react";
-import { BattleActions, BattleBriefPanel, BattleHeader, BattlePanel, BattleStudyOverlay, BattleTabList, BattleTabPanel, BattleTabs, BattleToast, useBattleFeedbackAudio, useBattleVictory, type BattleAction, type BattleFeedback, type BattleResultItem, type BattleView } from "./battle-card";
+import { BattleActions, BattleBriefPanel, BattleHeader, BattlePanel, BattleStudyOverlay, BattleTabList, BattleTabPanel, BattleTabs, BattleToast, LevelUpOverlay, useBattleFeedbackAudio, useBattleVictory, type BattleAction, type BattleFeedback, type BattleResultItem, type BattleView } from "./battle-card";
 import { useBattleShortcuts, useMissionDraft } from "./use-mission-draft";
 
 type WebMission = { slug: string; title: string; briefing: string; objective: string; starterCode: string; completed: boolean; nextMissionSlug: string | null; pathSlug: string; pathLabel: string; technologyName: string; xpReward: number; documentType: "html" | "css"; previewHtml: string; previewCss: string; study: MissionStudyMaterial | null };
-type Submission = { ok: boolean; message: string; results?: BattleResultItem[]; gainedXp?: number; newlyCompleted?: boolean; unlockedSlug?: string | null; battle?: { lives: number; state: BattleView["state"]; hint?: string } | null };
+type Submission = { ok: boolean; message: string; results?: BattleResultItem[]; gainedXp?: number; newlyCompleted?: boolean; unlockedSlug?: string | null; levelUp?: { fromLevel: number; toLevel: number; skillPointsGained: number } | null; guidance?: string | null; battle?: Partial<BattleView> & { lives: number; state: BattleView["state"]; hint?: string } };
 const CSP = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src 'none'; form-action 'none'; base-uri 'none'; navigate-to 'none'";
 const HTML_DOCUMENT_STARTER = "<!doctype html>\n<html>\n<head></head>\n<body>\n\n</body>\n</html>";
 
@@ -25,7 +25,7 @@ export function WebWorkspace({ mission, initialBattle }: { mission: WebMission; 
   const [previewCode, setPreviewCode] = useState(initialCode);
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [battle, setBattle] = useState(initialBattle);
-  const [hint, setHint] = useState<string | null>(null);
+  const [hint, setHint] = useState<string | null>(initialBattle?.hint ?? null);
   const [loading, setLoading] = useState<BattleAction | null>(null);
   const [feedback, setFeedback] = useState<BattleFeedback>(null);
   const [studyOpen, setStudyOpen] = useState(Boolean(mission.study));
@@ -46,6 +46,7 @@ export function WebWorkspace({ mission, initialBattle }: { mission: WebMission; 
       if (mode === "run" || mode === "test") setSubmission(result);
       if (result.battle && battle) setBattle({ ...battle, ...result.battle });
       if (result.battle?.hint) setHint(result.battle.hint);
+      else if (result.guidance) setHint(result.guidance);
       if (response.ok && (mode === "run" || mode === "test")) setPreviewCode(code);
       if (mode === "run" && result.results?.some((item) => item.passed)) setFeedback("enemy");
       if (mode === "test") setFeedback(result.battle && battle && result.battle.lives < battle.lives ? "player" : result.ok || result.results?.some((item) => item.passed) ? "enemy" : "player");
@@ -60,12 +61,12 @@ export function WebWorkspace({ mission, initialBattle }: { mission: WebMission; 
     <BattleTabs>
       <BattleTabList />
       <BattleTabPanel value="mission"><BattleBriefPanel briefing={mission.briefing} objective={mission.objective} hint={hint} /></BattleTabPanel>
-      <BattleTabPanel value="arena">{battle ? <BattlePanel battle={battle} technology={mission.technologyName} objective={mission.objective} results={results} hint={hint} feedback={feedback} loading={loading} onRevive={() => submit("revive")} victoryXp={victoryXp} review={mission.completed} /> : null}</BattleTabPanel>
+      <BattleTabPanel value="arena">{battle ? <BattlePanel battle={battle} technology={mission.technologyName} objective={mission.objective} results={results} hint={hint} feedback={feedback} victoryXp={victoryXp} review={mission.completed} /> : null}</BattleTabPanel>
       <BattleTabPanel value="code"><section className="editor-panel battle-code-editor"><div className="editor-tabs"><span><b>{mission.documentType === "html" ? "▱" : "#"}</b> index.{mission.documentType}</span><small className="editor-autosave">SALVO AUTOMATICAMENTE</small><button onClick={() => { resetCode(); setPreviewCode(initialCode); setSubmission(null); }}>↺ Resetar</button></div><div className="editor-surface" data-testid="web-editor"><Editor height="100%" language={mission.documentType} theme="vs-dark" value={code} onChange={(value) => setCode(value ?? "")} options={{ automaticLayout: true, fontSize: 14, minimap: { enabled: false }, padding: { top: 18 }, scrollBeyondLastLine: false, tabSize: 2 }} /></div></section><section className="battle-preview"><div className="battle-preview-title"><span>▣ PRÉ-VISUALIZAÇÃO</span><small>AMBIENTE ISOLADO</small></div><div className="browser-frame"><div className="browser-bar"><i /><i /><i /><span>▣ preview.devdex.local</span><b>↻</b></div><iframe title="Preview da missão" sandbox="" referrerPolicy="no-referrer" srcDoc={srcDoc} /></div></section></BattleTabPanel>
       <BattleTabPanel value="results"><section className="battle-console-panel"><header><span>☷ EXPLICAÇÃO</span>{results?.length ? <b>✓ {passed}/{results.length}</b> : null}</header><div className="battle-console-output" aria-live="polite">{!submission ? <p className="console-empty">Escreva a solução, teste sem risco e ataque quando estiver pronto.</p> : <><p className={submission.ok ? "console-success" : "console-error"}>{submission.message}</p>{results?.map((result) => <p key={result.name}><b>{result.passed ? "✓" : "×"}</b> {result.name}</p>)}{submission.gainedXp ? <div className="reward-banner"><span>INIMIGO DERROTADO</span><strong>+{submission.gainedXp} XP</strong></div> : null}{submission.ok && submission.unlockedSlug ? <a className="next-mission" href={`/missoes/${submission.unlockedSlug}`}>Próxima batalha →</a> : submission.ok && battle?.state === "completed" ? <a className="next-mission" href={`/trilhas/${mission.pathSlug}`}>Voltar ao mapa →</a> : null}</>}</div></section></BattleTabPanel>
       <BattleActions battle={battle} loading={loading} onAction={submit} victory={victoryXp !== null} />
       {submission ? <BattleToast message={submission.message} success={submission.ok} /> : null}
     </BattleTabs>
-    {studyOpen && mission.study && battle ? <BattleStudyOverlay material={mission.study} enemyType={battle.enemyType} pathSlug={mission.pathSlug} started={studyStarted} onContinue={() => { setStudyStarted(true); setStudyOpen(false); }} /> : null}
+    <LevelUpOverlay levelUp={submission?.levelUp} />{studyOpen && mission.study && battle ? <BattleStudyOverlay material={mission.study} enemyType={battle.enemyType} pathSlug={mission.pathSlug} started={studyStarted} onContinue={() => { setStudyStarted(true); setStudyOpen(false); }} /> : null}
   </div>;
 }
