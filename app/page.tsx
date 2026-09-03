@@ -1,69 +1,75 @@
+import Image from "next/image";
+import { ArrowRight, BookOpenCheck, CheckCircle2, Code2, Flame, FolderGit2, Gamepad2, Heart, Lightbulb, LockKeyhole, Trophy, Zap } from "lucide-react";
+import { FaCss3Alt, FaGithub, FaHtml5, FaPython } from "react-icons/fa";
+import { SiJavascript, SiSqlite } from "react-icons/si";
 import { chatGPTSignInPath } from "@/app/chatgpt-auth";
-import { FcGoogle } from "react-icons/fc";
 
 const tracks = [
-  ["GitHub", "Conta, Git, colaboração, automação e segurança", "01", "150 ETAPAS"],
-  ["HTML", "Semântica, formulários e acessibilidade", "02", "150 ETAPAS"],
-  ["CSS", "Design systems, layouts e responsividade", "03", "150 ETAPAS"],
-  ["JavaScript", "Lógica, coleções e aplicações", "04", "150 ETAPAS"],
-  ["SQL", "Consultas, relações e análise de dados", "05", "150 ETAPAS"],
-  ["Python", "Fundamentos, dados, objetos e engenharia", "06", "150 ETAPAS"],
+  { title: "GitHub", detail: "Comece aqui", icon: FaGithub, state: "active" },
+  { title: "HTML", detail: "Estrutura", icon: FaHtml5, state: "next" },
+  { title: "CSS", detail: "Interface", icon: FaCss3Alt, state: "locked" },
+  { title: "JavaScript", detail: "Lógica", icon: SiJavascript, state: "locked" },
+  { title: "SQL", detail: "Dados", icon: SiSqlite, state: "locked" },
+  { title: "Python", detail: "Engenharia", icon: FaPython, state: "locked" },
 ] as const;
 
 export default function Home() {
-  const googleSignInPath = chatGPTSignInPath("/dashboard");
+  const startPath = chatGPTSignInPath("/dashboard");
+  const challengePath = chatGPTSignInPath("/trilhas/html-fundamentals");
   return (
-    <main>
-      <nav className="nav container" aria-label="Navegação principal">
-        <a className="brand" href="/" aria-label="DevDex, início">
-          <span className="brand-mark">D_</span><span>DevDex</span>
-        </a>
-        <div className="nav-links">
-          <a href="#trilhas">Trilhas</a><a href="/status">Status</a>
-          <a className="button button-small" href="/dashboard">Abrir plataforma</a>
-        </div>
+    <main className="landing-page">
+      <nav className="nav landing-nav container" aria-label="Navegação principal">
+        <a className="brand" href="/" aria-label="DevDex, início"><span className="brand-mark">D_</span><span>DevDex</span></a>
+        <div className="nav-links landing-links"><a href="#jornada">Jornada</a><a href="#desafios">Desafios</a><a href="#projetos">Projetos</a><a href="/status">Status</a></div>
+        <a className="button button-small button-ghost landing-login" href="/dashboard">Entrar</a>
       </nav>
 
-      <section className="hero container">
-        <div className="eyebrow"><span className="pulse" /> Fase 1D · Project Mode ativo</div>
-        <h1>Aprenda programação.<br /><span>Escrevendo código de verdade.</span></h1>
-        <p className="hero-copy">Uma jornada gamificada por missões, desafios e projetos que ensina você a construir, testar e depurar software real.</p>
-        <div className="hero-actions">
-          <a className="button button-google" href={googleSignInPath} target="_top"><FcGoogle aria-hidden="true" /> Entrar com Google</a>
-          <a className="button button-ghost" href="#arquitetura">Ver arquitetura</a>
-        </div>
-
-        <div className="terminal" aria-label="Exemplo de missão JavaScript">
-          <div className="terminal-bar">
-            <div className="terminal-dots"><i /><i /><i /></div><span>mission-01.js</span><span className="terminal-status">● TESTES</span>
+      <section className="landing-hero container">
+        <div className="landing-hero-copy">
+          <div className="eyebrow"><span className="pulse" /> APRENDA · LUTE · EVOLUA</div>
+          <h1>Aprenda programação como quem vence uma <em>campanha.</em></h1>
+          <p>Escreva código de verdade, derrote bugs, ganhe XP e libere projetos — do primeiro commit ao nível profissional.</p>
+          <div className="landing-hero-actions">
+            <a className="button landing-primary" href={startPath} target="_top">Começar grátis <ArrowRight aria-hidden="true" /></a>
+            <a className="button button-ghost" href={challengePath} target="_top"><Gamepad2 aria-hidden="true" /> Testar um desafio</a>
           </div>
-          <div className="code-grid">
-            <pre><code><span className="muted">01</span> <span className="purple">function</span> <span className="blue">calcularTotal</span>(produtos) {'{'}{"\n"}<span className="muted">02</span>   <span className="purple">return</span> produtos.<span className="blue">reduce</span>((total, item) ={">"} {"\n"}<span className="muted">03</span>     total + item.valor, <span className="orange">0</span>{"\n"}<span className="muted">04</span>   );{"\n"}<span className="muted">05</span> {'}'}</code></pre>
-            <div className="test-results"><small>RESULTADO DA MISSÃO</small><p><b>✓</b> soma dois produtos</p><p><b>✓</b> aceita lista vazia</p><p><b>✓</b> funciona com vários itens</p><div className="xp">MISSÃO CONCLUÍDA <strong>+120 XP</strong></div></div>
+          <div className="landing-proof"><span><CheckCircle2 aria-hidden="true" /> Sem instalação</span><span><CheckCircle2 aria-hidden="true" /> Progresso salvo</span><span><CheckCircle2 aria-hidden="true" /> Projetos reais</span></div>
+        </div>
+        <div className="landing-game-preview" aria-label="Prévia da progressão no DevDex">
+          <div className="game-preview-top"><span>MISSÃO ATUAL</span><strong>NÍVEL 03</strong></div>
+          <div className="game-preview-title"><div><small>HTML · RUÍNAS DA ESTRUTURA</small><h2>Guardião dos Formulários</h2></div><span className="preview-xp">+120 XP</span></div>
+          <div className="preview-arena">
+            <div className="preview-player"><Image src="/characters/adventurer-male-sprite-v2.png" alt="Aventureiro DevDex" width={180} height={230} priority /><span>VOCÊ</span></div>
+            <div className="preview-versus">VS</div>
+            <div className="preview-enemy"><Image src="/battles/enemies/espectro-do-esqueleto-v2.png" alt="Inimigo Espectro do Esqueleto" width={205} height={230} priority /><span>BUG CORROMPIDO</span></div>
           </div>
+          <div className="preview-objective"><Code2 aria-hidden="true" /><div><small>OBJETIVO</small><strong>Crie um formulário acessível</strong></div><span>2/3</span></div>
+          <div className="preview-hud"><span><Heart aria-hidden="true" fill="currentColor" /> 3</span><span><Flame aria-hidden="true" /> 7 dias</span><span><Lightbulb aria-hidden="true" /> 2 dicas</span></div>
         </div>
       </section>
 
-      <section className="section container" id="trilhas">
-        <div className="section-heading"><div><span className="kicker">CURRÍCULO COMPLETO</span><h2>Seis cursos. Do básico ao profissional.</h2></div><p>Comece por GitHub e avance por materiais e batalhas liberados por pré-requisitos.</p></div>
-        <div className="track-grid">
-          {tracks.map(([title, description, number, total]) => <article className="track-card" key={title}><span className="track-number">{number}</span><div className="track-icon">{title.slice(0, 2)}</div><h3>{title}{title === "SQL" ? " · SQLite" : ""}</h3><p>{description}</p><span className="track-state">{total}</span></article>)}
+      <section className="landing-statbar container" aria-label="Resumo da experiência"><div><Zap aria-hidden="true" /><span><strong>900+</strong> etapas de progressão</span></div><div><Code2 aria-hidden="true" /><span><strong>6</strong> trilhas completas</span></div><div><FolderGit2 aria-hidden="true" /><span><strong>Projetos</strong> para portfólio</span></div><div><Trophy aria-hidden="true" /><span><strong>Bosses</strong> e conquistas</span></div></section>
+
+      <section className="landing-section container" id="jornada">
+        <div className="landing-section-heading"><span className="kicker">SUA ROTA DE EVOLUÇÃO</span><h2>Uma trilha. Cada vitória libera o próximo mundo.</h2><p>Seis cursos, do básico ao profissional. Materiais curtos preparam você para batalhas práticas, revisões e projetos.</p></div>
+        <div className="learning-path"><div className="learning-path-line" aria-hidden="true" />
+          {tracks.map(({ title, detail, icon: Icon, state }, index) => <div className={`path-step ${state}`} key={title}><span className="path-index">{String(index + 1).padStart(2, "0")}</span><div className="path-node"><Icon aria-hidden="true" />{state === "locked" ? <LockKeyhole className="path-lock" aria-hidden="true" /> : null}</div><strong>{title}</strong><small>{detail}</small></div>)}
         </div>
       </section>
 
-      <section className="section container">
-        <div className="section-heading"><div><span className="kicker">JORNADA DE APRENDIZADO</span><h2>Do conceito ao projeto completo.</h2></div><p>Cada modo tem uma função clara e prepara o aluno para construir com mais autonomia.</p></div>
-        <div className="mode-grid"><article><span>01</span><h3>Lessons</h3><p>Aprender conceitos.</p></article><article><span>02</span><h3>Challenges</h3><p>Praticar conceitos isolados.</p></article><article className="active"><span>03</span><h3>Projects</h3><p>Combinar vários conhecimentos.</p></article><article><span>04</span><h3>Boss Battles</h3><p>Construir praticamente sozinho.</p></article></div>
+      <section className="landing-section landing-experience container" id="desafios">
+        <div className="experience-copy"><span className="kicker">NÃO É SÓ ASSISTIR</span><h2>O conhecimento vira ação.</h2><p>Leia o essencial, escreva sua solução e receba feedback imediato. Acertou? O inimigo perde vida. Errou? Use uma dica, revise e tente outra vez.</p><a href={challengePath} target="_top">Entrar na primeira batalha <ArrowRight aria-hidden="true" /></a></div>
+        <div className="experience-sequence" aria-label="Fluxo de aprendizado"><article><BookOpenCheck aria-hidden="true" /><span>01</span><h3>Material</h3><p>Teoria objetiva e exemplos.</p></article><i aria-hidden="true">→</i><article><Code2 aria-hidden="true" /><span>02</span><h3>Batalha</h3><p>Código executado de verdade.</p></article><i aria-hidden="true">→</i><article><Trophy aria-hidden="true" /><span>03</span><h3>Conquista</h3><p>XP, níveis e novas rotas.</p></article></div>
       </section>
 
-      <section className="section container" id="arquitetura">
-        <div className="architecture">
-          <div><span className="kicker">ARQUITETURA EVOLUTIVA</span><h2>Preparado para crescer sem recomeçar.</h2><p>Currículo, progresso e execução são domínios separados. O código do aluno nunca roda junto da aplicação principal.</p></div>
-          <div className="architecture-flow" aria-label="Fluxo da arquitetura"><span>WEB APP<small>React + TypeScript</small></span><i>→</i><span>PLATAFORMA<small>SIWC + D1</small></span><i>→</i><span>RUNNERS<small>QuickJS + Python + SQLite + Web</small></span></div>
+      <section className="landing-section container" id="projetos">
+        <div className="project-feature"><div className="project-feature-copy"><span className="kicker">PROJECT MODE</span><h2>Construa algo que você pode mostrar.</h2><p>Projetos progressivos combinam tudo o que você aprendeu. Trabalhe na plataforma ou conecte seu repositório do GitHub para receber uma revisão estruturada.</p><ul><li><CheckCircle2 aria-hidden="true" /> Introdução e requisitos claros</li><li><CheckCircle2 aria-hidden="true" /> Autosave e progresso por etapas</li><li><CheckCircle2 aria-hidden="true" /> Revisão de implementação</li></ul><a className="button" href={startPath} target="_top">Começar minha jornada <ArrowRight aria-hidden="true" /></a></div>
+          <div className="project-window" aria-label="Exemplo de projeto prático"><div className="project-window-bar"><i /><i /><i /><span>todo-app / README.md</span></div><div className="project-window-body"><small>PROJETO DESBLOQUEADO</small><h3>Lista de tarefas</h3><p>HTML + CSS + JavaScript</p><div className="project-progress"><span><b style={{ width: "72%" }} /></span><strong>72%</strong></div><div className="project-checks"><span>✓ Estrutura semântica</span><span>✓ Interface responsiva</span><span className="pending">○ Persistência local</span></div><div className="project-reward"><Trophy aria-hidden="true" /><span>RECOMPENSA<strong>+500 XP · Projeto no perfil</strong></span></div></div></div>
         </div>
       </section>
 
-      <footer className="footer container"><span className="brand"><span className="brand-mark">D_</span> DevDex</span><p>Fundação do MVP · Agosto de 2026</p></footer>
+      <section className="landing-final container"><div><span className="kicker">SUA PRIMEIRA MISSÃO ESTÁ PRONTA</span><h2>Entre no mapa. Escreva seu primeiro código.</h2></div><a className="button landing-primary" href={startPath} target="_top">Começar grátis <ArrowRight aria-hidden="true" /></a></section>
+      <footer className="footer container"><span className="brand"><span className="brand-mark">D_</span> DevDex</span><p>Aprendizado gamificado com código real.</p></footer>
     </main>
   );
 }

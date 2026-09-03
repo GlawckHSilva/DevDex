@@ -14,10 +14,11 @@ test("renders the DevDex foundation landing page", async () => {
   assert.equal(response.status, 200);
   const html = await response.text();
   assert.match(html, /<html lang="pt-BR">/);
-  assert.match(html, /Escrevendo código de verdade/);
-  assert.match(html, /Seis cursos\. Do básico ao profissional/);
-  assert.match(html, /150 ETAPAS/);
-  assert.match(html, /QuickJS \+ Python \+ SQLite/);
+  assert.match(html, /Aprenda programação como quem vence uma/);
+  assert.match(html, /Começar grátis/);
+  assert.match(html, /Testar um desafio/);
+  assert.match(html, /Cada vitória libera o próximo mundo/);
+  assert.match(html, /Project Mode/i);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);
 });
 
