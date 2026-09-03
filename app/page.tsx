@@ -1,16 +1,16 @@
 import Image from "next/image";
-import { ArrowRight, BookOpenCheck, CheckCircle2, Code2, Flame, FolderGit2, Gamepad2, Heart, Lightbulb, LockKeyhole, Trophy, Zap } from "lucide-react";
+import { ArrowRight, BookOpenCheck, CheckCircle2, Code2, Flame, FolderGit2, Gamepad2, Heart, Lightbulb, Trophy, Zap } from "lucide-react";
 import { FaCss3Alt, FaGithub, FaHtml5, FaPython } from "react-icons/fa";
 import { SiJavascript, SiSqlite } from "react-icons/si";
 import { chatGPTSignInPath } from "@/app/chatgpt-auth";
 
 const tracks = [
-  { title: "GitHub", detail: "Comece aqui", icon: FaGithub, state: "active" },
-  { title: "HTML", detail: "Estrutura", icon: FaHtml5, state: "next" },
-  { title: "CSS", detail: "Interface", icon: FaCss3Alt, state: "locked" },
-  { title: "JavaScript", detail: "Lógica", icon: SiJavascript, state: "locked" },
-  { title: "SQL", detail: "Dados", icon: SiSqlite, state: "locked" },
-  { title: "Python", detail: "Engenharia", icon: FaPython, state: "locked" },
+  { title: "Git", detail: "Versionamento", icon: FaGithub, path: "github-fundamentals" },
+  { title: "HTML", detail: "Estrutura", icon: FaHtml5, path: "html-fundamentals" },
+  { title: "CSS", detail: "Interface", icon: FaCss3Alt, path: "css-fundamentals" },
+  { title: "JavaScript", detail: "Lógica", icon: SiJavascript, path: "javascript-fundamentals" },
+  { title: "SQL", detail: "Dados", icon: SiSqlite, path: "sql-fundamentals-sqlite" },
+  { title: "Python", detail: "Engenharia", icon: FaPython, path: "python-fundamentals" },
 ] as const;
 
 export default function Home() {
@@ -27,8 +27,8 @@ export default function Home() {
       <section className="landing-hero container">
         <div className="landing-hero-copy">
           <div className="eyebrow"><span className="pulse" /> APRENDA · LUTE · EVOLUA</div>
-          <h1>Aprenda programação como quem vence uma <em>campanha.</em></h1>
-          <p>Escreva código de verdade, derrote bugs, ganhe XP e libere projetos — do primeiro commit ao nível profissional.</p>
+          <h1>Aprenda programação.<br />Evolua como em um <em>jogo.</em></h1>
+          <p>Resolva desafios, ganhe XP, suba de nível e construa projetos reais — escolhendo o que aprender no seu ritmo.</p>
           <div className="landing-hero-actions">
             <a className="button landing-primary" href={startPath} target="_top">Começar grátis <ArrowRight aria-hidden="true" /></a>
             <a className="button button-ghost" href={challengePath} target="_top"><Gamepad2 aria-hidden="true" /> Testar um desafio</a>
@@ -51,15 +51,15 @@ export default function Home() {
       <section className="landing-statbar container" aria-label="Resumo da experiência"><div><Zap aria-hidden="true" /><span><strong>900+</strong> etapas de progressão</span></div><div><Code2 aria-hidden="true" /><span><strong>6</strong> trilhas completas</span></div><div><FolderGit2 aria-hidden="true" /><span><strong>Projetos</strong> para portfólio</span></div><div><Trophy aria-hidden="true" /><span><strong>Bosses</strong> e conquistas</span></div></section>
 
       <section className="landing-section container" id="jornada">
-        <div className="landing-section-heading"><span className="kicker">SUA ROTA DE EVOLUÇÃO</span><h2>Uma trilha. Cada vitória libera o próximo mundo.</h2><p>Seis cursos, do básico ao profissional. Materiais curtos preparam você para batalhas práticas, revisões e projetos.</p></div>
+        <div className="landing-section-heading"><span className="kicker">MAPA ABERTO</span><h2>Seu mapa de aprendizado</h2><p>Todos os caminhos estão disponíveis desde o início. Escolha onde começar e acompanhe sua evolução.</p></div>
         <div className="learning-path"><div className="learning-path-line" aria-hidden="true" />
-          {tracks.map(({ title, detail, icon: Icon, state }, index) => <div className={`path-step ${state}`} key={title}><span className="path-index">{String(index + 1).padStart(2, "0")}</span><div className="path-node"><Icon aria-hidden="true" />{state === "locked" ? <LockKeyhole className="path-lock" aria-hidden="true" /> : null}</div><strong>{title}</strong><small>{detail}</small></div>)}
+          {tracks.map(({ title, detail, icon: Icon, path }) => <a className="path-step available" href={chatGPTSignInPath(`/trilhas/${path}`)} key={title} target="_top"><span className="path-status">DISPONÍVEL</span><div className="path-node"><Icon aria-hidden="true" /></div><strong>{title}</strong><small>{detail}</small></a>)}
         </div>
       </section>
 
       <section className="landing-section landing-experience container" id="desafios">
         <div className="experience-copy"><span className="kicker">NÃO É SÓ ASSISTIR</span><h2>O conhecimento vira ação.</h2><p>Leia o essencial, escreva sua solução e receba feedback imediato. Acertou? O inimigo perde vida. Errou? Use uma dica, revise e tente outra vez.</p><a href={challengePath} target="_top">Entrar na primeira batalha <ArrowRight aria-hidden="true" /></a></div>
-        <div className="experience-sequence" aria-label="Fluxo de aprendizado"><article><BookOpenCheck aria-hidden="true" /><span>01</span><h3>Material</h3><p>Teoria objetiva e exemplos.</p></article><i aria-hidden="true">→</i><article><Code2 aria-hidden="true" /><span>02</span><h3>Batalha</h3><p>Código executado de verdade.</p></article><i aria-hidden="true">→</i><article><Trophy aria-hidden="true" /><span>03</span><h3>Conquista</h3><p>XP, níveis e novas rotas.</p></article></div>
+        <div className="experience-sequence" aria-label="Fluxo de aprendizado"><article><BookOpenCheck aria-hidden="true" /><span>01</span><h3>Material</h3><p>Teoria objetiva e exemplos.</p></article><i aria-hidden="true">→</i><article><Code2 aria-hidden="true" /><span>02</span><h3>Batalha</h3><p>Código executado de verdade.</p></article><i aria-hidden="true">→</i><article><Trophy aria-hidden="true" /><span>03</span><h3>Conquista</h3><p>XP, níveis e progresso salvo.</p></article></div>
       </section>
 
       <section className="landing-section container" id="projetos">
