@@ -1,4 +1,5 @@
 import type { ChatGPTUser } from "@/app/chatgpt-auth";
+import { calculateSkillMastery } from "@/lib/mastery";
 import { getBetaConfig, isAdminEmail } from "@/lib/runtime-config";
 import { getDb } from "./client";
 import { missionState } from "./mission-state";
@@ -139,16 +140,44 @@ export async function getWebMissionConfig(missionId: number): Promise<WebMission
   return config ? { ...config, starterCode: config.starterCode.replaceAll("\\n", "\n"), previewHtml: config.previewHtml.replaceAll("\\n", "\n"), previewCss: config.previewCss.replaceAll("\\n", "\n") } : null;
 }
 
+async function getNextSkillMastery(userId: string, skillId: number, missionId: number, passed: boolean) {
+  const db = getDb();
+  const [skillProgress, performance, battle, reviews] = await Promise.all([
+    db.prepare("SELECT mastery FROM user_skill_progress WHERE user_id=? AND skill_id=?").bind(userId, skillId).first<{ mastery: number }>(),
+    db.prepare(`SELECT attempts,errors,hints_used AS hintsUsed,completed_without_hints AS completedWithoutHints,
+      completed_first_attempt AS completedFirstAttempt FROM mission_performance WHERE user_id=? AND mission_id=?`).bind(userId, missionId).first<{
+        attempts: number; errors: number; hintsUsed: number; completedWithoutHints: number; completedFirstAttempt: number;
+      }>(),
+    db.prepare("SELECT enemy_type AS enemyType FROM mission_battle_configs WHERE mission_id=?").bind(missionId).first<{ enemyType: "enemy" | "elite" | "boss" }>(),
+    db.prepare(`SELECT COALESCE(SUM(ucr.correct_answers),0) AS correctAnswers,
+      COALESCE(SUM(ucr.incorrect_answers),0) AS incorrectAnswers FROM user_content_reviews ucr
+      JOIN educational_contents ec ON ec.id=ucr.content_id WHERE ucr.user_id=? AND ec.skill_id=?`).bind(userId, skillId).first<{ correctAnswers: number; incorrectAnswers: number }>(),
+  ]);
+  return calculateSkillMastery({
+    currentMastery: skillProgress?.mastery ?? 0,
+    passed,
+    attempts: performance?.attempts ?? 0,
+    errors: performance?.errors ?? 0,
+    hintsUsed: performance?.hintsUsed ?? 0,
+    completedWithoutHints: Boolean(performance?.completedWithoutHints),
+    completedFirstAttempt: Boolean(performance?.completedFirstAttempt),
+    enemyType: battle?.enemyType ?? null,
+    reviewCorrectAnswers: reviews?.correctAnswers ?? 0,
+    reviewIncorrectAnswers: reviews?.incorrectAnswers ?? 0,
+  });
+}
+
 export async function recordAttempt(userId: string, mission: Mission, passed: boolean, details?: { codeHash: string; sourceCode: string; durationMs: number }) {
   const db = getDb();
   const performance = details ? await recordMissionPerformance({ userId, missionId: mission.id, skillId: mission.skillId, passed, ...details }) : { guidance: null };
+  const nextMastery = await getNextSkillMastery(userId, mission.skillId, mission.id, passed);
   if (!passed) {
     await db.batch([
       db.prepare(`INSERT INTO user_missions (user_id,mission_id,state,attempts) VALUES (?,?,'in_progress',1)
         ON CONFLICT(user_id,mission_id) DO UPDATE SET attempts=attempts+1,
         state=CASE WHEN state='completed' THEN 'completed' ELSE 'in_progress' END`).bind(userId, mission.id),
-      db.prepare(`INSERT INTO user_skill_progress (user_id,skill_id,failed_attempts) VALUES (?,?,1)
-        ON CONFLICT(user_id,skill_id) DO UPDATE SET failed_attempts=failed_attempts+1`).bind(userId, mission.skillId),
+      db.prepare(`INSERT INTO user_skill_progress (user_id,skill_id,mastery,failed_attempts) VALUES (?,?,?,1)
+        ON CONFLICT(user_id,skill_id) DO UPDATE SET mastery=?,failed_attempts=failed_attempts+1`).bind(userId, mission.skillId, nextMastery, nextMastery),
     ]);
     return { gainedXp: 0, totalXp: null, unlockedSlug: null, newlyCompleted: false, guidance: performance.guidance };
   }
@@ -162,8 +191,8 @@ export async function recordAttempt(userId: string, mission: Mission, passed: bo
     db.prepare(`INSERT OR IGNORE INTO user_xp_history (user_id,mission_id,amount,reason)
       SELECT ?,?,?,? WHERE EXISTS (SELECT 1 FROM user_missions WHERE user_id=? AND mission_id=? AND awarded_xp=0)`).bind(userId, mission.id, reward.amount, `mission:${mission.slug}`, userId, mission.id),
     db.prepare("UPDATE user_missions SET attempts=attempts+1,state='completed',awarded_xp=?,completed_at=COALESCE(completed_at,CURRENT_TIMESTAMP) WHERE user_id=? AND mission_id=?").bind(reward.amount, userId, mission.id),
-    db.prepare(`INSERT INTO user_skill_progress (user_id,skill_id,mastery,successful_attempts) VALUES (?,?,50,1)
-      ON CONFLICT(user_id,skill_id) DO UPDATE SET mastery=MIN(100,MAX(mastery,50)+10),successful_attempts=successful_attempts+1`).bind(userId, mission.skillId),
+    db.prepare(`INSERT INTO user_skill_progress (user_id,skill_id,mastery,successful_attempts) VALUES (?,?,?,1)
+      ON CONFLICT(user_id,skill_id) DO UPDATE SET mastery=?,successful_attempts=successful_attempts+1`).bind(userId, mission.skillId, nextMastery, nextMastery),
   ];
   if (mission.nextMissionSlug) {
     statements.push(db.prepare(`INSERT OR IGNORE INTO user_missions (user_id,mission_id,state)
@@ -185,3 +214,4 @@ export * from "./adventure";
 export * from "./campaigns";
 export * from "./library";
 export * from "./progression";
+export * from "./mastery";

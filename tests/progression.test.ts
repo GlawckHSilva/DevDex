@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { calculateSkillMastery, masteryState } from "../lib/mastery";
 import { levelFromXp, missionXpReward, regenerateResource, xpForLevel, xpProgress } from "../lib/progression";
 
 test("usa curva progressiva de XP sem tabela hardcoded", () => {
@@ -39,4 +40,18 @@ test("balanceia bônus de desempenho e penalidade configurável de dicas", () =>
   assert.equal(missionXpReward(100, 1, 0).amount, 95);
   assert.equal(missionXpReward(100, 3, 2).amount, 70);
   assert.equal(missionXpReward(100, 10, 2).amount, 70);
+});
+
+test("classifica estados visíveis de maestria", () => {
+  assert.equal(masteryState(0), "Novo");
+  assert.equal(masteryState(35), "Familiar");
+  assert.equal(masteryState(60), "Competente");
+  assert.equal(masteryState(82), "Proficiente");
+  assert.equal(masteryState(95), "Dominado");
+});
+
+test("maestria evolui separada de XP e evita farm fácil", () => {
+  assert.equal(calculateSkillMastery({ currentMastery: 0, passed: true, attempts: 1, errors: 0, hintsUsed: 0, completedWithoutHints: true, completedFirstAttempt: true, enemyType: "boss" }), 50);
+  assert.equal(calculateSkillMastery({ currentMastery: 80, passed: true, attempts: 18, errors: 0, hintsUsed: 0, completedWithoutHints: true, completedFirstAttempt: false, enemyType: "enemy" }), 80);
+  assert.equal(calculateSkillMastery({ currentMastery: 76, passed: false, attempts: 5, errors: 2, hintsUsed: 0, completedWithoutHints: false, completedFirstAttempt: false }), 73);
 });

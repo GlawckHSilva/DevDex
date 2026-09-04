@@ -10,9 +10,9 @@ test.describe("landing DevDex", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Aprenda programação");
     await expect(page.getByRole("link", { name: /Começar grátis/ }).first()).toHaveAttribute("href", /signin-with-chatgpt/);
     await expect(page.getByRole("link", { name: /Testar um desafio/ })).toHaveAttribute("href", /html-fundamentals/);
-    await expect(page.getByText("3", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("3/5")).toBeVisible();
     await expect(page.getByText("7 dias")).toBeVisible();
-    await expect(page.getByText("2 dicas")).toBeVisible();
+    await expect(page.getByText("2/3 dicas")).toBeVisible();
     expect(await page.locator(".landing-hero").evaluate((hero) => getComputedStyle(hero, "::before").animationName)).toBe("landingAuroraPrimary");
 
     await page.getByRole("link", { name: "Jornada", exact: true }).click();

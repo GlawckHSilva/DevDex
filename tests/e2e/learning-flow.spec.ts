@@ -56,7 +56,7 @@ test("restringe métricas ao administrador", async ({ page }) => {
 test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ page }) => {
   await page.setExtraHTTPHeaders(userHeaders("navigation-user"));
   await page.goto("/");
-  await page.getByRole("link", { name: "Abrir plataforma" }).click();
+  await page.getByRole("link", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.getByRole("link", { name: /To-do App/ }).click();
   await expect(page).toHaveURL(/\/projetos\/lista-de-tarefas$/);
@@ -178,7 +178,7 @@ test("escolhe personagem, usa recursos globais e vence a primeira batalha", asyn
 
 test("oferece entrada com conta Google", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Entrar com Google" })).toHaveAttribute("href", "/signin-with-chatgpt?return_to=%2Fdashboard");
+  await expect(page.getByRole("link", { name: /Começar grátis/ }).first()).toHaveAttribute("href", "/signin-with-chatgpt?return_to=%2Fdashboard");
 });
 
 test("bloqueia somente avaliações quando os corações chegam a zero", async ({ page, request }) => {
@@ -406,7 +406,7 @@ test("mantém o Project Mode bloqueado até as 25 etapas da zona JavaScript", as
   await expect(page.getByTestId("map-node-guardar-nome")).toHaveClass(/state-available/);
   await expect(page.getByTestId("map-node-boss-project")).toHaveClass(/type-boss.*state-locked/);
   await expect(page.getByTestId("map-node-boss-project")).toHaveAttribute("aria-label", /Bloqueada/);
-  await expect(page.locator('a[href="/projetos/lista-de-tarefas"]')).toHaveCount(0);
+  await expect(page.locator('.adventure-map-canvas a[href="/projetos/lista-de-tarefas"]')).toHaveCount(0);
 });
 
 test("executa SQLite/Wasm descartável sem misturar progresso", async ({ page, request }) => {

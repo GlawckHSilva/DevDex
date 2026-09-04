@@ -37,13 +37,12 @@ Public Beta v0.3 em estabilização para a próxima etapa do Learning Engine.
 - Espectro do Esqueleto como asset pixel art substituível e estados visuais de dano, derrota, retry e vitória;
 - telemetria de batalhas, derrotas, vidas perdidas, pesquisas e tempo de conclusão.
 - Biblioteca educacional com 144 conteúdos, favoritos, histórico, quiz e revisão inteligente espaçada;
-- maestria técnica inicial por skill em `user_skill_progress.mastery`, ainda sem página dedicada;
-- 23 testes de fundação/runners e 13 cenários E2E cobrindo o fluxo crítico.
+- Maestria técnica dedicada em `/maestria`, com cálculo separado de XP, estados visíveis e revisão sugerida por conceito;
+- testes de fundação/runners e 25 cenários E2E cobrindo o fluxo crítico.
 
 ## Não implementado
 
 - login independente por e-mail/senha fora do ChatGPT;
-- página dedicada de Maestria;
 - tela Hoje;
 - revisão inteligente 2.0 baseada diretamente em maestria;
 - caminhos de carreira;
@@ -51,4 +50,4 @@ Public Beta v0.3 em estabilização para a próxima etapa do Learning Engine.
 
 ## Próxima tarefa
 
-Implementar a Fase 2 do Learning Engine: consolidar o cálculo de Maestria usando dados reais de tentativas, revisões, dicas e desempenho recente.
+Implementar a Fase 3 do Learning Engine: evoluir a revisão inteligente usando maestria, erro recente e tempo sem prática.

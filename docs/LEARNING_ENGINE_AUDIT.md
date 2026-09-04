@@ -28,10 +28,17 @@ Atualizado em: 2026-09-04.
 - Landing page tinha números promocionais fixos que poderiam divergir do currículo publicado.
 - Mentor IA estava descrito como totalmente ausente, embora já exista revisão de projetos com IA configurável.
 
+## Maestria consolidada
+
+- `user_skill_progress.mastery` segue separado de XP e nível global.
+- A fórmula única usa acertos, erros, tentativas, dicas, primeira tentativa, conclusão sem dicas, elites/bosses e revisão de conteúdos.
+- Repetir atividades fáceis não aumenta domínio acima do teto de evidência.
+- A página `/maestria` mostra estados Novo, Familiar, Competente, Proficiente e Dominado por tecnologia, região, módulo e conceito.
+
 ## Ordem de implementação
 
-1. Correções de inconsistência e documentação.
-2. Maestria: fórmula única, estados de domínio e página dedicada.
+1. Correções de inconsistência e documentação. Concluído.
+2. Maestria: fórmula única, estados de domínio e página dedicada. Concluído.
 3. Revisão inteligente 2.0 usando maestria, erros recentes e tempo sem prática.
 4. Tela Hoje com plano curto de estudo.
 5. Ciclo pedagógico Material → Treino → Batalha → Prática → Revisão → Elite/Boss.
