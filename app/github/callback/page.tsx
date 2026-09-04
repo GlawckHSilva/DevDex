@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
+import { AuthenticatedSidebar } from "@/app/dashboard/authenticated-sidebar";
 import { consumeGitHubConnectionState, saveGitHubInstallation } from "@/db";
 import { exchangeAndVerifyInstallation } from "@/lib/github-app";
 
@@ -19,6 +20,6 @@ export default async function GitHubCallback({ searchParams }: { searchParams: P
     redirect(connection.returnPath);
   } catch (error) {
     if (error && typeof error === "object" && "digest" in error) throw error;
-    return <main className="github-callback"><span className="kicker">GITHUB APP</span><h1>Não foi possível concluir a conexão</h1><p>{error instanceof Error ? error.message : "Tente novamente pelo projeto."}</p><a className="button" href="/dashboard">Voltar ao dashboard</a></main>;
+    return <main className="dashboard-shell"><AuthenticatedSidebar user={user} activePath="/projetos/lista-de-tarefas" /><section className="github-callback"><span className="kicker">GITHUB APP</span><h1>Não foi possível concluir a conexão</h1><p>{error instanceof Error ? error.message : "Tente novamente pelo projeto."}</p><a className="button" href="/dashboard">Voltar ao dashboard</a></section></main>;
   }
 }

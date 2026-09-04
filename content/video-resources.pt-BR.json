@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "language": "pt-BR",
+  "sources": [
+    { "technology": "HTML", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Seu primeiro código HTML", "url": "https://www.youtube.com/watch?v=E6CdIawPTh0", "matches": ["estrutura-documento", "sintaxe-aninhamento"] },
+    { "technology": "HTML", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Listas OL e UL", "url": "https://www.youtube.com/watch?v=JlE0pzESf5g", "matches": ["listas-conteudo"] },
+    { "technology": "HTML", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Listas mistas e de definição", "url": "https://www.youtube.com/watch?v=Ez1kgIyoGuE", "matches": ["listas-conteudo", "documentacao-tecnica"] },
+    { "technology": "HTML/CSS", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "O que vamos aprender no módulo 01?", "url": "https://www.youtube.com/watch?v=jgQjeqGRdgA", "matches": ["estrutura-documento", "sintaxe-cascade"] },
+    { "technology": "CSS", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Introdução prática ao Flexbox", "url": "https://www.youtube.com/watch?v=YeGn9nGies0", "matches": ["flexbox", "layout-aplicacao"] },
+    { "technology": "CSS", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Conteúdo flexível apenas com Flexbox (parte 1)", "url": "https://www.youtube.com/watch?v=VBGMnFHRqcY", "matches": ["flexbox", "responsividade", "layout-aplicacao"] },
+    { "technology": "JavaScript", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Loopings (Parte 2) - JavaScript Curso #14", "url": "https://www.youtube.com/watch?v=eX-lkN_Zahc", "matches": ["repeticoes"] },
+    { "technology": "Python", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Curso Python #17 - Listas (Parte 1)", "url": "https://www.youtube.com/watch?v=N1hTsbW50eM", "matches": ["listas-sequencias", "compreensoes-matrizes"] },
+    { "technology": "Python", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Curso Python #19 - Dicionários", "url": "https://www.youtube.com/watch?v=ZWj8o692qGY", "matches": ["sets-dicionarios", "modelagem-dados"] },
+    { "technology": "Python", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Curso Python #23 - Tratamento de Erros e Exceções", "url": "https://www.youtube.com/watch?v=xz2B3bfNjEk", "matches": ["erros-contratos", "qualidade-debug"] },
+    { "technology": "Git/GitHub", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "O que é Git e GitHub?", "url": "https://www.youtube.com/watch?v=GDGMf2bnHlE", "matches": ["git-local", "primeiro-repositorio", "estado-repositorio"] },
+    { "technology": "Git/GitHub", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Primeiro repositório Git e GitHub", "url": "https://www.youtube.com/watch?v=P0Hvrf8T3zo", "matches": ["primeiro-repositorio", "staging-commits"] },
+    { "technology": "SQL", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Curso MySQL #11 - SELECT (Parte 1)", "url": "https://www.youtube.com/watch?v=GaOlyL3Uv9M", "matches": ["select-projecao", "where-filtros", "ordenacao-catalogo"] },
+    { "technology": "SQL", "provider": "Curso em Vídeo", "teacher": "Gustavo Guanabara", "title": "Curso MySQL #12 - SELECT (Parte 2)", "url": "https://www.youtube.com/watch?v=q4hPo83-Buo", "matches": ["select-projecao", "where-filtros", "texto-faixas", "ordenacao-catalogo"] }
+  ]
+}

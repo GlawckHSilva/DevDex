@@ -14,7 +14,7 @@ export type LearningPathView = { slug: string; name: string; description: string
 export type SqlMissionConfig = { dialect: string; runtimeVersion: string; schemaSql: string; seedSql: string; starterSql: string; expectedResultJson: string; tableSchemaJson: string; tablePreviewJson: string; maxRows: number; timeoutMs: number; maxStatements: number };
 export type WebMissionConfig = { documentType: "html" | "css"; runtimeVersion: string; starterCode: string; previewHtml: string; previewCss: string; validatorJson: string; maxLength: number };
 export type MissionStudyMaterial = { title: string; introduction: string; explanation: string; exampleCode: string; exampleExplanation: string; keyPoints: string[]; commonMistakes: string[]; references: { label: string; url: string }[] };
-export type StudyLessonBody = { introduction: string; sections: { title: string; text: string }[]; exampleCode: string; keyPoints: string[]; practiceObjectives: string[]; pdfUrl: string; videoUrl: string; videoLabel: string; references: { label: string; url: string }[] };
+export type StudyLessonBody = { introduction: string; sections: { title: string; text: string }[]; exampleCode: string; keyPoints: string[]; practiceObjectives: string[]; commonErrors?: string[]; pdfUrl: string; videoUrl: string; videoLabel: string; references: { label: string; url: string }[] };
 export type StudyLesson = { id: number; slug: string; title: string; pathSlug: string; zoneId: number; firstMissionSlug: string; state: MissionSummary["state"]; body: StudyLessonBody };
 
 export class BetaAccessError extends Error {

@@ -49,6 +49,7 @@ test("restringe métricas ao administrador", async ({ page }) => {
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.setExtraHTTPHeaders(userHeaders("admin"));
   await page.goto("/admin/metricas");
+  await expect(page.locator(".app-sidebar")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Métricas de aprendizagem" })).toBeVisible();
   await expect(page.getByText(/Nenhuma métrica armazena o código-fonte/)).toBeVisible();
 });
@@ -60,19 +61,30 @@ test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ pa
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.getByRole("link", { name: /To-do App/ }).click();
   await expect(page).toHaveURL(/\/projetos\/lista-de-tarefas$/);
+  await expect(page.locator(".app-sidebar")).toBeVisible();
   await expect(page.getByText("PRÓXIMA CONQUISTA")).toBeVisible();
   await page.getByRole("link", { name: "CONTINUAR NAS CAMPANHAS" }).click();
   await page.locator(".sidebar").getByRole("link", { name: /^HTML/ }).click();
   await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/);
 });
 
-test("exibe e recolhe o menu lateral no mapa da campanha", async ({ page }) => {
+test("expande o menu lateral sobre o mapa sem deslocar o conteúdo", async ({ page }) => {
   test.setTimeout(60_000);
   await page.setExtraHTTPHeaders(userHeaders("campaign-sidebar-user"));
+  await page.setViewportSize({ width: 1440, height: 784 });
   await page.goto("/trilhas/html-fundamentals");
-  await expect(page.locator(".app-sidebar")).toBeVisible();
-  await page.locator(".sidebar-toggle").click();
-  await expect(page.getByRole("checkbox", { name: "Recolher menu lateral" })).toBeChecked();
+  const sidebar = page.locator(".app-sidebar");
+  const content = page.locator(".game-campaign-main");
+  await expect(sidebar).toBeVisible();
+  const compactBox = await sidebar.boundingBox();
+  const contentBefore = await content.boundingBox();
+  expect(compactBox?.width).toBeLessThanOrEqual(73);
+  await sidebar.hover();
+  await expect.poll(async () => (await sidebar.boundingBox())?.width).toBeGreaterThan(200);
+  const contentAfter = await content.boundingBox();
+  expect(contentAfter?.x).toBe(contentBefore?.x);
+  await page.mouse.move(800, 10);
+  await expect.poll(async () => (await sidebar.boundingBox())?.width).toBeLessThanOrEqual(73);
 });
 
 test("pesquisa, favorita e revisa conteúdo sem conceder XP", async ({ page, request }) => {
@@ -87,7 +99,14 @@ test("pesquisa, favorita e revisa conteúdo sem conceder XP", async ({ page, req
   await expect(page.getByText(/conteúdo\(s\) precisam de atenção/)).toBeVisible();
   await expect(page.getByRole("link", { name: /Valores e variáveis/ })).toBeVisible();
   await page.goto("/biblioteca");
+  await expect(page.locator(".app-sidebar")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Consulte sem sair da aventura." })).toBeVisible();
+  const catalog = page.locator(".library-results");
+  await expect(catalog).not.toHaveAttribute("open", "");
+  await expect(catalog.locator(".library-grid")).toBeHidden();
+  await catalog.getByText("Mostrar mais", { exact: true }).click();
+  await expect(catalog.locator(".library-grid")).toBeVisible();
+  await expect(catalog.getByText("Mostrar menos", { exact: true })).toBeVisible();
   const reviewQueue = page.locator(".library-review-queue");
   await expect(reviewQueue.getByRole("heading", { name: "Valores e variáveis" })).toBeVisible();
   await expect(reviewQueue.getByText(/REVISÃO PRÁTICA/)).toBeVisible();
@@ -96,6 +115,7 @@ test("pesquisa, favorita e revisa conteúdo sem conceder XP", async ({ page, req
   await expect(page.getByRole("heading", { name: "Busca por “variáveis”" })).toBeVisible();
 
   await page.goto("/biblioteca/referencia-javascript-estudo-valores-variaveis");
+  await expect(page.locator(".app-sidebar")).toBeVisible();
   await expect(page.getByText("REVISÃO RÁPIDA")).toBeVisible();
   await page.getByRole("button", { name: "FAVORITAR" }).click();
   await expect(page.getByRole("button", { name: "SALVO" })).toBeVisible();
@@ -114,6 +134,12 @@ test("pesquisa, favorita e revisa conteúdo sem conceder XP", async ({ page, req
   await expect(page.getByRole("heading", { name: "Valores e variáveis" })).toBeVisible();
   await page.goto("/maestria");
   await expect(page.getByRole("heading", { name: "Maestria por tecnologia" })).toBeVisible();
+  const masteryCard = page.locator(".mastery-tech-card").first();
+  await expect(masteryCard).not.toHaveAttribute("open", "");
+  await expect(masteryCard.locator(".mastery-concept-grid")).toBeHidden();
+  await masteryCard.getByText("Mostrar mais", { exact: true }).click();
+  await expect(masteryCard.locator(".mastery-concept-grid")).toBeVisible();
+  await expect(masteryCard.getByText("Mostrar menos", { exact: true })).toBeVisible();
   await page.goto("/dashboard");
   await expect(page.locator("header").getByText("0 / 100 XP", { exact: true })).toBeVisible();
 });
@@ -143,6 +169,19 @@ test("explora o mapa horizontal arrastando e volta ao personagem", async ({ page
   await expect.poll(() => world.evaluate((element) => element.style.transform)).toBe(before);
 });
 
+test("material exibe vídeos curados como complemento opcional", async ({ page, request }) => {
+  const userId = "curated-video-user";
+  await chooseCharacter(request, userId);
+  await page.setExtraHTTPHeaders(userHeaders(userId));
+  await page.goto("/aulas/html-estudo-estrutura-documento");
+  await expect(page.locator(".app-sidebar")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Vídeo opcional" })).toBeVisible();
+  await expect(page.getByText("Gustavo Guanabara · Curso em Vídeo")).toHaveCount(2);
+  await expect(page.getByText("ASSISTIR EXPLICAÇÃO")).toHaveCount(2);
+  await expect(page.locator("iframe, video[autoplay]")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Abrir resumo em PDF/ })).toBeVisible();
+});
+
 test("escolhe personagem, usa recursos globais e vence a primeira batalha", async ({ page, request }) => {
   const userId = "rpg-user";
   const headers = userHeaders(userId);
@@ -157,6 +196,7 @@ test("escolhe personagem, usa recursos globais e vence a primeira batalha", asyn
   await expect(page.getByTestId("campaign-map")).toBeVisible();
   await expect(page.getByTestId("map-node-guardar-nome")).toHaveAttribute("aria-label", /Disponível/);
   await page.goto("/missoes/guardar-nome");
+  await expect(page.locator(".app-sidebar")).toHaveCount(0);
   await expect(page.getByTestId("battle-workspace")).toBeVisible();
   await expect(page.locator(".battle-player .pixel-hero")).toHaveAttribute("style", /adventuress-female-v1/);
   await expect(page.getByLabel("5 de 5 corações disponíveis")).toBeVisible();
@@ -291,6 +331,7 @@ test("percorre trilha, conclui missão e persiste apó novo login", async ({ bro
   expect((await restored.request.post("/api/skills/clinical-eye/purchase")).status()).toBe(409);
   expect((await restored.request.post("/api/skills/code-memory/purchase")).status()).toBe(409);
   await restored.goto("/habilidades");
+  await expect(restored.locator(".app-sidebar")).toBeVisible();
   await expect(restored.getByRole("button", { name: "Olho Clínico: acquired" })).toBeVisible();
   await relogin.close();
 });
@@ -398,9 +439,9 @@ test("Python exige o material e libera cinco batalhas alinhadas pelo backend", a
   await page.getByTestId("map-node-estudo-sintaxe-valores").click();
   await page.getByTestId("mission-panel").getByRole("link", { name: "ABRIR MATERIAL" }).click();
   await expect(page).toHaveURL(/\/aulas\/estudo-sintaxe-valores$/);
-  await expect(page.getByRole("heading", { name: "As cinco batalhas deste bloco" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Missões e batalhas deste bloco" })).toBeVisible();
   await expect(page.locator(".study-article ol li")).toHaveCount(5);
-  await expect(page.getByRole("link", { name: /Abrir guia em PDF/ })).toHaveAttribute("href", "/materials/python/zona-1-fundamentos.pdf");
+  await expect(page.getByRole("link", { name: /Abrir resumo em PDF/ })).toHaveAttribute("href", "/materials/python/zona-1-fundamentos.pdf");
   await page.getByRole("button", { name: /CONCLUIR ESTUDO E TREINAR/ }).click();
   await expect(page).toHaveURL(/\/missoes\/py2-py-primeira-funcao-treino$/);
   await page.goto("/trilhas/python-fundamentals");
@@ -603,8 +644,15 @@ test("libera e conclui um projeto inicial depois do estudo e da batalha", async 
   await page.setExtraHTTPHeaders(userHeaders(userId));
   await page.goto("/dashboard");
   await expect(page.getByText("NOVO PROJETO LIBERADO").first()).toBeVisible();
+  await page.setViewportSize({ width: 1440, height: 784 });
   await page.goto("/projetos/cartao-de-perfil");
+  await expect(page.locator(".app-sidebar")).toBeVisible();
   await expect(page.getByTestId("project-editor")).toBeVisible();
+  const briefingBox = await page.locator(".project-briefing").boundingBox();
+  const editorBox = await page.locator(".project-editor").boundingBox();
+  expect(briefingBox).not.toBeNull();
+  expect(editorBox).not.toBeNull();
+  expect(briefingBox!.y + briefingBox!.height).toBeLessThanOrEqual(editorBox!.y + 1);
   const preview = page.getByTitle("Preview do projeto");
   await expect(preview).toHaveAttribute("sandbox", "allow-scripts");
   expect(await preview.getAttribute("srcdoc")).toContain("default-src 'none'");

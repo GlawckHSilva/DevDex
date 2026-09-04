@@ -8,6 +8,8 @@ test.describe("landing DevDex", () => {
     await page.goto("/");
 
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Aprenda programação");
+    await expect(page.locator(".landing-nav .brand-mark")).toHaveCSS("background-image", /devdex-logo\.png/);
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", /devdex-logo\.png/);
     await expect(page.getByRole("link", { name: /Começar grátis/ }).first()).toHaveAttribute("href", /signin-with-chatgpt/);
     await expect(page.getByRole("link", { name: /Testar um desafio/ })).toHaveAttribute("href", /html-fundamentals/);
     await expect(page.getByText("3/5")).toBeVisible();

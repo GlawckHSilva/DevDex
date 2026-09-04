@@ -40,12 +40,12 @@ export default async function MasteryPage() {
 
       <div className="mission-list-heading"><div><span className="kicker">MAPA DE CONCEITOS</span><h2>Maestria por tecnologia</h2></div><span>{mastery.technologies.length} tecnologias</span></div>
       <section className="mastery-tech-list">
-        {mastery.technologies.map((technology) => <article className="mastery-tech-card" key={technology.slug}>
-          <header><div><span>{technology.name}</span><h3>{technology.mastery}% de maestria</h3></div><div className="progress-track"><i style={{ width: `${technology.mastery}%` }} /></div></header>
+        {mastery.technologies.map((technology) => <details className="mastery-tech-card" key={technology.slug}>
+          <summary><div><span>{technology.name}</span><h3>{technology.mastery}% de maestria</h3></div><div className="progress-track"><i style={{ width: `${technology.mastery}%` }} /></div><span className="mastery-toggle"><span>Mostrar mais</span><span>Mostrar menos</span></span></summary>
           <div className="mastery-concept-grid">
             {technology.concepts.map((concept) => <ConceptCard concept={concept} recommendation={reviewBySkill.get(concept.id)} key={concept.id} />)}
           </div>
-        </article>)}
+        </details>)}
       </section>
     </section>
   </main>;

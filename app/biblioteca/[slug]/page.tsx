@@ -1,6 +1,7 @@
 import { ArrowLeft, BookOpen, Code2, Map, Star } from "lucide-react";
 import { notFound } from "next/navigation";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
+import { AuthenticatedSidebar } from "@/app/dashboard/authenticated-sidebar";
 import { getLibraryContent, recordContentView } from "@/db";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +16,9 @@ export default async function LibraryContentPage({ params, searchParams }: { par
 
   const sections = content.lessonBody?.sections ?? [];
   const keyPoints = content.lessonBody?.keyPoints ?? [];
-  return <main className="library-detail-page">
+  return <main className="dashboard-shell">
+    <AuthenticatedSidebar user={user} activePath="/biblioteca" />
+    <section className="library-detail-page">
     <nav className="library-topbar"><a className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</a><div><a href="/biblioteca"><ArrowLeft size={15} /> Biblioteca</a><a href={`/trilhas/${content.pathSlug}`}><Map size={15} /> Mapa</a></div></nav>
     <header className="library-detail-hero">
       <div><span className="kicker">{content.technologyName} · {content.zoneTitle ?? content.pathName}</span><h1>{content.title}</h1><p>{content.description}</p><div className="library-tags">{content.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div>
@@ -42,5 +45,6 @@ export default async function LibraryContentPage({ params, searchParams }: { par
         <div className="library-related"><span>CONTINUAR APRENDENDO</span>{content.missionSlug ? <a className="button" href={`/missoes/${content.missionSlug}`}>IR PARA A MISSÃO →</a> : null}<a href={`/trilhas/${content.pathSlug}`}>Ver mapa da campanha</a></div>
       </aside>
     </div>
+    </section>
   </main>;
 }
