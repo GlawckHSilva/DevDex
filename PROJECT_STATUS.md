@@ -4,7 +4,7 @@ Atualizado em: 2026-09-04
 
 ## Situação
 
-Public Beta v0.3 em estabilização para a próxima etapa do Learning Engine.
+Public Beta v0.3 com Revisão Inteligente 2.0 integrada ao Learning Engine.
 
 ## Implementado
 
@@ -36,18 +36,18 @@ Public Beta v0.3 em estabilização para a próxima etapa do Learning Engine.
 - tela de batalha RPG + IDE com vidas e XP no header, arena jogador versus inimigo, HP determinístico por critérios, objetivos reativos, preview em moldura de navegador, console compacto e ações PESQUISAR/TESTAR/ATACAR;
 - Espectro do Esqueleto como asset pixel art substituível e estados visuais de dano, derrota, retry e vitória;
 - telemetria de batalhas, derrotas, vidas perdidas, pesquisas e tempo de conclusão.
-- Biblioteca educacional com 144 conteúdos, favoritos, histórico, quiz e revisão inteligente espaçada;
-- Maestria técnica dedicada em `/maestria`, com cálculo separado de XP, estados visíveis e revisão sugerida por conceito;
+- Biblioteca educacional com 144 conteúdos, favoritos, histórico, quiz e Revisão Inteligente 2.0;
+- Maestria técnica dedicada em `/maestria`, com cálculo separado de XP, estados visíveis e indicação discreta de revisão;
+- recomendações adaptativas em `getUserReviewRecommendations(userId)`, consumidas por Biblioteca, Dashboard e Maestria;
 - testes de fundação/runners e 25 cenários E2E cobrindo o fluxo crítico.
 
 ## Não implementado
 
 - login independente por e-mail/senha fora do ChatGPT;
 - tela Hoje;
-- revisão inteligente 2.0 baseada diretamente em maestria;
 - caminhos de carreira;
 - Mentor IA geral de missão com escada de ajuda.
 
 ## Próxima tarefa
 
-Implementar a Fase 3 do Learning Engine: evoluir a revisão inteligente usando maestria, erro recente e tempo sem prática.
+Implementar a Fase 4 do Learning Engine: criar a tela Hoje como plano curto de estudo usando as recomendações já centralizadas.

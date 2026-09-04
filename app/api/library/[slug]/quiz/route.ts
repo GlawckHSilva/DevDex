@@ -1,5 +1,5 @@
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { answerContentQuiz, BetaAccessError, ensureUser, getLibraryContent, getUserProgression, spendHeart } from "@/db";
+import { answerContentQuiz, BetaAccessError, ensureUser, getLibraryContent } from "@/db";
 
 export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const user = await getChatGPTUser();
@@ -12,13 +12,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
   const { slug } = await params;
   const content = await getLibraryContent(user.userId, slug);
   if (!content) return Response.json({ ok: false, message: "Conteúdo não encontrado." }, { status: 404 });
-  if ((await getUserProgression(user.userId)).hearts === 0) return Response.redirect(new URL(`/biblioteca/${content.slug}?quiz=sem-coracoes`, request.url), 303);
   const form = await request.formData();
   const rawAnswer = form.get("answer");
   const answer = typeof rawAnswer === "string" && rawAnswer.trim() ? Number(rawAnswer) : Number.NaN;
   const result = await answerContentQuiz(user.userId, content.id, answer);
   if (!result) return Response.json({ ok: false, message: "Resposta inválida." }, { status: 400 });
   const status = result.correct ? "correto" : "revisar";
-  await spendHeart(user.userId, result.correct);
   return Response.redirect(new URL(`/biblioteca/${content.slug}?quiz=${status}&intervalo=${result.intervalDays}`, request.url), 303);
 }

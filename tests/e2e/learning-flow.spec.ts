@@ -83,9 +83,14 @@ test("pesquisa, favorita e revisa conteúdo sem conceder XP", async ({ page, req
   await submit(request, userId, "guardar-nome", "const nome = 42;");
   await page.setExtraHTTPHeaders(headers);
 
+  await page.goto("/dashboard");
+  await expect(page.getByText(/conteúdo\(s\) precisam de atenção/)).toBeVisible();
+  await expect(page.getByRole("link", { name: /Valores e variáveis/ })).toBeVisible();
   await page.goto("/biblioteca");
   await expect(page.getByRole("heading", { name: "Consulte sem sair da aventura." })).toBeVisible();
-  await expect(page.getByText("Dificuldade detectada na batalha")).toBeVisible();
+  const reviewQueue = page.locator(".library-review-queue");
+  await expect(reviewQueue.getByRole("heading", { name: "Valores e variáveis" })).toBeVisible();
+  await expect(reviewQueue.getByText(/REVISÃO PRÁTICA/)).toBeVisible();
   await page.getByLabel("Buscar na biblioteca").fill("variáveis");
   await page.getByRole("button", { name: "BUSCAR" }).click();
   await expect(page.getByRole("heading", { name: "Busca por “variáveis”" })).toBeVisible();
@@ -107,6 +112,8 @@ test("pesquisa, favorita e revisa conteúdo sem conceder XP", async ({ page, req
 
   await page.goto("/biblioteca?favoritos=1");
   await expect(page.getByRole("heading", { name: "Valores e variáveis" })).toBeVisible();
+  await page.goto("/maestria");
+  await expect(page.getByRole("heading", { name: "Maestria por tecnologia" })).toBeVisible();
   await page.goto("/dashboard");
   await expect(page.locator("header").getByText("0 / 100 XP", { exact: true })).toBeVisible();
 });
@@ -199,6 +206,12 @@ test("bloqueia somente avaliações quando os corações chegam a zero", async (
   await expect(page.getByRole("button", { name: /Atacar com a solução/ })).toBeDisabled();
   await page.goto("/biblioteca");
   await expect(page.getByRole("heading", { name: "Consulte sem sair da aventura." })).toBeVisible();
+  await page.goto("/biblioteca/referencia-javascript-estudo-valores-variaveis");
+  await page.getByRole("radio").first().check();
+  await page.getByRole("button", { name: "CONFIRMAR RESPOSTA" }).click();
+  await expect(page.getByText(/Resposta correta/)).toBeVisible();
+  await page.goto("/missoes/guardar-nome");
+  await expect(page.getByLabel("0 de 5 corações disponíveis")).toBeVisible();
 });
 
 test("apresenta e persiste a transmissão de lore sem alterar progresso", async ({ page, request }) => {

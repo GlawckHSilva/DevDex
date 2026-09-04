@@ -149,11 +149,13 @@ test("GitHub is the first campaign and teaches a safe professional workflow", as
 });
 
 test("educational library indexes every course without changing progression", async () => {
-  const [migration, reviewMigration, library, quizRoute] = await Promise.all([
+  const [migration, reviewMigration, library, quizRoute, reviewPriority, recommendations] = await Promise.all([
     readFile(educationalLibraryUrl, "utf8"),
     readFile(contentReviewUrl, "utf8"),
     readFile(new URL("../db/library.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/library/[slug]/quiz/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../lib/review-priority.ts", import.meta.url), "utf8"),
+    readFile(new URL("../db/reviews.ts", import.meta.url), "utf8"),
   ]);
   assert.match(migration, /CREATE TABLE `educational_contents`/);
   assert.match(migration, /CREATE TABLE `content_examples`/);
@@ -164,9 +166,14 @@ test("educational library indexes every course without changing progression", as
   assert.match(reviewMigration, /CREATE TABLE `user_content_reviews`/);
   assert.match(migration, /FROM lessons l.*JOIN technologies t/s);
   assert.match(library, /lower\(ec\.title\|\|' '\|\|ec\.description/);
+  assert.match(library, /getUserReviewRecommendations/);
+  assert.match(library, /calculateSkillMastery/);
+  assert.match(reviewPriority, /reviewPriorityConfig/);
+  assert.match(recommendations, /getUserReviewRecommendations/);
   assert.doesNotMatch(migration, /UPDATE (?:user_missions|profiles|user_xp_history)/);
   assert.doesNotMatch(library, /starter_code|source_code|student_code/);
   assert.doesNotMatch(quizRoute, /recordAttempt|awardedXp|total_xp|user_xp_history/);
+  assert.doesNotMatch(quizRoute, /spendHeart|getUserProgression/);
   const SQL = await initSqlJs();
   const db = new SQL.Database();
   const directory = new URL("../drizzle/", import.meta.url);

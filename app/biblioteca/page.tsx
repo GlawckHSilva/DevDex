@@ -30,7 +30,7 @@ export default async function LibraryPage({ searchParams }: { searchParams: Prom
         {library.technologies.map((item) => <a className={technology === item.slug ? "active" : ""} href={libraryHref(query, item.slug, favoritesOnly)} key={item.slug}>{item.name}<small>{item.contentCount}</small></a>)}
         <a className={favoritesOnly ? "active favorite" : "favorite"} href={libraryHref(query, technology, !favoritesOnly)}><Star size={13} fill={favoritesOnly ? "currentColor" : "none"} /> Favoritos <small>{library.favoriteCount}</small></a>
       </div>
-      {library.reviews.length && !query && !technology && !favoritesOnly ? <section className="library-review-queue"><header><div><span className="kicker">REVISÃO INTELIGENTE</span><h2>Fortaleça os pontos que podem enfraquecer.</h2></div><strong>{library.reviews.length} revisões</strong></header><div>{library.reviews.map((item) => <a href={`/biblioteca/${item.slug}`} key={item.slug}><span>{item.technologyName}</span><h3>{item.title}</h3><p>{item.reviewReason}</p><strong>REVISAR →</strong></a>)}</div></section> : null}
+      {!query && !technology && !favoritesOnly ? <section className="library-review-queue"><header><div><span className="kicker">REVISÃO INTELIGENTE</span><h2>Fortaleça os pontos que podem enfraquecer.</h2></div><strong>{library.reviews.length ? `${library.reviews.length} revisões` : "Em dia"}</strong></header>{library.reviews.length ? <div>{library.reviews.map((item) => <a className={`priority-${item.priority}`} href={`/biblioteca/${item.slug}`} key={item.slug}><span>{priorityLabel(item.priority)} · {item.masteryPercent}% · {item.masteryState}</span><h3>{item.title}</h3><p>{item.reviewReason}</p><strong>{item.reviewLabel} →</strong></a>)}</div> : <p className="review-empty">Continue praticando. Suas revisões inteligentes aparecerão conforme surgirem sinais reais.</p>}</section> : null}
       {library.recent.length && !query && !technology && !favoritesOnly ? <section className="library-recent"><header><Clock3 size={15} /><strong>VISTOS RECENTEMENTE</strong></header><div>{library.recent.map((item) => <LibraryCard item={item} compact key={item.slug} />)}</div></section> : null}
       <section className="library-results">
         <header><div><span className="kicker">{favoritesOnly ? "FAVORITOS" : query ? "RESULTADOS" : "CATÁLOGO"}</span><h2>{query ? `Busca por “${query}”` : technology ? library.technologies.find((item) => item.slug === technology)?.name : "Referência por tecnologia"}</h2></div><strong>{library.contents.length} encontrados</strong></header>
@@ -59,4 +59,8 @@ function libraryHref(query: string, technology: string, favorites: boolean) {
 
 function difficultyLabel(value: string) {
   return ({ beginner: "Iniciante", intermediate: "Intermediário", advanced: "Avançado", professional: "Profissional" } as Record<string, string>)[value] ?? value;
+}
+
+function priorityLabel(value: "low" | "medium" | "high") {
+  return ({ high: "Alta prioridade", medium: "Prioridade média", low: "Preventiva" } as const)[value];
 }

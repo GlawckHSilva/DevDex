@@ -14,6 +14,8 @@ Cloudflare D1 é o banco principal, definido em `db/schema.ts` e migrado por `dr
 
 - porcentagem da trilha deriva do peso/domínio das skills, não de valor manual;
 - `mastery` varia de 0 a 100 e é reavaliado por tentativas futuras;
+- revisão inteligente deriva de `user_skill_progress`, `mission_performance`, `mission_attempt_history`, `user_content_reviews`, `user_content_history` e pré-requisitos de conteúdo;
+- revisão educacional não consome coração e não grava XP;
 - XP é ledger append-only em `user_xp_history`; `profiles.total_xp` é projeção transacional;
 - testes privados só são lidos pelo serviço responsável por avaliar submissões;
 - conteúdo usa `draft`, `review`, `published` e `deprecated`.

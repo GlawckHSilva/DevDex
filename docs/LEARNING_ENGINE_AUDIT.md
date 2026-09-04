@@ -35,11 +35,20 @@ Atualizado em: 2026-09-04.
 - Repetir atividades fáceis não aumenta domínio acima do teto de evidência.
 - A página `/maestria` mostra estados Novo, Familiar, Competente, Proficiente e Dominado por tecnologia, região, módulo e conceito.
 
+## Revisão Inteligente 2.0
+
+- A fila anterior da Biblioteca vinha de `user_content_reviews`, `user_content_history`, `user_missions` e datas programadas.
+- A nova fila continua usando essas estruturas, sem tabela paralela.
+- `reviewPriority` centraliza pesos, prioridade, tipo de revisão, motivos e fatores explicáveis.
+- `getUserReviewRecommendations(userId)` alimenta Biblioteca, Dashboard, Maestria e a futura tela Hoje.
+- Conceitos nunca estudados não são recomendados; Maestria 0 sem histórico não significa esquecimento.
+- Revisões educacionais não consomem coração, não concedem XP e recalculam Maestria pela fórmula central.
+
 ## Ordem de implementação
 
 1. Correções de inconsistência e documentação. Concluído.
 2. Maestria: fórmula única, estados de domínio e página dedicada. Concluído.
-3. Revisão inteligente 2.0 usando maestria, erros recentes e tempo sem prática.
+3. Revisão inteligente 2.0 usando maestria, erros recentes e tempo sem prática. Concluído.
 4. Tela Hoje com plano curto de estudo.
 5. Ciclo pedagógico Material → Treino → Batalha → Prática → Revisão → Elite/Boss.
 6. Novos formatos de desafio reutilizando progressão existente.

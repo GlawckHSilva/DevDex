@@ -48,7 +48,7 @@ Primeiro fluxo vertical JavaScript:
 
 - Fase 1: corrigir inconsistências de documentação e números públicos derivados do banco. Concluída;
 - Fase 2: consolidar Maestria como domínio técnico separado de XP/level. Concluída;
-- Fase 3: evoluir a revisão inteligente usando maestria, erro recente e tempo sem prática;
+- Fase 3: evoluir a revisão inteligente usando maestria, erro recente e tempo sem prática. Concluída;
 - Fase 4: criar a tela Hoje como plano curto de estudo;
 - Fases seguintes: padronizar ciclo pedagógico, diversificar desafios, evoluir Project Mode, preparar Caminhos e Mentor IA.
 
@@ -105,7 +105,6 @@ Primeiro fluxo vertical JavaScript:
 ## Pendente
 
 - tela Hoje;
-- revisão inteligente 2.0;
 - formatos de desafio além de batalha de código;
 - categorias de Project Mode: guiado, semi-guiado e independente;
 - Caminhos Frontend, Backend, Full Stack e IA usando conteúdos existentes;

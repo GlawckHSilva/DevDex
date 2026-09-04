@@ -1,5 +1,7 @@
+import { calculateSkillMastery } from "@/lib/mastery";
 import { getDb } from "./client";
 import type { StudyLessonBody } from "./index";
+import { getUserReviewRecommendations, type UserReviewRecommendation } from "./reviews";
 
 export type LibraryCard = {
   id: number;
@@ -16,7 +18,7 @@ export type LibraryCard = {
 };
 
 export type LibraryTechnology = { slug: string; name: string; contentCount: number };
-export type LibraryReviewCard = LibraryCard & { reviewReason: string; dueAt: string | null };
+export type LibraryReviewCard = UserReviewRecommendation;
 export type LibraryOverview = { contents: LibraryCard[]; technologies: LibraryTechnology[]; recent: LibraryCard[]; reviews: LibraryReviewCard[]; favoriteCount: number };
 export type LibraryExample = { title: string; code: string; explanation: string; exampleType: string };
 export type LibrarySnippet = { title: string; language: string; code: string; explanation: string };
@@ -62,25 +64,10 @@ export async function getLibraryOverview(userId: string, query = "", technology 
       LEFT JOIN campaign_zones cz ON cz.id=ec.zone_id LEFT JOIN missions m ON m.id=ec.related_mission_id
       LEFT JOIN user_content_favorites f ON f.content_id=ec.id AND f.user_id=?
       WHERE h.user_id=? AND ec.status='published' ORDER BY h.last_viewed_at DESC LIMIT 6`).bind(userId, userId).all<LibraryCard>(),
-    db.prepare(`SELECT ${cardSelect},r.next_review_at AS dueAt,
-      CASE WHEN COALESCE(um.attempts,0)>=2 THEN 'Dificuldade detectada na batalha'
-        WHEN r.next_review_at IS NOT NULL THEN 'Revisão programada'
-        ELSE 'Conteúdo concluído há mais de 7 dias' END AS reviewReason
-      FROM educational_contents ec JOIN technologies t ON t.id=ec.technology_id JOIN learning_paths lp ON lp.id=ec.learning_path_id
-      LEFT JOIN campaign_zones cz ON cz.id=ec.zone_id LEFT JOIN missions m ON m.id=ec.related_mission_id
-      LEFT JOIN user_content_favorites f ON f.content_id=ec.id AND f.user_id=?
-      LEFT JOIN user_content_reviews r ON r.content_id=ec.id AND r.user_id=?
-      LEFT JOIN user_missions um ON um.mission_id=ec.related_mission_id AND um.user_id=?
-      LEFT JOIN user_lessons ul ON ul.lesson_id=ec.lesson_id AND ul.user_id=?
-      LEFT JOIN user_content_history h ON h.content_id=ec.id AND h.user_id=?
-      WHERE ec.status='published' AND ((r.next_review_at IS NOT NULL AND r.next_review_at<=CURRENT_TIMESTAMP)
-        OR (r.content_id IS NULL AND COALESCE(um.attempts,0)>=2)
-        OR (r.content_id IS NULL AND ul.lesson_id IS NOT NULL AND h.last_viewed_at IS NOT NULL AND h.last_viewed_at<=datetime('now','-7 days')))
-      ORDER BY COALESCE(um.attempts,0) DESC,COALESCE(r.incorrect_answers,0) DESC,COALESCE(r.next_review_at,h.last_viewed_at) LIMIT 6`)
-      .bind(userId, userId, userId, userId, userId).all<LibraryReviewCard>(),
+    getUserReviewRecommendations(userId),
     db.prepare("SELECT COUNT(*) AS count FROM user_content_favorites WHERE user_id=?").bind(userId).first<{ count: number }>(),
   ]);
-  return { contents: contents.results, technologies: technologies.results, recent: recent.results, reviews: reviews.results, favoriteCount: favoriteCount?.count ?? 0 };
+  return { contents: contents.results, technologies: technologies.results, recent: recent.results, reviews, favoriteCount: favoriteCount?.count ?? 0 };
 }
 
 export async function getLibraryContent(userId: string, slug: string): Promise<LibraryContent | null> {
@@ -134,12 +121,14 @@ export async function toggleContentFavorite(userId: string, contentId: number) {
 
 export async function answerContentQuiz(userId: string, contentId: number, answer: number) {
   const db = getDb();
-  const content = await db.prepare("SELECT quiz_json AS quizJson FROM educational_contents WHERE id=? AND status='published'").bind(contentId).first<{ quizJson: string }>();
+  const content = await db.prepare("SELECT quiz_json AS quizJson,skill_id AS skillId FROM educational_contents WHERE id=? AND status='published'").bind(contentId).first<{ quizJson: string; skillId: number | null }>();
   const quiz = content ? parseStoredQuiz(content.quizJson) : null;
-  if (!quiz || !Number.isInteger(answer) || answer < 0 || answer >= quiz.options.length) return null;
-  const previous = await db.prepare(`SELECT correct_answers AS correctAnswers,interval_days AS intervalDays
-    FROM user_content_reviews WHERE user_id=? AND content_id=?`).bind(userId, contentId).first<{ correctAnswers: number; intervalDays: number }>();
+  if (!content || !quiz || !Number.isInteger(answer) || answer < 0 || answer >= quiz.options.length) return null;
+  const previous = await db.prepare(`SELECT correct_answers AS correctAnswers,incorrect_answers AS incorrectAnswers,interval_days AS intervalDays
+    FROM user_content_reviews WHERE user_id=? AND content_id=?`).bind(userId, contentId).first<{ correctAnswers: number; incorrectAnswers: number; intervalDays: number }>();
   const correct = answer === quiz.correctIndex;
+  const nextCorrectAnswers = (previous?.correctAnswers ?? 0) + (correct ? 1 : 0);
+  const nextIncorrectAnswers = (previous?.incorrectAnswers ?? 0) + (correct ? 0 : 1);
   const intervalDays = correct ? previous?.correctAnswers ? Math.min(30, Math.max(3, previous.intervalDays * 2)) : 1 : 1;
   const nextReviewAt = new Date(Date.now() + intervalDays * 86_400_000).toISOString();
   await db.prepare(`INSERT INTO user_content_reviews
@@ -150,7 +139,27 @@ export async function answerContentQuiz(userId: string, contentId: number, answe
       incorrect_answers=incorrect_answers+excluded.incorrect_answers,
       interval_days=excluded.interval_days,next_review_at=excluded.next_review_at,last_reviewed_at=CURRENT_TIMESTAMP`)
     .bind(userId, contentId, correct ? 1 : 0, correct ? 0 : 1, intervalDays, nextReviewAt).run();
+  if (content.skillId) await updateSkillMasteryFromReview(userId, content.skillId, correct, nextCorrectAnswers, nextIncorrectAnswers);
   return { correct, explanation: quiz.explanation, intervalDays };
+}
+
+async function updateSkillMasteryFromReview(userId: string, skillId: number, correct: boolean, correctAnswers: number, incorrectAnswers: number) {
+  const db = getDb();
+  const current = await db.prepare("SELECT mastery FROM user_skill_progress WHERE user_id=? AND skill_id=?").bind(userId, skillId).first<{ mastery: number }>();
+  const nextMastery = calculateSkillMastery({
+    currentMastery: current?.mastery ?? 0,
+    passed: correct,
+    attempts: correctAnswers + incorrectAnswers,
+    errors: incorrectAnswers,
+    hintsUsed: 0,
+    completedWithoutHints: true,
+    completedFirstAttempt: false,
+    reviewCorrectAnswers: correctAnswers,
+    reviewIncorrectAnswers: incorrectAnswers,
+  });
+  await db.prepare(`INSERT INTO user_skill_progress (user_id,skill_id,mastery,successful_attempts,failed_attempts) VALUES (?,?,?,?,?)
+    ON CONFLICT(user_id,skill_id) DO UPDATE SET mastery=?,successful_attempts=successful_attempts+excluded.successful_attempts,
+    failed_attempts=failed_attempts+excluded.failed_attempts`).bind(userId, skillId, nextMastery, correct ? 1 : 0, correct ? 0 : 1, nextMastery).run();
 }
 
 function parseList(value: string) {
