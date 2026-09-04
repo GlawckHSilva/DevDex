@@ -10,3 +10,4 @@
 - [Mentor IA](AI_MENTOR.md)
 - [Atualização de currículo](UPDATE_SYSTEM.md)
 - [Escopo do MVP](MVP.md)
+- [Auditoria do Learning Engine](LEARNING_ENGINE_AUDIT.md)

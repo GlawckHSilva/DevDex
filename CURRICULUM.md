@@ -6,13 +6,15 @@ Cada tecnologia é uma campanha RPG independente. O aluno pode alternar entre ca
 
 ## Campanhas publicadas
 
-| Tecnologia | Campanha | Zona inicial | Missões |
+| Tecnologia | Campanha | Zona inicial | Etapas |
 |---|---|---|---:|
-| HTML | Crônicas da Estrutura | Ruínas da Estrutura | 4 |
-| CSS | Reino dos Estilos | Distrito sem Cor | 4 |
-| JavaScript | Cidade da Lógica | Bosque dos Fundamentos | 5 |
-| SQL | Minas dos Dados | Arquivo Perdido | 6 |
+| GitHub | Forja Colaborativa | Portal da Identidade | 150 |
+| HTML | Crônicas da Estrutura | Ruínas da Estrutura | 150 |
+| CSS | Reino dos Estilos | Distrito sem Cor | 150 |
+| JavaScript | Cidade da Lógica | Bosque dos Fundamentos | 150 |
+| SQL | Minas dos Dados | Arquivo Perdido | 150 |
+| Python | Código da Serpente | Terminal dos Fundamentos | 150 |
 
-Todas as missões mantêm seus runners, validações privadas, recompensas e sequência técnica originais. O To-do App continua como projeto de cinco etapas e aparece como boss de construção da Cidade da Lógica.
+Cada trilha publicada possui 24 materiais e 126 batalhas. Todas as missões mantêm runners, validações privadas, recompensas e sequência técnica. O To-do App continua como projeto de cinco etapas e aparece como boss de construção da Cidade da Lógica.
 
-Novas tecnologias não fazem parte deste marco.
+Novas tecnologias não fazem parte da próxima fase; o foco agora é qualidade educacional sobre a base existente.

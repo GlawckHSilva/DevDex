@@ -7,14 +7,33 @@ type BattleMetric = { missionId: number; enemyName: string; enemyType: string; b
 
 export async function getPublicStatus() {
   const db = getDb();
-  const [curriculum, projects] = await Promise.all([
-    db.prepare(`SELECT COUNT(DISTINCT lp.id) AS paths,COUNT(DISTINCT m.id) AS missions,COUNT(DISTINCT m.runtime) AS runtimes
-      FROM learning_paths lp JOIN skills s ON s.learning_path_id=lp.id JOIN missions m ON m.skill_id=s.id
-      WHERE lp.status='published' AND m.status='published'`).first<{ paths: number; missions: number; runtimes: number }>(),
+  const [curriculum, projects, contents, balance] = await Promise.all([
+    db.prepare(`SELECT COUNT(DISTINCT lp.id) AS paths,COUNT(DISTINCT m.id) AS missions,
+      COUNT(DISTINCT l.id) AS lessons,COUNT(DISTINCT m.runtime) AS runtimes
+      FROM learning_paths lp
+      LEFT JOIN skills s ON s.learning_path_id=lp.id
+      LEFT JOIN missions m ON m.skill_id=s.id AND m.status='published'
+      LEFT JOIN lessons l ON l.skill_id=s.id AND l.status='published'
+      WHERE lp.status='published'`).first<{ paths: number; missions: number; lessons: number; runtimes: number }>(),
     db.prepare(`SELECT COUNT(DISTINCT p.id) AS projects,COUNT(ps.id) AS steps FROM projects p
       LEFT JOIN project_steps ps ON ps.project_id=p.id WHERE p.status='published'`).first<{ projects: number; steps: number }>(),
+    db.prepare("SELECT COUNT(*) AS count FROM educational_contents WHERE status='published'").first<{ count: number }>(),
+    db.prepare(`SELECT
+      MAX(CASE WHEN key='max_hearts' THEN value END) AS maxHearts,
+      MAX(CASE WHEN key='max_hints' THEN value END) AS maxHints
+      FROM game_balance_settings`).first<{ maxHearts: number | null; maxHints: number | null }>(),
   ]);
-  return { paths: curriculum?.paths ?? 0, missions: curriculum?.missions ?? 0, runtimes: curriculum?.runtimes ?? 0, projects: projects?.projects ?? 0, projectSteps: projects?.steps ?? 0 };
+  return {
+    paths: curriculum?.paths ?? 0,
+    missions: curriculum?.missions ?? 0,
+    lessons: curriculum?.lessons ?? 0,
+    runtimes: curriculum?.runtimes ?? 0,
+    contents: contents?.count ?? 0,
+    projects: projects?.projects ?? 0,
+    projectSteps: projects?.steps ?? 0,
+    maxHearts: balance?.maxHearts ?? 5,
+    maxHints: balance?.maxHints ?? 3,
+  };
 }
 
 export async function getAdminMetrics() {

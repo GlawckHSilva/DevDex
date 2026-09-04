@@ -44,11 +44,13 @@ Primeiro fluxo vertical JavaScript:
 - painel de métricas exclusivo do administrador;
 - status sincronizado com o currículo publicado.
 
-## Próximo
+## Próximo — Learning Engine
 
-- testar os quatro mapas e a nova Battle IDE com usuários reais;
-- ajustar vidas, PESQUISAR, narrativa e bosses com base nas métricas;
-- expandir conteúdo apenas após validar o loop batalha → código → teste → ataque.
+- Fase 1: corrigir inconsistências de documentação e números públicos derivados do banco;
+- Fase 2: consolidar Maestria como domínio técnico separado de XP/level;
+- Fase 3: evoluir a revisão inteligente usando maestria, erro recente e tempo sem prática;
+- Fase 4: criar a tela Hoje como plano curto de estudo;
+- Fases seguintes: padronizar ciclo pedagógico, diversificar desafios, evoluir Project Mode, preparar Caminhos e Mentor IA.
 
 ## Implementado — Battle IDE
 
@@ -100,17 +102,15 @@ Primeiro fluxo vertical JavaScript:
 - preview em iframe sandbox com CSP sem scripts, rede ou navegação;
 - E2E do fluxo visual e bloqueio de conteúdo ativo.
 
-## Depois — Fase 1B
-
-- expandir HTML, CSS, JavaScript e SQL básico;
-- dashboard, perfil, skill tree e revisão;
-- observabilidade e painel editorial mínimo.
-
 ## Pendente
 
-- Fase 2: expandir as campanhas atuais antes de avaliar novas tecnologias;
-- Fase 3: React, TypeScript, PostgreSQL avançado e mentor IA;
-- Fases 4–6: mobile, backend, Flutter e atualização inteligente.
+- página de Maestria;
+- tela Hoje;
+- revisão inteligente 2.0;
+- formatos de desafio além de batalha de código;
+- categorias de Project Mode: guiado, semi-guiado e independente;
+- Caminhos Frontend, Backend, Full Stack e IA usando conteúdos existentes;
+- Mentor IA geral com escada de ajuda e limites integrados às dicas.
 
 ## Riscos
 

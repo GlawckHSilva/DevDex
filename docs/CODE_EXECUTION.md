@@ -14,6 +14,8 @@ O runner SQL executa schema e seed confiáveis, prepara um único SELECT do alun
 
 ## Implementação atual
 
-JavaScript possui cinco missões em QuickJS. SQLite possui seis missões de leitura. HTML e CSS possuem quatro missões cada, limite de 8.000 caracteres e preview em iframe sandbox.
+JavaScript roda em QuickJS/Wasm. SQL roda em SQLite/Wasm descartável. HTML e CSS usam validação estrutural e preview em iframe sandbox. Python usa runner próprio com Pyodide. GitHub usa validação segura de comandos e procedimentos, sem executar ações reais.
+
+As seis trilhas publicadas possuem materiais de estudo antes das batalhas e validações privadas no backend.
 
 Runtimes futuros podem migrar para serviço externo quando exigirem isolamento de processo.

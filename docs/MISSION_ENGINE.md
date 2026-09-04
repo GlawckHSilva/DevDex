@@ -9,7 +9,7 @@
 5. normalizar stdout, erros e testes;
 6. concluir em transação: tentativa, domínio, XP e próximo desbloqueio.
 
-Tipos: tutorial, coding challenge, bug hunt, support, project e boss. O MVP possui desafios JavaScript, SQLite, HTML e CSS.
+Tipos: tutorial, coding challenge, bug hunt, support, project e boss. A beta atual possui desafios de GitHub, HTML, CSS, JavaScript, SQL e Python.
 
 Projetos são um domínio próprio: `projects`, `project_steps`, `project_files` e progresso dedicado. Lessons ensinam conceitos, challenges praticam habilidades isoladas, projects combinam tecnologias e boss battles reduzem a orientação.
 

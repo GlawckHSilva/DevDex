@@ -13,7 +13,14 @@ const tracks = [
   { title: "Python", detail: "Engenharia", icon: FaPython, path: "python-fundamentals" },
 ] as const;
 
+const stagesPerTrack = 150;
+const contentsPerTrack = 24;
+const maxHearts = 5;
+const maxHints = 3;
+
 export default function Home() {
+  const stages = tracks.length * stagesPerTrack;
+  const contents = tracks.length * contentsPerTrack;
   const startPath = chatGPTSignInPath("/dashboard");
   const challengePath = chatGPTSignInPath("/trilhas/html-fundamentals");
   return (
@@ -36,7 +43,7 @@ export default function Home() {
           <div className="landing-proof"><span><CheckCircle2 aria-hidden="true" /> Sem instalação</span><span><CheckCircle2 aria-hidden="true" /> Progresso salvo</span><span><CheckCircle2 aria-hidden="true" /> Projetos reais</span></div>
         </div>
         <div className="landing-game-preview" aria-label="Prévia da progressão no DevDex">
-          <div className="game-preview-top"><span>MISSÃO ATUAL</span><strong>NÍVEL 03</strong></div>
+          <div className="game-preview-top"><span>MISSÃO ATUAL</span><strong>NÍVEL 3</strong></div>
           <div className="game-preview-title"><div><small>HTML · RUÍNAS DA ESTRUTURA</small><h2>Guardião dos Formulários</h2></div><span className="preview-xp">+120 XP</span></div>
           <div className="preview-arena">
             <div className="preview-player"><Image src="/characters/adventurer-male-sprite-v2.png" alt="Aventureiro DevDex" width={180} height={230} priority /><span>VOCÊ</span></div>
@@ -44,11 +51,11 @@ export default function Home() {
             <div className="preview-enemy"><Image src="/battles/enemies/espectro-do-esqueleto-v2.png" alt="Inimigo Espectro do Esqueleto" width={205} height={230} priority /><span>BUG CORROMPIDO</span></div>
           </div>
           <div className="preview-objective"><Code2 aria-hidden="true" /><div><small>OBJETIVO</small><strong>Crie um formulário acessível</strong></div><span>2/3</span></div>
-          <div className="preview-hud"><span><Heart aria-hidden="true" fill="currentColor" /> 3</span><span><Flame aria-hidden="true" /> 7 dias</span><span><Lightbulb aria-hidden="true" /> 2 dicas</span></div>
+          <div className="preview-hud"><span><Heart aria-hidden="true" fill="currentColor" /> 3/{maxHearts}</span><span><Flame aria-hidden="true" /> 7 dias</span><span><Lightbulb aria-hidden="true" /> 2/{maxHints} dicas</span></div>
         </div>
       </section>
 
-      <section className="landing-statbar container" aria-label="Resumo da experiência"><div><Zap aria-hidden="true" /><span><strong>900+</strong> etapas de progressão</span></div><div><Code2 aria-hidden="true" /><span><strong>6</strong> trilhas completas</span></div><div><FolderGit2 aria-hidden="true" /><span><strong>Projetos</strong> para portfólio</span></div><div><Trophy aria-hidden="true" /><span><strong>Bosses</strong> e conquistas</span></div></section>
+      <section className="landing-statbar container" aria-label="Resumo da experiência"><div><Zap aria-hidden="true" /><span><strong>{formatNumber(stages)}</strong> etapas de progressão</span></div><div><Code2 aria-hidden="true" /><span><strong>{tracks.length}</strong> trilhas publicadas</span></div><div><BookOpenCheck aria-hidden="true" /><span><strong>{contents}</strong> conteúdos na Biblioteca</span></div><div><FolderGit2 aria-hidden="true" /><span><strong>1</strong> projeto para portfólio</span></div></section>
 
       <section className="landing-section container" id="jornada">
         <div className="landing-section-heading"><span className="kicker">MAPA ABERTO</span><h2>Seu mapa de aprendizado</h2><p>Todos os caminhos estão disponíveis desde o início. Escolha onde começar e acompanhe sua evolução.</p></div>
@@ -72,4 +79,8 @@ export default function Home() {
       <footer className="footer container"><span className="brand"><span className="brand-mark">D_</span> DevDex</span><p>Aprendizado gamificado com código real.</p></footer>
     </main>
   );
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("pt-BR").format(value);
 }

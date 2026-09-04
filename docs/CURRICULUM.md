@@ -2,14 +2,14 @@
 
 Conteúdo nunca fica acoplado a componentes. A interface recebe uma versão publicada de `learning_paths`, com skills ordenadas e pré-requisitos.
 
-## MVP
+## Beta atual
 
-- HTML: estrutura, headings, paragraphs, links e forms.
-- CSS: selectors, colors, spacing e flexbox.
-- JavaScript: variáveis, condições, loops, funções e arrays, com uma missão publicada por skill.
-- SQL Fundamentals · SQLite: SELECT, WHERE, ORDER BY, BETWEEN, LIKE e IN, com uma missão publicada por skill.
-- HTML Fundamentals: conteúdo semântico, navegação, listas e formulários.
-- CSS Fundamentals: cores, espaçamento, bordas e flexbox.
+- GitHub: conta, Git local, commits, branches, pull requests, Actions e governança.
+- HTML: semântica, estrutura, formulários, acessibilidade e páginas profissionais.
+- CSS: seletores, layout, responsividade, componentes e polimento visual.
+- JavaScript: fundamentos, DOM, assíncrono, dados, testes e arquitetura de front-end.
+- SQL Fundamentals · SQLite: leitura, filtros, joins, agregações, modelagem e análise.
+- Python: sintaxe, coleções, funções, arquivos, automação, APIs e código profissional.
 
 ## Publicação
 

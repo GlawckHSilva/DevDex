@@ -4,7 +4,7 @@ Plataforma gamificada para aprender programação escrevendo, executando, testan
 
 ## Estado
 
-Public Beta v0.2: quatro campanhas RPG com mapas próprios e batalhas que integram arena, IDE, preview seguro, testes e progressão.
+Public Beta v0.3: seis campanhas RPG publicadas com materiais, batalhas, revisão inteligente, Biblioteca, Project Mode, GitHub e progressão gamificada.
 
 ## Stack
 

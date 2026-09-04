@@ -3,7 +3,7 @@
 ## Incluído
 
 - cadastro/login, perfil básico e separação multiusuário;
-- quatro trilhas básicas: HTML, CSS, JavaScript e SQL;
+- seis trilhas publicadas: GitHub, HTML, CSS, JavaScript, SQL e Python;
 - catálogo, skill tree, lesson e missões por pré-requisito;
 - Monaco em desktop, executar/testar/resetar e feedback;
 - preview HTML/CSS, runner JavaScript e sandbox SQL;
@@ -12,7 +12,7 @@
 
 ## Fora
 
-Python, React, TypeScript como trilha, React Native, Flutter, mentor IA, Support Mode completo, projetos full stack, atualização automática e editor multi-arquivo avançado.
+React, TypeScript como trilha, React Native, Flutter, Mentor IA geral, Support Mode completo, projetos full stack, atualização automática e editor multi-arquivo avançado.
 
 ## Critério de aceite
 
