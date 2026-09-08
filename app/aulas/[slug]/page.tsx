@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { BookOpen, CirclePlay, Download, ExternalLink, Swords } from "lucide-react";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { AuthenticatedSidebar } from "@/app/dashboard/authenticated-sidebar";
@@ -12,14 +13,14 @@ export default async function StudyPage({ params }: { params: Promise<{ slug: st
   const user = await requireChatGPTUser(`/aulas/${slug}`);
   const lesson = await getStudyLesson(user.userId, slug);
   if (!lesson) notFound();
-  if (lesson.state === "locked") return <main className="dashboard-shell"><AuthenticatedSidebar user={user} activePath={`/trilhas/${lesson.pathSlug}`} /><section className="app-page container"><a className="back" href={`/trilhas/${lesson.pathSlug}`}>← Voltar ao mapa</a><h2>Material bloqueado</h2><p className="notice">Derrote os inimigos anteriores para liberar este estudo.</p></section></main>;
+  if (lesson.state === "locked") return <main className="dashboard-shell"><AuthenticatedSidebar user={user} activePath={`/trilhas/${lesson.pathSlug}`} /><section className="app-page container"><Link className="back" href={`/trilhas/${lesson.pathSlug}`}>← Voltar ao mapa</Link><h2>Material bloqueado</h2><p className="notice">Derrote os inimigos anteriores para liberar este estudo.</p></section></main>;
   const videos = getLessonVideoResources(lesson.slug, lesson.pathSlug);
   const commonErrors = lesson.body.commonErrors?.length ? lesson.body.commonErrors : ["Copiar o exemplo sem adaptar ao objetivo proposto.", "Ignorar os requisitos e não testar pequenas mudanças durante a implementação."];
 
   return <main className="dashboard-shell">
     <AuthenticatedSidebar user={user} activePath={`/trilhas/${lesson.pathSlug}`} />
     <section className="study-page">
-    <nav className="study-topbar"><a className="brand" href="/"><span className="brand-mark">D_</span>DevDex</a><a href={`/trilhas/${lesson.pathSlug}`}>← Voltar ao mapa</a></nav>
+    <nav className="study-topbar"><Link className="brand" href="/"><span className="brand-mark">D_</span>DevDex</Link><Link href={`/trilhas/${lesson.pathSlug}`}>← Voltar ao mapa</Link></nav>
     <header className="study-hero"><div><span><BookOpen size={16} /> MATERIAL DE ESTUDO</span><h1>{lesson.title}</h1><p>{lesson.body.introduction}</p></div><strong>GUIA + FONTES + EXEMPLOS</strong></header>
     <div className="study-layout">
       <article className="study-article">

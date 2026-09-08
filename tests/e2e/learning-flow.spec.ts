@@ -68,6 +68,15 @@ test("abre dashboard, trilhas e Project Mode pelos links visíveis", async ({ pa
   await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/);
 });
 
+test("troca de módulo sem recarregar o documento inteiro", async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem("devdex-document-loads", String(Number(sessionStorage.getItem("devdex-document-loads") ?? 0) + 1)));
+  await page.setExtraHTTPHeaders(userHeaders("fast-navigation-user"));
+  await page.goto("/dashboard");
+  await page.locator(".sidebar").getByRole("link", { name: /^HTML/ }).click();
+  await expect(page).toHaveURL(/\/trilhas\/html-fundamentals$/);
+  await expect.poll(() => page.evaluate(() => sessionStorage.getItem("devdex-document-loads"))).toBe("1");
+});
+
 test("expande o menu lateral sobre o mapa sem deslocar o conteúdo", async ({ page }) => {
   test.setTimeout(60_000);
   await page.setExtraHTTPHeaders(userHeaders("campaign-sidebar-user"));

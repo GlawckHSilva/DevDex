@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { PixelHero } from "@/app/aventura/character-select";
 import type { Archetype, CampaignLore, CampaignNode, CampaignZone } from "@/db";
 import { ENEMY_ASSETS } from "@/lib/enemy-assets";
@@ -230,7 +231,7 @@ function MissionPanel({ node, campaignPath }: { node: SelectedNode; campaignPath
   return <aside className="mission-detail-panel" aria-live="polite" data-testid="mission-panel">
     <span>{study ? "ESTUDO SELECIONADO" : "ENCONTRO SELECIONADO"}</span>{enemyAsset ? <div className={`detail-enemy-sprite type-${node.type}`}><Image alt={`Sprite de ${node.enemyName}`} fill sizes="150px" src={enemyAsset} /></div> : <div className={`detail-node-icon type-${node.type}`}>{node.icon}</div>}<small>{study ? "MATERIAL DE ESTUDO" : node.type === "boss" ? "CHEFE DA ZONA" : node.type === "bug" ? "DESAFIO DE DEBUG" : node.type === "elite" ? "INIMIGO ELITE" : "INIMIGO COMUM"}</small><h3>{node.enemyName}</h3><strong>{node.title}</strong><p>{node.description}</p>{study ? <div className="mission-learning-flow"><span>PDF + VÍDEO</span><i>→</i><span>5 BATALHAS</span></div> : null}
     <dl><div><dt>STATUS</dt><dd className={`status-${node.state}`}>{statusLabel(node.state)}</dd></div><div><dt>{study ? "CONTEÚDO" : "RECOMPENSA"}</dt><dd>{study ? "GUIA DA ETAPA" : `${node.xpReward} XP`}</dd></div></dl>
-    {node.href ? <a className="button" href={node.href}>{study ? node.state === "completed" ? "REVISAR MATERIAL" : "ABRIR MATERIAL" : node.state === "completed" ? "REPETIR BATALHA" : projectBoss ? "⚔ ENTRAR NO PROJETO" : node.state === "in_progress" ? "⚔ CONTINUAR BATALHA" : "⚔ COMEÇAR BATALHA"}</a> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}<a className="course-back-link" href={`#${campaignPath}`}>Curso completo · 150 etapas</a>
+    {node.href ? <Link className="button" href={node.href}>{study ? node.state === "completed" ? "REVISAR MATERIAL" : "ABRIR MATERIAL" : node.state === "completed" ? "REPETIR BATALHA" : projectBoss ? "⚔ ENTRAR NO PROJETO" : node.state === "in_progress" ? "⚔ CONTINUAR BATALHA" : "⚔ COMEÇAR BATALHA"}</Link> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}<a className="course-back-link" href={`#${campaignPath}`}>Curso completo · 150 etapas</a>
   </aside>;
 }
 

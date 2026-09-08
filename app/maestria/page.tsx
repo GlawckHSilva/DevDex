@@ -1,4 +1,5 @@
 import { AlertTriangle, CheckCircle2, Gauge, Target } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
 import { getCampaignSummaries, getDashboard, getMasteryOverview, getUserReviewRecommendations, type MasteryConcept, type UserReviewRecommendation } from "@/db";
@@ -23,7 +24,7 @@ export default async function MasteryPage() {
     <section className="dashboard-content mastery-page">
       <header className="dashboard-top mastery-top">
         <div><span className="kicker">MAESTRIA TÉCNICA</span><h1>Veja o que você já domina de verdade.</h1><p>XP mede avanço global. Maestria mede consistência por conceito, com base em acertos, erros, dicas e revisões.</p></div>
-        <a className="level-chip" href="/habilidades"><small>NÍVEL GLOBAL {profile.level}</small><strong>{profile.withinLevel} / {profile.required} XP</strong><div className="progress-track"><i style={{ width: `${profile.percent}%` }} /></div><span>◇ {profile.skillPoints} pontos disponíveis</span></a>
+        <Link className="level-chip" href="/habilidades"><small>NÍVEL GLOBAL {profile.level}</small><strong>{profile.withinLevel} / {profile.required} XP</strong><div className="progress-track"><i style={{ width: `${profile.percent}%` }} /></div><span>◇ {profile.skillPoints} pontos disponíveis</span></Link>
       </header>
 
       <section className="mastery-summary-grid" aria-label="Resumo de maestria">
@@ -60,7 +61,7 @@ function InsightList({ title, empty, items, review = false }: { title: string; e
 }
 
 function RecommendationList({ items }: { items: UserReviewRecommendation[] }) {
-  return <article className="mastery-insight-card"><header><span className="kicker">Pedir revisão</span></header>{items.length ? items.map((item) => <a className="mastery-review-link" href={`/biblioteca/${item.slug}`} key={item.id}><strong>{item.title}</strong><span>{item.reviewReason}</span></a>) : <p>Nenhum ponto crítico recente.</p>}</article>;
+  return <article className="mastery-insight-card"><header><span className="kicker">Pedir revisão</span></header>{items.length ? items.map((item) => <Link className="mastery-review-link" href={`/biblioteca/${item.slug}`} key={item.id}><strong>{item.title}</strong><span>{item.reviewReason}</span></Link>) : <p>Nenhum ponto crítico recente.</p>}</article>;
 }
 
 function ConceptCard({ concept, recommendation }: { concept: MasteryConcept; recommendation?: UserReviewRecommendation }) {
@@ -70,7 +71,7 @@ function ConceptCard({ concept, recommendation }: { concept: MasteryConcept; rec
     <p>{concept.zoneName ?? "Sem região vinculada"} · {concept.relatedActivities} atividade(s)</p>
     <div className="progress-track"><i style={{ width: `${concept.mastery}%` }} /></div>
     <footer><span>{concept.state}</span><small>{formatPracticeDate(concept.lastPracticeAt)}</small></footer>
-    {recommendation ? <a className="mastery-review-badge" href={`/biblioteca/${recommendation.slug}`}>{recommendation.reviewLabel}</a> : null}
+    {recommendation ? <Link className="mastery-review-badge" href={`/biblioteca/${recommendation.slug}`}>{recommendation.reviewLabel}</Link> : null}
   </div>;
 }
 

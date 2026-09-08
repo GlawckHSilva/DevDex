@@ -1,5 +1,6 @@
 import { ArrowLeft, BookOpen, Code2, Map, Star } from "lucide-react";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { AuthenticatedSidebar } from "@/app/dashboard/authenticated-sidebar";
 import { getLibraryContent, recordContentView } from "@/db";
@@ -19,7 +20,7 @@ export default async function LibraryContentPage({ params, searchParams }: { par
   return <main className="dashboard-shell">
     <AuthenticatedSidebar user={user} activePath="/biblioteca" />
     <section className="library-detail-page">
-    <nav className="library-topbar"><a className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</a><div><a href="/biblioteca"><ArrowLeft size={15} /> Biblioteca</a><a href={`/trilhas/${content.pathSlug}`}><Map size={15} /> Mapa</a></div></nav>
+    <nav className="library-topbar"><Link className="brand" href="/dashboard"><span className="brand-mark">D_</span>DevDex</Link><div><Link href="/biblioteca"><ArrowLeft size={15} /> Biblioteca</Link><Link href={`/trilhas/${content.pathSlug}`}><Map size={15} /> Mapa</Link></div></nav>
     <header className="library-detail-hero">
       <div><span className="kicker">{content.technologyName} · {content.zoneTitle ?? content.pathName}</span><h1>{content.title}</h1><p>{content.description}</p><div className="library-tags">{content.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div>
       <form action={`/api/library/${content.slug}/favorite`} method="post"><button className={content.favorite ? "favorite active" : "favorite"} type="submit"><Star size={17} fill={content.favorite ? "currentColor" : "none"} /> {content.favorite ? "SALVO" : "FAVORITAR"}</button></form>
@@ -41,8 +42,8 @@ export default async function LibraryContentPage({ params, searchParams }: { par
       <aside className="library-detail-aside">
         <div><span>QUANDO USAR</span><p>{content.whenToUse || "Use como referência durante a prática e nas revisões."}</p></div>
         {content.snippets.length ? <div><span>SNIPPETS</span>{content.snippets.map((snippet) => <article key={snippet.title}><strong>{snippet.title}</strong><small>{snippet.language}</small><pre><code>{snippet.code}</code></pre></article>)}</div> : null}
-        {content.prerequisites.length ? <div><span>PRÉ-REQUISITOS</span>{content.prerequisites.map((item) => <a href={`/biblioteca/${item.slug}`} key={item.slug}>{item.title}<small>{item.technologyName}</small></a>)}</div> : null}
-        <div className="library-related"><span>CONTINUAR APRENDENDO</span>{content.missionSlug ? <a className="button" href={`/missoes/${content.missionSlug}`}>IR PARA A MISSÃO →</a> : null}<a href={`/trilhas/${content.pathSlug}`}>Ver mapa da campanha</a></div>
+        {content.prerequisites.length ? <div><span>PRÉ-REQUISITOS</span>{content.prerequisites.map((item) => <Link href={`/biblioteca/${item.slug}`} key={item.slug}>{item.title}<small>{item.technologyName}</small></Link>)}</div> : null}
+        <div className="library-related"><span>CONTINUAR APRENDENDO</span>{content.missionSlug ? <Link className="button" href={`/missoes/${content.missionSlug}`}>IR PARA A MISSÃO →</Link> : null}<Link href={`/trilhas/${content.pathSlug}`}>Ver mapa da campanha</Link></div>
       </aside>
     </div>
     </section>

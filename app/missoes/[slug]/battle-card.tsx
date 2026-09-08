@@ -12,6 +12,7 @@ import { clsx } from "clsx";
 import { ArrowLeft, Code2, FlaskConical, Lightbulb, ListChecks, ScrollText, Swords, Volume2, VolumeX, X } from "lucide-react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
 export type BattleView = { enemyName: string; enemyType: "enemy" | "elite" | "boss"; enemyLevel: number; playerLevel: number; playerXpPercent: number; skillPoints: number; lives: number; maxLives: number; hints: number; maxHints: number; nextHeartMinutes: number | null; nextHintMinutes: number | null; hint?: string | null; nextHintType?: string | null; state: "active" | "defeated" | "completed"; archetype: Archetype };
@@ -41,14 +42,14 @@ export function BattleStudyOverlay({ material, enemyType, pathSlug, started, onC
         <section><h2>Antes de enfrentar este inimigo</h2><p>{material.explanation}</p><h2>Exemplo</h2><pre><code>{material.exampleCode}</code></pre><p>{material.exampleExplanation}</p></section>
         <aside><h2>Pontos importantes</h2><ul>{material.keyPoints.map((item) => <li key={item}>{item}</li>)}</ul>{material.commonMistakes.length ? <><h2>Erros comuns</h2><ul className="study-mistakes">{material.commonMistakes.map((item) => <li key={item}>{item}</li>)}</ul></> : null}</aside>
       </div>
-      <footer><p>O exemplo ensina o conceito. Na etapa seguinte você vai aplicá-lo sem receber a solução pronta.</p><div className="study-footer-actions"><a className="button study-back-link" href={`/trilhas/${pathSlug}`}><ArrowLeft aria-hidden="true" size={16} /> VOLTAR AO MAPA</a><button className="button" data-testid="start-battle" onClick={onContinue}><Swords aria-hidden="true" size={17} /> {started ? "VOLTAR À PRÁTICA" : "IR PARA A PRÁTICA"}</button></div></footer>
+      <footer><p>O exemplo ensina o conceito. Na etapa seguinte você vai aplicá-lo sem receber a solução pronta.</p><div className="study-footer-actions"><Link className="button study-back-link" href={`/trilhas/${pathSlug}`}><ArrowLeft aria-hidden="true" size={16} /> VOLTAR AO MAPA</Link><button className="button" data-testid="start-battle" onClick={onContinue}><Swords aria-hidden="true" size={17} /> {started ? "VOLTAR À PRÁTICA" : "IR PARA A PRÁTICA"}</button></div></footer>
     </article>
   </section>;
 }
 
 export function BattleHeader({ battle, pathSlug, pathLabel, title, xpReward }: { battle?: BattleView; pathSlug: string; pathLabel: string; title: string; xpReward: number }) {
   return <header className="battle-page-header">
-    <div className="battle-header-start"><a className="battle-brand" href="/dashboard">Dev<span>Dex</span></a><a className="battle-back" href={`/trilhas/${pathSlug}`}><ArrowLeft aria-hidden="true" size={17} /> <span>Voltar para o mapa</span></a></div>
+    <div className="battle-header-start"><Link className="battle-brand" href="/dashboard">Dev<span>Dex</span></Link><Link className="battle-back" href={`/trilhas/${pathSlug}`}><ArrowLeft aria-hidden="true" size={17} /> <span>Voltar para o mapa</span></Link></div>
     <div className="battle-header-mission"><small>{pathLabel}</small><strong>{title}</strong></div>
     <div className="battle-header-status"><BattleAudioToggle /><div className="battle-xp"><span>◈ Nível {battle?.playerLevel ?? 1}</span><div><i style={{ width: `${battle?.playerXpPercent ?? 0}%` }} /></div><small>até +{Math.round(xpReward * 1.15)} XP</small></div><BattleResources battle={battle} /></div>
   </header>;
