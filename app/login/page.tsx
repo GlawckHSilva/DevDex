@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
-import { FaGithub, FaGoogle } from "react-icons/fa";
-import { Bot } from "lucide-react";
 import { chatGPTSignInPath, getChatGPTUser } from "@/app/chatgpt-auth";
+import { LoginExperience } from "@/app/login/login-experience";
 import { safeReturnPath } from "@/lib/oauth-auth";
 import { getOAuthConfig } from "@/lib/runtime-config";
 
@@ -15,21 +14,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const providers = getOAuthConfig();
   const error = query.erro ? errorMessage(query.erro) : null;
 
-  return <main className="login-page">
-    <section className="login-card" aria-labelledby="login-title">
-      <a className="brand" href="/"><span className="brand-mark">D_</span><span>DevDex</span></a>
-      <span className="kicker">CONTINUE SUA JORNADA</span>
-      <h1 id="login-title">Entre no DevDex</h1>
-      <p>Escolha como acessar. Seu progresso fica vinculado ao e-mail verificado da conta.</p>
-      {error && <div className="login-error" role="alert">{error}</div>}
-      <div className="login-options">
-        <a className="login-provider login-google" href={`/auth/google?return_to=${encodeURIComponent(returnTo)}`} aria-disabled={!providers.google.enabled}><FaGoogle aria-hidden="true" /> Continuar com Google{!providers.google.enabled && <small>Configuração pendente</small>}</a>
-        <a className="login-provider" href={`/auth/github?return_to=${encodeURIComponent(returnTo)}`} aria-disabled={!providers.github.enabled}><FaGithub aria-hidden="true" /> Continuar com GitHub{!providers.github.enabled && <small>Configuração pendente</small>}</a>
-        <a className="login-provider" href={chatGPTSignInPath(returnTo)} target="_top"><Bot aria-hidden="true" /> Continuar com ChatGPT</a>
-      </div>
-      <a className="login-back" href="/">← Voltar ao início</a>
-    </section>
-  </main>;
+  return <LoginExperience
+    error={error}
+    googleEnabled={providers.google.enabled}
+    githubEnabled={providers.github.enabled}
+    googleUrl={`/auth/google?return_to=${encodeURIComponent(returnTo)}`}
+    githubUrl={`/auth/github?return_to=${encodeURIComponent(returnTo)}`}
+    chatgptUrl={chatGPTSignInPath(returnTo)}
+  />;
 }
 
 function errorMessage(error: string) {
