@@ -1,7 +1,7 @@
 import { AlertTriangle, CheckCircle2, Gauge, Target } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
+import { requireChatGPTUser, signOutPath } from "@/app/chatgpt-auth";
 import { getCampaignSummaries, getDashboard, getMasteryOverview, getUserReviewRecommendations, type MasteryConcept, type UserReviewRecommendation } from "@/db";
 import { isAdminEmail } from "@/lib/runtime-config";
 import { AppSidebar } from "../dashboard/sidebar";
@@ -20,7 +20,7 @@ export default async function MasteryPage() {
   const reviewBySkill = new Map(reviews.map((item) => [item.skillId, item]));
 
   return <main className="dashboard-shell">
-    <AppSidebar campaigns={campaigns} skillPoints={profile.skillPoints} admin={isAdminEmail(user.email)} signOutHref={chatGPTSignOutPath("/")} activePath="/maestria" />
+    <AppSidebar campaigns={campaigns} skillPoints={profile.skillPoints} admin={isAdminEmail(user.email)} signOutHref={signOutPath(user)} activePath="/maestria" />
     <section className="dashboard-content mastery-page">
       <header className="dashboard-top mastery-top">
         <div><span className="kicker">MAESTRIA TÉCNICA</span><h1>Veja o que você já domina de verdade.</h1><p>XP mede avanço global. Maestria mede consistência por conceito, com base em acertos, erros, dicas e revisões.</p></div>

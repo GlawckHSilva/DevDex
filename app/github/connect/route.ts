@@ -1,10 +1,10 @@
-import { getChatGPTUser } from "@/app/chatgpt-auth";
+import { getChatGPTUser, signInPath } from "@/app/chatgpt-auth";
 import { BetaAccessError, createGitHubConnectionState, ensureUser } from "@/db";
 import { getGitHubInstallUrl } from "@/lib/github-app";
 
 export async function GET(request: Request) {
   const user = await getChatGPTUser();
-  if (!user) return Response.redirect(new URL(`/signin-with-chatgpt?return_to=${encodeURIComponent(new URL(request.url).pathname + new URL(request.url).search)}`, request.url));
+  if (!user) return Response.redirect(new URL(signInPath(new URL(request.url).pathname + new URL(request.url).search), request.url));
   try { await ensureUser(user); }
   catch (error) { if (error instanceof BetaAccessError) return Response.redirect(new URL(`/beta-indisponivel?reason=${error.reason}`, request.url)); throw error; }
   const requested = new URL(request.url).searchParams.get("return_to") ?? "/dashboard";

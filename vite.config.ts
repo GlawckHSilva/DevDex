@@ -25,6 +25,11 @@ const localBindingConfig = {
     GITHUB_APP_PRIVATE_KEY: process.env.GITHUB_APP_PRIVATE_KEY ?? "",
     OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? "",
     OPENAI_REVIEW_MODEL: process.env.OPENAI_REVIEW_MODEL ?? "gpt-5.4-mini",
+    AUTH_SESSION_SECRET: process.env.AUTH_SESSION_SECRET ?? "",
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "",
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? "",
+    GITHUB_OAUTH_CLIENT_ID: process.env.GITHUB_OAUTH_CLIENT_ID ?? "",
+    GITHUB_OAUTH_CLIENT_SECRET: process.env.GITHUB_OAUTH_CLIENT_SECRET ?? "",
   },
   d1_databases: d1
     ? [

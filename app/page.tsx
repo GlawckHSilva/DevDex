@@ -2,7 +2,7 @@ import Image from "next/image";
 import { ArrowRight, BookOpenCheck, CheckCircle2, Code2, Flame, FolderGit2, Gamepad2, Heart, Lightbulb, Trophy, Zap } from "lucide-react";
 import { FaCss3Alt, FaGithub, FaHtml5, FaPython } from "react-icons/fa";
 import { SiJavascript, SiSqlite } from "react-icons/si";
-import { chatGPTSignInPath } from "@/app/chatgpt-auth";
+import { signInPath } from "@/app/chatgpt-auth";
 
 const tracks = [
   { title: "Git", detail: "Versionamento", icon: FaGithub, path: "github-fundamentals" },
@@ -21,8 +21,8 @@ const maxHints = 3;
 export default function Home() {
   const stages = tracks.length * stagesPerTrack;
   const contents = tracks.length * contentsPerTrack;
-  const startPath = chatGPTSignInPath("/dashboard");
-  const challengePath = chatGPTSignInPath("/trilhas/html-fundamentals");
+  const startPath = signInPath("/dashboard");
+  const challengePath = signInPath("/trilhas/html-fundamentals");
   return (
     <main className="landing-page">
       <nav className="nav landing-nav container" aria-label="Navegação principal">
@@ -60,7 +60,7 @@ export default function Home() {
       <section className="landing-section container" id="jornada">
         <div className="landing-section-heading"><span className="kicker">MAPA ABERTO</span><h2>Seu mapa de aprendizado</h2><p>Todos os caminhos estão disponíveis desde o início. Escolha onde começar e acompanhe sua evolução.</p></div>
         <div className="learning-path"><div className="learning-path-line" aria-hidden="true" />
-          {tracks.map(({ title, detail, icon: Icon, path }) => <a className="path-step available" href={chatGPTSignInPath(`/trilhas/${path}`)} key={title} target="_top"><span className="path-status">DISPONÍVEL</span><div className="path-node"><Icon aria-hidden="true" /></div><strong>{title}</strong><small>{detail}</small></a>)}
+          {tracks.map(({ title, detail, icon: Icon, path }) => <a className="path-step available" href={signInPath(`/trilhas/${path}`)} key={title} target="_top"><span className="path-status">DISPONÍVEL</span><div className="path-node"><Icon aria-hidden="true" /></div><strong>{title}</strong><small>{detail}</small></a>)}
         </div>
       </section>
 

@@ -11,6 +11,11 @@ type RuntimeEnv = {
   GITHUB_APP_PRIVATE_KEY?: string;
   OPENAI_API_KEY?: string;
   OPENAI_REVIEW_MODEL?: string;
+  AUTH_SESSION_SECRET?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  GITHUB_OAUTH_CLIENT_ID?: string;
+  GITHUB_OAUTH_CLIENT_SECRET?: string;
 };
 
 export function getBetaConfig() {
@@ -39,6 +44,24 @@ export function getAIReviewConfig() {
   const runtime = env as RuntimeEnv;
   const apiKey = runtime.OPENAI_API_KEY?.trim() ?? "";
   return { apiKey, model: runtime.OPENAI_REVIEW_MODEL?.trim() || "gpt-5.4-mini", enabled: apiKey.length > 0 };
+}
+
+export function getOAuthConfig() {
+  const runtime = env as RuntimeEnv;
+  const sessionSecret = runtime.AUTH_SESSION_SECRET?.trim() ?? "";
+  const google = {
+    clientId: runtime.GOOGLE_CLIENT_ID?.trim() ?? "",
+    clientSecret: runtime.GOOGLE_CLIENT_SECRET?.trim() ?? "",
+  };
+  const github = {
+    clientId: runtime.GITHUB_OAUTH_CLIENT_ID?.trim() ?? "",
+    clientSecret: runtime.GITHUB_OAUTH_CLIENT_SECRET?.trim() ?? "",
+  };
+  return {
+    sessionSecret,
+    google: { ...google, enabled: Boolean(sessionSecret.length >= 32 && google.clientId && google.clientSecret) },
+    github: { ...github, enabled: Boolean(sessionSecret.length >= 32 && github.clientId && github.clientSecret) },
+  };
 }
 
 export function isAdminEmail(email: string) {

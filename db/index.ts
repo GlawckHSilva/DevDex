@@ -21,6 +21,12 @@ export class BetaAccessError extends Error {
   constructor(public reason: "closed" | "full") { super(reason === "closed" ? "Beta fechada." : "Beta lotada."); }
 }
 
+export async function findProfileUserIdByEmail(email: string) {
+  const profile = await getDb().prepare("SELECT user_id AS userId FROM profiles WHERE lower(email)=lower(?) ORDER BY created_at LIMIT 1")
+    .bind(email).first<{ userId: string }>();
+  return profile?.userId ?? null;
+}
+
 export async function ensureUser(user: ChatGPTUser) {
   const db = getDb();
   const config = getBetaConfig();

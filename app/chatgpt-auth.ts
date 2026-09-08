@@ -1,23 +1,26 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { BetaAccessError, ensureUser } from "@/db";
+import { readExternalUser, safeReturnPath } from "@/lib/oauth-auth";
 import { isAdminEmail } from "@/lib/runtime-config";
 
-export type ChatGPTUser = { userId: string; displayName: string; email: string; fullName: string | null };
+export type ChatGPTUser = { userId: string; displayName: string; email: string; fullName: string | null; provider: "chatgpt" | "google" | "github" };
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const userId = requestHeaders.get("oai-authenticated-user-id");
   const email = requestHeaders.get("oai-authenticated-user-email");
-  if (!userId || !email) return null;
-  const encodedName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName = encodedName && requestHeaders.get("oai-authenticated-user-full-name-encoding") === "percent-encoded-utf-8" ? safeDecode(encodedName) : null;
-  return { userId, email, fullName, displayName: fullName ?? email };
+  if (userId && email) {
+    const encodedName = requestHeaders.get("oai-authenticated-user-full-name");
+    const fullName = encodedName && requestHeaders.get("oai-authenticated-user-full-name-encoding") === "percent-encoded-utf-8" ? safeDecode(encodedName) : null;
+    return { userId, email, fullName, displayName: fullName ?? email, provider: "chatgpt" };
+  }
+  return readExternalUser(requestHeaders.get("cookie"));
 }
 
 export async function requireChatGPTUser(returnTo: string): Promise<ChatGPTUser> {
   const user = await getChatGPTUser();
-  if (!user) redirect(`/signin-with-chatgpt?return_to=${encodeURIComponent(safeReturnPath(returnTo))}`);
+  if (!user) redirect(signInPath(returnTo));
   try { await ensureUser(user); }
   catch (error) {
     if (error instanceof BetaAccessError) redirect(`/beta-indisponivel?reason=${error.reason}`);
@@ -40,12 +43,12 @@ export function chatGPTSignInPath(returnTo = "/") {
   return `/signin-with-chatgpt?return_to=${encodeURIComponent(safeReturnPath(returnTo))}`;
 }
 
-function safeReturnPath(value: string) {
-  if (!value.startsWith("/") || value.startsWith("//")) return "/";
-  try {
-    const url = new URL(value, "https://app.local");
-    return url.origin === "https://app.local" ? `${url.pathname}${url.search}${url.hash}` : "/";
-  } catch { return "/"; }
+export function signInPath(returnTo = "/") {
+  return `/login?return_to=${encodeURIComponent(safeReturnPath(returnTo))}`;
+}
+
+export function signOutPath(user: ChatGPTUser, returnTo = "/") {
+  return user.provider === "chatgpt" ? chatGPTSignOutPath(returnTo) : `/auth/logout?return_to=${encodeURIComponent(safeReturnPath(returnTo))}`;
 }
 
 function safeDecode(value: string) { try { return decodeURIComponent(value); } catch { return null; } }

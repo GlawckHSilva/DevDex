@@ -1,4 +1,4 @@
-import { chatGPTSignOutPath, requireChatGPTUser } from "@/app/chatgpt-auth";
+import { requireChatGPTUser, signOutPath } from "@/app/chatgpt-auth";
 import Link from "next/link";
 import { AppSidebar } from "./sidebar";
 import { getCampaignSummaries, getDashboard, getProjectSummaries, getUserReviewRecommendations } from "@/db";
@@ -14,7 +14,7 @@ export default async function Dashboard() {
     ?? campaigns.find((campaign) => campaign.pathSlug === "github-fundamentals") ?? campaigns[0];
 
   return <main className="dashboard-shell">
-    <AppSidebar campaigns={campaigns} skillPoints={profile.skillPoints} admin={isAdminEmail(user.email)} signOutHref={chatGPTSignOutPath("/")} />
+    <AppSidebar campaigns={campaigns} skillPoints={profile.skillPoints} admin={isAdminEmail(user.email)} signOutHref={signOutPath(user)} />
     <section className="dashboard-content">
       <header className="dashboard-top"><div><span className="kicker">UNIVERSO DEVDEX</span><h1>Escolha sua próxima aventura, {user.displayName.split("@")[0]}.</h1></div><Link className="level-chip" href="/habilidades"><small>NÍVEL GLOBAL {profile.level}</small><strong>{profile.withinLevel} / {profile.required} XP</strong><div className="progress-track"><i style={{ width: `${profile.percent}%` }} /></div><span>❤️ {profile.hearts}/{profile.maxHearts} · 💡 {profile.hints}/{profile.maxHints} · ◇ {profile.skillPoints}</span></Link></header>
       {activeCampaign ? <section className={`campaign-continue theme-${activeCampaign.theme}`}><div><span className="kicker">CONTINUE SUA JORNADA · {activeCampaign.technologyName}</span><h2>{activeCampaign.title}</h2><p>Zona atual: <strong>{activeCampaign.zoneTitle}</strong></p><small>{activeCampaign.completedMissions}/{activeCampaign.totalMissions} inimigos derrotados</small></div><Link href={`/trilhas/${activeCampaign.pathSlug}`}>CONTINUAR →</Link></section> : null}
