@@ -180,7 +180,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
       <div className="map-pan-controls"><span>ARRASTE PARA OS LADOS</span><button onClick={() => centerOnPlayer()} type="button">◎ Centralizar</button></div>
       <div className="adventure-legend"><strong>CAMINHO</strong><span><i className="completed" />Concluído</span><span><i className="available" />Disponível</span><span><i className="locked" />Bloqueado</span></div>
       </div>
-      <MissionPanel node={selected} campaignPath={campaignPath} />
+      <MissionPanel node={selected} campaignPath={campaignPath} zoneSortOrder={zone.sortOrder} />
     </div>
   </section>;
 }
@@ -224,14 +224,18 @@ function MapNode({ node, selected, current, onSelect, onKeyDown }: { node: Selec
   ><span className={`map-node-encounter${enemyAsset ? " has-sprite" : ""}`}><i className="map-enemy-silhouette">{enemyAsset ? <Image alt="" aria-hidden="true" fill sizes="130px" src={enemyAsset} /> : node.icon}</i><i className="map-node-pedestal" />{node.state === "completed" ? <b aria-hidden="true">✓</b> : node.state === "locked" ? <b aria-hidden="true">⌁</b> : null}</span><strong>{node.enemyName}</strong><small>{node.title}</small><em>{node.type === "boss" ? "CHEFE" : node.type === "bug" ? "DESAFIO" : node.type === "elite" ? "ELITE" : `NÍVEL ${node.enemyLevel}`}</em></button>;
 }
 
-function MissionPanel({ node, campaignPath }: { node: SelectedNode; campaignPath: string }) {
+function MissionPanel({ node, campaignPath, zoneSortOrder }: { node: SelectedNode; campaignPath: string; zoneSortOrder: number }) {
   const projectBoss = node.missionSlug === "boss-project";
   const study = node.nodeKind === "study";
   const enemyAsset = ENEMY_ASSETS[node.enemyName];
+  const encounterLabel = study ? "MATERIAL DE ESTUDO" : node.type === "bug" ? "BUG BATTLE" : node.type === "boss" ? "BOSS BATTLE" : node.type === "elite" ? "ELITE BATTLE" : "BATTLE";
+  const tags = campaignPath === "github-fundamentals" ? ["GitHub", "Perfil", "Segurança"] : [study ? "Material" : "Prática", node.type === "bug" ? "Debug" : node.type === "elite" ? "Elite" : "Fundamentos"];
   return <aside className="mission-detail-panel" aria-live="polite" data-testid="mission-panel">
-    <span>{study ? "ESTUDO SELECIONADO" : "ENCONTRO SELECIONADO"}</span>{enemyAsset ? <div className={`detail-enemy-sprite type-${node.type}`}><Image alt={`Sprite de ${node.enemyName}`} fill sizes="150px" src={enemyAsset} /></div> : <div className={`detail-node-icon type-${node.type}`}>{node.icon}</div>}<small>{study ? "MATERIAL DE ESTUDO" : node.type === "boss" ? "CHEFE DA ZONA" : node.type === "bug" ? "DESAFIO DE DEBUG" : node.type === "elite" ? "INIMIGO ELITE" : "INIMIGO COMUM"}</small><h3>{node.enemyName}</h3><strong>{node.title}</strong><p>{node.description}</p>{study ? <div className="mission-learning-flow"><span>PDF + VÍDEO</span><i>→</i><span>5 BATALHAS</span></div> : null}
-    <dl><div><dt>STATUS</dt><dd className={`status-${node.state}`}>{statusLabel(node.state)}</dd></div><div><dt>{study ? "CONTEÚDO" : "RECOMPENSA"}</dt><dd>{study ? "GUIA DA ETAPA" : `${node.xpReward} XP`}</dd></div></dl>
-    {node.href ? <Link className="button" href={node.href}>{study ? node.state === "completed" ? "REVISAR MATERIAL" : "ABRIR MATERIAL" : node.state === "completed" ? "REPETIR BATALHA" : projectBoss ? "⚔ ENTRAR NO PROJETO" : node.state === "in_progress" ? "⚔ CONTINUAR BATALHA" : "⚔ COMEÇAR BATALHA"}</Link> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}<a className="course-back-link" href={`#${campaignPath}`}>Curso completo · 150 etapas</a>
+    <header className="mission-panel-header"><span>{encounterLabel}</span><small>ZONA {String(zoneSortOrder).padStart(2, "0")} · MISSÃO {String(node.order).padStart(2, "0")}</small></header>
+    {enemyAsset ? <div className={`detail-enemy-sprite type-${node.type}`}><Image alt={`Sprite de ${node.enemyName}`} fill sizes="150px" src={enemyAsset} /></div> : <div className={`detail-node-icon type-${node.type}`}>{node.icon}</div>}
+    <small className="mission-panel-kicker">{study ? "MATERIAL DE ESTUDO" : node.type === "boss" ? "CHEFE DA ZONA" : node.type === "bug" ? "DESAFIO DE DEBUG" : node.type === "elite" ? "INIMIGO ELITE" : "INIMIGO COMUM"}</small><h3>{node.enemyName}</h3><strong>{node.title}</strong><p>{node.description}</p>{study ? <div className="mission-learning-flow"><span>PDF + VÍDEO</span><i>→</i><span>5 BATALHAS</span></div> : <><div className="mission-panel-tags" aria-label="Tópicos da missão">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div><div className="mission-helper-actions" aria-label="Recursos de apoio"><span>▧ Aprender</span><span>▷ Assistir</span><span>⚔ Treinar</span></div></>}
+    <div className="mission-reward-line"><span>{study ? "CONTEÚDO" : "RECOMPENSA"}</span><strong>{study ? "GUIA DA ETAPA" : `+${node.xpReward} XP`}</strong><em className={`status-${node.state}`}>{statusLabel(node.state)}</em></div>
+    {node.href ? <Link className="button" href={node.href}>{study ? node.state === "completed" ? "Revisar material →" : "Abrir material →" : node.state === "completed" ? "Repetir batalha →" : projectBoss ? "Entrar no projeto →" : node.state === "in_progress" ? "Continuar batalha →" : "Iniciar batalha →"}</Link> : <button className="button" disabled>CAMINHO BLOQUEADO</button>}<a className="course-back-link" href={`#${campaignPath}`}>Curso completo · 150 etapas</a>
   </aside>;
 }
 

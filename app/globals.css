@@ -639,3 +639,72 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 /* Keep the campaign world tall enough to remain the visual anchor. */
 .game-campaign-shell.has-app-sidebar .adventure-map-canvas.map-pannable { height:670px; min-height:670px; }
 @media (max-width:760px) { .game-campaign-shell.has-app-sidebar .adventure-map-canvas.map-pannable { height:560px; min-height:560px!important; } }
+
+/* Campaign fidelity pass: compact sidebar/HUD and a mission card closer to the map reference. */
+.game-campaign-shell.has-app-sidebar { --sidebar-width:132px; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar,
+.game-campaign-shell.has-app-sidebar>.app-sidebar:hover,
+.game-campaign-shell.has-app-sidebar>.app-sidebar:focus-within { width:var(--sidebar-width); padding-inline:10px; box-shadow:none; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar .brand { margin:0; gap:7px; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-brand-name { font-size:12px; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar nav { gap:10px; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-nav-section>a,
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-nav-section>.sidebar-disabled { grid-template-columns:18px minmax(0,1fr) auto; gap:7px; padding:7px 6px!important; font-size:11px; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-nav-section a>i { font-size:8px; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-nav-section>small { font-size:7px; letter-spacing:.14em; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar .signout { padding-inline:6px; font-size:11px; }
+.game-campaign-header { grid-template-columns:minmax(0,1.55fr) minmax(210px,.72fr) minmax(250px,.86fr); gap:12px; }
+.campaign-title-block,.header-campaign-progress,.game-player-card { height:104px; min-height:104px; border-radius:8px; box-shadow:inset 0 1px #ffffff08,0 10px 25px #0003; }
+.campaign-title-block { gap:14px; padding:10px 15px; background:linear-gradient(115deg,#091522f5,#0a1422f4 62%,#17102ad9); }
+.campaign-emblem { width:54px; height:54px; font-size:16px; }
+.campaign-title-block h1 { font-family:var(--font-geist-mono); font-size:clamp(22px,2.2vw,34px); font-weight:800; letter-spacing:-.045em; }
+.campaign-title-block p { font-size:9px; }
+.campaign-title-stats { gap:9px; font-size:6px; }
+.campaign-title-stats span+span { padding-left:9px; }
+.header-campaign-progress { padding:14px 16px; }
+.header-campaign-progress .progress-track { height:7px; margin:10px 0 8px; }
+.header-campaign-progress small { font-size:9px; }
+.game-player-card { gap:8px; padding:9px 12px; }
+.game-player-card .pixel-small { width:52px; height:64px; transform:scale(.9); }
+.game-player-card strong { font-size:12px; }
+.game-player-card small { font-size:8px; }
+.player-resources { gap:8px; margin-top:5px; font-size:8px; }
+.course-zone-nav { padding-block:6px 7px; }
+.course-zone-nav button { min-width:150px; }
+.course-zone-nav button>span { width:22px; height:22px; }
+.course-zone-nav button.active>span { width:28px; height:28px; }
+.adventure-map-canvas.map-pannable { height:670px; min-height:670px; }
+.map-fog { opacity:.3; }
+.mission-detail-panel { width:auto; padding:21px 22px; }
+.mission-panel-header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:5px; }
+.mission-panel-header>span { color:#b784ff; font:800 10px var(--font-geist-mono); letter-spacing:.1em; }
+.mission-panel-header>small { color:#7b91a6; font:700 8px var(--font-geist-mono); letter-spacing:.06em; white-space:nowrap; }
+.mission-panel-kicker { color:#71879a; font:700 8px var(--font-geist-mono); letter-spacing:.08em; }
+.mission-detail-panel .detail-enemy-sprite { margin:24px auto 14px; }
+.mission-detail-panel h3 { margin:7px 0 5px; font-size:23px; line-height:1.2; }
+.mission-detail-panel>strong { font-size:11px; }
+.mission-detail-panel>p { margin:15px 0 17px; }
+.mission-panel-tags,.mission-helper-actions { display:flex; flex-wrap:wrap; gap:7px; }
+.mission-panel-tags { margin:0 0 14px; }
+.mission-panel-tags span,.mission-helper-actions span { display:inline-flex; align-items:center; padding:7px 9px; border:1px solid #29465d; border-radius:6px; background:#091827; color:#a9ccdc; font:700 8px var(--font-geist-mono); }
+.mission-panel-tags span:first-child { color:#68e4de; border-color:#32656b; }
+.mission-helper-actions { padding:14px 0; border-top:1px solid #1f3345; border-bottom:1px solid #1f3345; }
+.mission-helper-actions span { flex:1; justify-content:center; min-width:70px; color:#a8c2d5; }
+.mission-reward-line { display:flex; align-items:center; gap:10px; margin-top:auto; padding:15px 0 14px; border-bottom:1px solid #1f3345; }
+.mission-reward-line>span { color:#7d92a5; font:700 8px var(--font-geist-mono); letter-spacing:.08em; }
+.mission-reward-line>strong { color:#c7a4ff; font:800 16px var(--font-geist-mono); }
+.mission-reward-line>em { margin-left:auto; color:#63e3da; font:700 8px var(--font-geist-mono); font-style:normal; }
+.mission-reward-line .status-locked { color:#7c8997; }
+.mission-detail-panel>dl { display:none; }
+.mission-detail-panel .button { min-height:56px; margin-top:14px; background:linear-gradient(110deg,#22d4d3,#4b93ee); border-color:#49e2e0; color:#07121b!important; font-weight:900; }
+.mission-detail-panel .button:hover { filter:brightness(1.08); }
+@media (max-width:1180px) and (min-width:761px) {
+  .game-campaign-shell.has-app-sidebar { --sidebar-width:132px; }
+  .game-campaign-header { grid-template-columns:minmax(0,1.25fr) minmax(185px,.75fr) minmax(210px,.85fr); }
+  .mission-detail-panel { padding-inline:18px; }
+}
+@media (max-width:760px) {
+  .game-campaign-shell.has-app-sidebar { --sidebar-width:100%; }
+  .mission-panel-header>small { font-size:7px; }
+  .mission-helper-actions span { min-width:0; }
+}
