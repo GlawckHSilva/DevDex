@@ -42,7 +42,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
   const zoneLayouts = useMemo(() => layoutsFor(zone.nodes.length), [zone.nodes.length]);
   const nodes = useMemo<SelectedNode[]>(() => zone.nodes.map((node, index) => {
     const layout = zoneLayouts[index];
-    const type = node.nodeKind === "study" ? "study" : campaignPath === "javascript-fundamentals" && index === 3 ? "bug" : node.enemyType;
+    const type = node.nodeKind === "study" ? "study" : campaignPath === "javascript-fundamentals" && index === 3 ? "bug" : node.enemyName.toLowerCase().startsWith("bug") ? "bug" : node.enemyType;
     return { ...node, ...layout, type, title: node.skillName, icon: type === "study" ? "▤" : CAMPAIGN_ICONS[campaignPath]?.[index % 8] ?? (type === "elite" ? "✦" : "◇"), order: index + 1, state: node.missionState, description: node.enemyIntro || node.battleDialogue, href: node.missionState === "locked" ? null : node.nodeKind === "study" ? `/aulas/${node.missionSlug}` : `/missoes/${node.missionSlug}` };
   }), [campaignPath, zone.nodes, zoneLayouts]);
   const bossNode: SelectedNode | null = boss ? { ...BOSS_LAYOUT, nodeKind: "battle", type: "boss", title: "Project Mode", icon: "♛", order: nodes.length + 1, state: boss.state, description: "Construa uma aplicação real para restaurar o sistema central da zona.", href: boss.state === "locked" ? null : boss.href, missionSlug: "boss-project", missionTitle: boss.title, skillName: "Project Mode", xpReward: 720, enemyName: boss.title, enemyType: "boss", enemyLevel: nodes.length + 1, enemyIntro: "", battleDialogue: "", sortOrder: nodes.length + 1, zoneId: zone.id, missionState: boss.state } : null;
