@@ -478,6 +478,76 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 }
 @media (prefers-reduced-motion:reduce) { .battle-toast { animation:none!important; } }
 
+/* Campaign map: compact game HUD with the world as the focus. */
+.game-campaign-shell.has-app-sidebar { --sidebar-width:176px; grid-template-columns:var(--sidebar-width) minmax(0,1fr)!important; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar { width:var(--sidebar-width); padding:22px 17px 18px; overflow-y:auto; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-brand-name,
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-nav-section>small,
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-nav-section a>span,
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-nav-section a>i,
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-nav-section a>b,
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-disabled>span,
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-disabled>em,
+.game-campaign-shell.has-app-sidebar>.app-sidebar .signout>span { display:block; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar .brand { justify-content:flex-start; margin-left:4px; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar nav { gap:15px; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-nav-section>a,
+.game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-nav-section>.sidebar-disabled { grid-template-columns:20px minmax(0,1fr) auto; place-items:initial; align-items:center; padding:8px 10px!important; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar:hover { width:var(--sidebar-width); padding-inline:17px; box-shadow:none; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar:hover nav { gap:15px; }
+.game-campaign-shell.has-app-sidebar>.app-sidebar .signout { justify-content:flex-start; padding-inline:10px; }
+.game-campaign-header { min-height:128px; grid-template-columns:minmax(320px,1.45fr) minmax(190px,.68fr) minmax(215px,.78fr); gap:14px; padding:12px 0 14px; }
+.campaign-title-block,.header-campaign-progress,.game-player-card { height:112px; min-height:112px; border-radius:10px; box-shadow:inset 0 1px #ffffff0a,0 12px 30px #0004; }
+.campaign-title-block { gap:17px; padding:11px 18px; }
+.campaign-emblem { width:60px; height:60px; font-size:18px; }
+.campaign-title-block h1 { font-size:clamp(25px,2.5vw,36px); }
+.campaign-title-block p { max-width:100%; font-size:10px; }
+.campaign-title-stats { gap:11px; font-size:7px; }
+.campaign-title-stats span+span { padding-left:11px; }
+.header-campaign-progress { padding:16px 18px; }
+.header-campaign-progress>span { font-size:9px; }
+.header-campaign-progress .progress-track { height:8px; margin:12px 0 9px; }
+.header-campaign-progress small { font-size:10px; }
+.game-player-card { gap:11px; padding:10px 14px; }
+.game-player-card .pixel-small { width:58px; height:70px; transform:scale(1.02); }
+.game-player-card strong { font-size:13px; }
+.game-player-card small { font-size:9px; }
+.game-player-card b { display:none; }
+.player-resources { display:flex; gap:10px; margin-top:7px; color:#aab8c8; font:700 9px var(--font-geist-mono); }
+.player-resources span:first-child { color:#ff6a83; }
+.player-resources span:last-child { color:#f0bd57; }
+.adventure-map-section { margin-top:2px; }
+.map-fog { opacity:.48; }
+.adventure-zone-heading { min-height:48px; padding-inline:17px; }
+.adventure-zone-heading h2 { font-size:13px; }
+.adventure-zone-heading p { font-size:11px; }
+.adventure-map-canvas.map-pannable { min-height:670px; height:670px; }
+.mission-detail-panel { padding:22px 22px; }
+.mission-detail-panel h3 { font-size:23px; line-height:1.18; }
+.mission-detail-panel>p { font-size:12px; line-height:1.6; }
+.mission-detail-panel .button { min-height:54px; font-size:11px; }
+@media (max-width:1180px) {
+  .game-campaign-shell.has-app-sidebar { --sidebar-width:156px; }
+  .game-campaign-shell.has-app-sidebar>.app-sidebar,.game-campaign-shell.has-app-sidebar>.app-sidebar:hover { width:var(--sidebar-width); padding-inline:13px; }
+  .game-campaign-header { grid-template-columns:minmax(280px,1.3fr) minmax(180px,.7fr) minmax(190px,.75fr); }
+}
+@media (max-width:760px) {
+  .game-campaign-shell.has-app-sidebar { --sidebar-width:100%; display:block; }
+  .game-campaign-shell.has-app-sidebar>.app-sidebar,.game-campaign-shell.has-app-sidebar>.app-sidebar:hover { width:100%; padding:12px 14px; }
+  .game-campaign-shell.has-app-sidebar>.app-sidebar nav { display:none; }
+  .game-campaign-shell.has-app-sidebar>.app-sidebar .sidebar-brand-name,.game-campaign-shell.has-app-sidebar>.app-sidebar .signout>span { display:inline; }
+  .game-campaign-shell.has-app-sidebar>.app-sidebar .signout { padding-inline:10px; }
+  .game-campaign-header { grid-template-columns:1fr; gap:8px; padding-top:10px; }
+  .campaign-title-block,.header-campaign-progress,.game-player-card { height:auto; min-height:88px; }
+  .campaign-title-block { padding:12px 15px; }
+  .campaign-emblem { width:50px; height:50px; }
+  .campaign-title-block h1 { font-size:27px; }
+  .campaign-title-block p { white-space:normal; }
+  .header-campaign-progress { padding:14px 16px; }
+  .game-player-card { width:100%; }
+  .adventure-map-canvas.map-pannable { min-height:560px; height:560px; }
+}
+
 /* Independent course study nodes. */
 .adventure-map-node.type-study .map-enemy-silhouette,.detail-node-icon.type-study { border-color:#f0a34a; background:linear-gradient(145deg,#3b2a18,#15120f); color:#ffd28c; box-shadow:inset -10px -8px #120d08,0 0 22px #f0a34a66; }
 .adventure-map-node.type-study.current::before { content:"ESTUDO ATUAL"; }
@@ -565,3 +635,7 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 @media (max-width:1180px) { .mastery-summary-grid,.mastery-concept-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media (max-width:720px) { .mastery-summary-grid,.mastery-insights,.mastery-concept-grid { grid-template-columns:1fr; }.mastery-tech-card>summary { grid-template-columns:1fr; }.mastery-insight-card>div { display:block; }.mastery-insight-card span { display:block; margin-top:4px; } }
 @media (max-width:800px) { .dashboard-review-strip>header { align-items:flex-start; flex-direction:column; }.dashboard-review-strip>div { grid-template-columns:1fr; } }
+
+/* Keep the campaign world tall enough to remain the visual anchor. */
+.game-campaign-shell.has-app-sidebar .adventure-map-canvas.map-pannable { height:670px; min-height:670px; }
+@media (max-width:760px) { .game-campaign-shell.has-app-sidebar .adventure-map-canvas.map-pannable { height:560px; min-height:560px!important; } }
