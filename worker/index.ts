@@ -32,7 +32,7 @@ const worker = {
       return Response.redirect(new URL("/og.png", request.url), 302);
     }
 
-    if (url.pathname.startsWith("/api/missions/") || url.pathname.startsWith("/api/projects/")) {
+    if (url.pathname.startsWith("/api/missions/") || url.pathname.startsWith("/api/projects/") || url.pathname === "/api/onboarding/tutorial") {
       const workerScope = globalThis as unknown as { location?: URL };
       workerScope.location ??= new URL(request.url);
       const scope = globalThis as typeof globalThis & { __DEVDEX_QUICKJS_WASM__?: WebAssembly.Module; __DEVDEX_SQLITE_WASM__?: WebAssembly.Module };
