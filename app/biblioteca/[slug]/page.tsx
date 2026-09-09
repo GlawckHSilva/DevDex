@@ -1,6 +1,6 @@
 import { ArrowLeft, BookOpen, Code2, Map, Star } from "lucide-react";
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/app-link";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { AuthenticatedSidebar } from "@/app/dashboard/authenticated-sidebar";
 import { getLibraryContent, recordContentView } from "@/db";

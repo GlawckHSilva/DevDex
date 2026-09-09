@@ -2,7 +2,7 @@
 
 import Editor from "@monaco-editor/react";
 import type { MissionStudyMaterial } from "@/db";
-import Link from "next/link";
+import Link from "@/components/app-link";
 import { useMemo, useState } from "react";
 import { BattleActions, BattleBriefPanel, BattleHeader, BattlePanel, BattleStudyOverlay, BattleTabList, BattleTabPanel, BattleTabs, BattleToast, LevelUpOverlay, useBattleFeedbackAudio, useBattleVictory, type BattleAction, type BattleFeedback, type BattleResultItem, type BattleView } from "./battle-card";
 import { useBattleShortcuts, useMissionDraft } from "./use-mission-draft";

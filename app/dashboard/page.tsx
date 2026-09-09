@@ -1,5 +1,5 @@
 import { requireChatGPTUser, signOutPath } from "@/app/chatgpt-auth";
-import Link from "next/link";
+import Link from "@/components/app-link";
 import { AppSidebar } from "./sidebar";
 import { getCampaignSummaries, getDashboard, getProjectSummaries, getUserReviewRecommendations } from "@/db";
 import { isAdminEmail } from "@/lib/runtime-config";

@@ -1,5 +1,5 @@
 import { BookOpen, Database, FolderKanban, Gauge, LogOut, Map, Sparkles, Terminal, Trophy } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/app-link";
 import { SiCss3, SiGithub, SiHtml5, SiJavascript, SiPython } from "react-icons/si";
 import { TbSql } from "react-icons/tb";
 

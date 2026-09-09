@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/app-link";
 import { BookOpen, CirclePlay, Download, ExternalLink, Swords } from "lucide-react";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { AuthenticatedSidebar } from "@/app/dashboard/authenticated-sidebar";

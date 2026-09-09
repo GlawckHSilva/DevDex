@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle2, Gauge, Target } from "lucide-react";
-import Link from "next/link";
+import Link from "@/components/app-link";
 import type { ReactNode } from "react";
 import { requireChatGPTUser, signOutPath } from "@/app/chatgpt-auth";
 import { getCampaignSummaries, getDashboard, getMasteryOverview, getUserReviewRecommendations, type MasteryConcept, type UserReviewRecommendation } from "@/db";

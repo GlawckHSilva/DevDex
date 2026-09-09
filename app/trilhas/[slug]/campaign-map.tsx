@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/app-link";
 import { PixelHero } from "@/app/aventura/character-select";
 import type { Archetype, CampaignLore, CampaignNode, CampaignZone } from "@/db";
 import { ENEMY_ASSETS } from "@/lib/enemy-assets";

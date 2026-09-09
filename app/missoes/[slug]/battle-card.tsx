@@ -12,7 +12,7 @@ import { clsx } from "clsx";
 import { ArrowLeft, Code2, FlaskConical, Lightbulb, ListChecks, ScrollText, Swords, Volume2, VolumeX, X } from "lucide-react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/app-link";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
 export type BattleView = { enemyName: string; enemyType: "enemy" | "elite" | "boss"; enemyLevel: number; playerLevel: number; playerXpPercent: number; skillPoints: number; lives: number; maxLives: number; hints: number; maxHints: number; nextHeartMinutes: number | null; nextHintMinutes: number | null; hint?: string | null; nextHintType?: string | null; state: "active" | "defeated" | "completed"; archetype: Archetype };

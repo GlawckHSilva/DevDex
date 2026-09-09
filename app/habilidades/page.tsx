@@ -1,5 +1,5 @@
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
-import Link from "next/link";
+import Link from "@/components/app-link";
 import { AuthenticatedSidebar } from "@/app/dashboard/authenticated-sidebar";
 import { getCodeMemoryReview, getSkillTree } from "@/db";
 import { SkillTree } from "./skill-tree";
