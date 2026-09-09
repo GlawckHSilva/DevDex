@@ -1,7 +1,8 @@
 import { requireChatGPTUser, signOutPath } from "@/app/chatgpt-auth";
+import { redirect } from "next/navigation";
 import Link from "@/components/app-link";
 import { AppSidebar } from "./sidebar";
-import { getCampaignSummaries, getDashboard, getProjectSummaries, getUserReviewRecommendations } from "@/db";
+import { getCampaignSummaries, getCharacter, getDashboard, getOnboardingState, getProjectSummaries, getUserReviewRecommendations } from "@/db";
 import { isAdminEmail } from "@/lib/runtime-config";
 
 export const metadata = { title: "Dashboard" };
@@ -9,7 +10,8 @@ export const dynamic = "force-dynamic";
 
 export default async function Dashboard() {
   const user = await requireChatGPTUser("/dashboard");
-  const [{ profile }, projects, campaigns, reviews] = await Promise.all([getDashboard(user), getProjectSummaries(user.userId), getCampaignSummaries(user.userId), getUserReviewRecommendations(user.userId, { limit: 3 })]);
+  const [{ profile }, projects, campaigns, reviews, character, onboarding] = await Promise.all([getDashboard(user), getProjectSummaries(user.userId), getCampaignSummaries(user.userId), getUserReviewRecommendations(user.userId, { limit: 3 }), getCharacter(user.userId), getOnboardingState(user.userId)]);
+  if (!character && !onboarding?.completed && profile.totalXp === 0) redirect("/onboarding");
   const activeCampaign = campaigns.find((campaign) => campaign.progress > 0 && campaign.progress < 100)
     ?? campaigns.find((campaign) => campaign.pathSlug === "github-fundamentals") ?? campaigns[0];
 

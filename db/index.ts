@@ -5,6 +5,8 @@ import { getDb } from "./client";
 import { missionState } from "./mission-state";
 import { refreshProjectUnlocks } from "./projects";
 import { getMissionReward, getUserProgression, recordMissionPerformance, syncProfileProgression } from "./progression";
+export { completeOnboarding, getOnboardingState, saveOnboardingState } from "./onboarding";
+export type { OnboardingStage, OnboardingState } from "./onboarding";
 export { missionState } from "./mission-state";
 
 export type MissionSummary = { slug: string; title: string; xpReward: number; skillName: string; pathSlug?: string; pathName?: string; state: "locked" | "available" | "in_progress" | "completed" };
