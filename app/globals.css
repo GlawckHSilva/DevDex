@@ -672,6 +672,7 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
 .course-zone-nav { padding-block:6px 7px; }
 .course-zone-nav button { min-width:150px; }
 .course-zone-nav button>span { width:22px; height:22px; }
+.course-zone-nav button>span em svg { display:block; transform:rotate(-45deg); }
 .course-zone-nav button.active>span { width:28px; height:28px; }
 .adventure-map-canvas.map-pannable { height:670px; min-height:670px; }
 .map-fog { opacity:.3; }
