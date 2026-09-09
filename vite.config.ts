@@ -30,6 +30,7 @@ const localBindingConfig = {
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? "",
     GITHUB_OAUTH_CLIENT_ID: process.env.GITHUB_OAUTH_CLIENT_ID ?? "",
     GITHUB_OAUTH_CLIENT_SECRET: process.env.GITHUB_OAUTH_CLIENT_SECRET ?? "",
+    FIREBASE_WEB_API_KEY: process.env.FIREBASE_WEB_API_KEY ?? "",
   },
   d1_databases: d1
     ? [

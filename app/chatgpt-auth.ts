@@ -4,7 +4,7 @@ import { BetaAccessError, ensureUser } from "@/db";
 import { readExternalUser, safeReturnPath } from "@/lib/oauth-auth";
 import { isAdminEmail } from "@/lib/runtime-config";
 
-export type ChatGPTUser = { userId: string; displayName: string; email: string; fullName: string | null; provider: "chatgpt" | "google" | "github" };
+export type ChatGPTUser = { userId: string; displayName: string; email: string; fullName: string | null; provider: "chatgpt" | "google" | "github" | "password" };
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();

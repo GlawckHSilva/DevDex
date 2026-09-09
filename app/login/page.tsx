@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { chatGPTSignInPath, getChatGPTUser } from "@/app/chatgpt-auth";
 import { LoginExperience } from "@/app/login/login-experience";
 import { safeReturnPath } from "@/lib/oauth-auth";
-import { getOAuthConfig } from "@/lib/runtime-config";
+import { getOAuthConfig, getPasswordAuthConfig } from "@/lib/runtime-config";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Entrar" };
@@ -12,6 +12,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const returnTo = safeReturnPath(query.return_to);
   if (await getChatGPTUser()) redirect(returnTo);
   const providers = getOAuthConfig();
+  const password = getPasswordAuthConfig();
   const error = query.erro ? errorMessage(query.erro) : null;
 
   return <LoginExperience
@@ -21,6 +22,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     googleUrl={`/auth/google?return_to=${encodeURIComponent(returnTo)}`}
     githubUrl={`/auth/github?return_to=${encodeURIComponent(returnTo)}`}
     chatgptUrl={chatGPTSignInPath(returnTo)}
+    passwordEnabled={password.enabled}
+    returnTo={returnTo}
   />;
 }
 

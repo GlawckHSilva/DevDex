@@ -16,6 +16,7 @@ type RuntimeEnv = {
   GOOGLE_CLIENT_SECRET?: string;
   GITHUB_OAUTH_CLIENT_ID?: string;
   GITHUB_OAUTH_CLIENT_SECRET?: string;
+  FIREBASE_WEB_API_KEY?: string;
 };
 
 export function getBetaConfig() {
@@ -62,6 +63,11 @@ export function getOAuthConfig() {
     google: { ...google, enabled: Boolean(sessionSecret.length >= 32 && google.clientId && google.clientSecret) },
     github: { ...github, enabled: Boolean(sessionSecret.length >= 32 && github.clientId && github.clientSecret) },
   };
+}
+
+export function getPasswordAuthConfig() {
+  const apiKey = (env as RuntimeEnv).FIREBASE_WEB_API_KEY?.trim() ?? "";
+  return { apiKey, enabled: apiKey.length > 0 };
 }
 
 export function isAdminEmail(email: string) {

@@ -1,12 +1,13 @@
 import { getOAuthConfig } from "@/lib/runtime-config";
 
 export type AuthProvider = "google" | "github";
+export type SessionProvider = AuthProvider | "password";
 export type ExternalUser = {
   userId: string;
   displayName: string;
   email: string;
   fullName: string | null;
-  provider: AuthProvider;
+  provider: SessionProvider;
 };
 
 type OAuthState = { provider: AuthProvider; state: string; verifier: string; returnTo: string; exp: number };
@@ -45,7 +46,7 @@ export async function createSession(user: ExternalUser) {
 
 export async function readExternalUser(cookieHeader: string | null): Promise<ExternalUser | null> {
   const session = await verify<Session>(readCookie(cookieHeader, sessionCookie));
-  if (!session || (session.provider !== "google" && session.provider !== "github")) return null;
+  if (!session || !["google", "github", "password"].includes(session.provider)) return null;
   return session;
 }
 
