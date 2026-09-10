@@ -166,7 +166,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
       const locked = item.nodes.every((node) => node.missionState === "locked");
       return <motion.button className={`${index === selectedZoneIndex ? "active" : ""}${locked ? " locked" : ""}`} aria-current={index === selectedZoneIndex ? "step" : undefined} data-testid={`course-zone-${item.sortOrder}`} key={item.id} onClick={() => { setSelectedZoneIndex(index); setSelectedSlug(""); }} whileHover={locked ? undefined : { y: -2 }} whileTap={locked ? undefined : { scale: .97 }} transition={{ duration: .16 }}><i aria-hidden="true" /><span aria-hidden="true"><em>{locked ? <LockKeyhole size={10} strokeWidth={2.5} /> : "✦"}</em></span><small>{String(item.sortOrder).padStart(2, "0")}</small><strong>{item.title}</strong><b>{item.progress}%</b></motion.button>;
     })}</nav></MotionConfig>
-    <div className="adventure-map-layout">
+      <div className="adventure-map-layout">
       <header className="adventure-zone-heading"><div><span>ZONA ATUAL</span><h2>Zona {String(zone.sortOrder).padStart(2, "0")} — {zone.title}</h2><p>{zone.storyIntro}</p></div><strong>{zone.nodes.filter((node) => node.missionState === "completed").length}/{zone.nodes.length} missões</strong></header>
       <div aria-label="Mapa horizontal explorável. Arraste para os lados ou use as setas esquerda e direita." className={`adventure-map-canvas map-pannable${allNodes.length > 9 ? " map-dense" : ""}${panning ? " is-panning" : ""}`} data-testid="map-viewport" onClickCapture={(event) => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); } }} onKeyDown={panByKeyboard} onPointerCancel={endPan} onPointerDown={startPan} onPointerMove={pan} onPointerUp={endPan} ref={viewportRef} role="application" style={{ "--fog-reveal": `${Math.min(90, 19 + (completed / Math.max(1, nodes.length)) * 71)}%` } as CSSProperties} tabIndex={0}>
       <div className="adventure-map-world" data-testid="map-world" ref={worldRef} style={{ "--world-width": `${worldWidth}px` } as CSSProperties}>
@@ -177,6 +177,7 @@ export function CampaignAdventureMap({ zones, archetype, bosses, campaignPath, l
         <PlayerMarker archetype={archetype} position={playerPosition} previous={previousPosition} arriving={arriving} />
         {allNodes.map((node, index) => <MapNode node={node} selected={selected.missionSlug === node.missionSlug} current={node.missionSlug === initial.missionSlug} onSelect={() => setSelectedSlug(node.missionSlug)} onKeyDown={(event) => selectByKeyboard(event, index)} key={node.missionSlug} />)}
       </div>
+      <div className="adventure-map-caption"><strong>ZONA {String(zone.sortOrder).padStart(2, "0")}</strong><span>{zone.storyIntro}</span></div>
       {arriving ? <div className="map-unlock-toast" role="status" data-testid="map-unlock-toast"><span>✦</span> NOVA ETAPA DESBLOQUEADA</div> : null}
       <div className="map-pan-controls"><span>ARRASTE PARA OS LADOS</span><button onClick={() => centerOnPlayer()} type="button">◎ Centralizar</button></div>
       <div className="adventure-legend"><strong>CAMINHO</strong><span><i className="completed" />Concluído</span><span><i className="available" />Disponível</span><span><i className="locked" />Bloqueado</span></div>

@@ -743,3 +743,19 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
   .course-zone-nav button>span { width:21px; height:21px; }
   .course-zone-nav button.active>span { width:27px; height:27px; }
 }
+
+@media (min-width:761px) {
+  .game-campaign-shell.has-app-sidebar { --sidebar-width:120px; }
+  .game-campaign-shell.has-app-sidebar .game-campaign-main { width:calc(100% - 44px)!important; margin-inline:22px!important; }
+  .game-campaign-shell.has-app-sidebar .adventure-map-layout { grid-template-rows:minmax(0,1fr)!important; margin-top:18px; }
+  .game-campaign-shell.has-app-sidebar .adventure-zone-heading { display:none!important; }
+  .game-campaign-shell.has-app-sidebar .adventure-map-canvas,
+  .game-campaign-shell.has-app-sidebar .mission-detail-panel { grid-row:1!important; }
+  .adventure-map-caption { position:absolute; z-index:5; left:28px; bottom:28px; display:grid; gap:8px; max-width:250px; color:#20d7e2; pointer-events:none; }
+  .adventure-map-caption strong { font:700 16px var(--font-geist-mono); letter-spacing:.08em; }
+  .adventure-map-caption span { color:#8bc9d1; font:700 11px var(--font-geist-mono); line-height:1.5; text-transform:uppercase; }
+}
+
+@media (max-width:760px) {
+  .adventure-map-caption { display:none; }
+}
