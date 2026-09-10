@@ -715,8 +715,8 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
   .game-campaign-topbar { min-height:40px; padding-block:6px; }
   .game-campaign-header { min-height:96px; padding-block:8px 10px; }
   .campaign-title-block,.header-campaign-progress,.game-player-card { height:88px; min-height:88px; }
-  .adventure-map-layout { grid-template-rows:46px minmax(500px,1fr); }
-  .adventure-map-canvas.map-pannable { height:calc(100vh - 210px); min-height:500px; }
+  .adventure-map-layout { grid-template-rows:46px minmax(500px,1fr)!important; }
+  .game-campaign-shell.has-app-sidebar .adventure-map-canvas.map-pannable { height:calc(100vh - 210px)!important; min-height:500px!important; }
   .mission-detail-panel { height:100%; padding-block:16px; }
   .mission-detail-panel .detail-enemy-sprite { margin-block:12px 8px; }
 }
