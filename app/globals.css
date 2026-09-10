@@ -757,6 +757,7 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
   .campaign-title-block { padding:8px 15px; }
   .campaign-title-block h1 { margin:3px 0 0; }
   .campaign-title-block p { margin:1px 0 3px; }
+  .campaign-title-stats { transform:translateY(-3px); }
 }
 
 @media (max-width:760px) {
