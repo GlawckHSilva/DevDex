@@ -754,6 +754,9 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
   .adventure-map-caption { position:absolute; z-index:5; left:28px; bottom:28px; display:grid; gap:8px; max-width:250px; color:#20d7e2; pointer-events:none; }
   .adventure-map-caption strong { font:700 16px var(--font-geist-mono); letter-spacing:.08em; }
   .adventure-map-caption span { color:#8bc9d1; font:700 11px var(--font-geist-mono); line-height:1.5; text-transform:uppercase; }
+  .campaign-title-block { padding:8px 15px; }
+  .campaign-title-block h1 { margin:3px 0 0; }
+  .campaign-title-block p { margin:1px 0 3px; }
 }
 
 @media (max-width:760px) {
