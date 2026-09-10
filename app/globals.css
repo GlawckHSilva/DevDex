@@ -709,3 +709,11 @@ pre { margin:0; padding:38px; overflow:auto; border-right:1px solid #1d2734; col
   .mission-panel-header>small { font-size:7px; }
   .mission-helper-actions span { min-width:0; }
 }
+
+/* Keep the full campaign composition visible on short desktop viewports without browser zoom. */
+@media (max-height:850px) and (min-width:761px) {
+  .game-campaign-topbar { min-height:40px; padding-block:6px; }
+  .game-campaign-header { min-height:96px; padding-block:8px 10px; }
+  .campaign-title-block,.header-campaign-progress,.game-player-card { height:88px; min-height:88px; }
+  .adventure-map-canvas.map-pannable { height:calc(100vh - 210px); min-height:500px; }
+}
